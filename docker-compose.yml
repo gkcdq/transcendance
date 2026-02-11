@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: db
+    restart: always
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend         
+    container_name: backend
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - db
+    command: >
+      sh -c "until cd src && python3 manage.py migrate --noinput; do
+               echo 'Waiting for db...'
+               sleep 2
+             done &&
+             daphne -b 0.0.0.0 -p 8000 transcendance.asgi:application"
+
+  frontend:
+    build: ./frontend           
+    container_name: frontend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "8080:80"
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "8443:443"
+    volumes:
+      - ./frontend:/var/www/html 
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

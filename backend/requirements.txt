@@ -1,0 +1,5 @@
+Django>=4.2
+psycopg2-binary  # Pour PostgreSQL
+channels         # Pour les WebSockets (pour le jeu)
+daphne           # Le serveur ASGI (temps réel)
+django-environ   # Pour gérer .env proprement
