@@ -14,15 +14,11 @@ services:
     container_name: backend
     volumes:
       - ./backend:/app
+      #- ./backend/staticfiles:/app/staticfiles
+      #- static_volume:/app/staticfiles
     env_file: .env
     depends_on:
       - db
-    command: >
-      sh -c "until cd src && python3 manage.py migrate --noinput; do
-               echo 'Waiting for db...'
-               sleep 2
-             done &&
-             daphne -b 0.0.0.0 -p 8000 transcendance.asgi:application"
 
   frontend:
     build: ./frontend           
@@ -39,8 +35,11 @@ services:
       - "8443:443"
     volumes:
       - ./frontend:/var/www/html 
+      - ./backend/staticfiles:/var/www/static:ro
+      #- static_volume:/var/www/static:ro
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+  static_volume:

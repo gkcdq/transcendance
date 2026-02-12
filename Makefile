@@ -3,7 +3,8 @@ include .env
 export DOCKER_API_VERSION=1.44
 
 all:
-	chmod +x backend/scripts/setup.sh
+	chmod +x backend/scripts/entrypoint.sh
+	chmod +x backend/src/manage.py
 	$(DOCKER_COMPOSE) up --build
 
 # arreter les containers sans supprimer les données

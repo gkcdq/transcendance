@@ -61,4 +61,5 @@ DATABASES = {
     }
 }
 
-STATIC_URL = 'static/'
+STATIC_ROOT = '/app/staticfiles'
+STATIC_URL = '/static/'
