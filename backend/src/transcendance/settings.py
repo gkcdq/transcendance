@@ -6,7 +6,6 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-debug-key-42')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
-# Indispensable pour l'admin Django
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -29,7 +28,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'transcendance.urls'
 
-# Obligatoire pour l'admin
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -49,7 +47,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'transcendance.wsgi.application'
 ASGI_APPLICATION = 'transcendance.asgi.application'
 
-# Ta config DB avec des valeurs de secours pour le debug
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -63,3 +60,12 @@ DATABASES = {
 
 STATIC_ROOT = '/app/staticfiles'
 STATIC_URL = '/static/'
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8443',
+    'https://127.0.0.1:8443',
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
