@@ -264,3 +264,22 @@ header {
     height: 100%;
     transition: width 0.5s ease-in-out;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+#game-controls { text-align: center; margin-bottom: 20px; }
+.cyber-button { 
+    background: #00babc; color: #0d1117; padding: 10px 20px; 
+    border: none; border-radius: 5px; font-weight: bold; cursor: pointer; 
+}
+.cyber-button:hover { background: white; }

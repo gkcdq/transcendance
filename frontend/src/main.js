@@ -1,10 +1,22 @@
 console.log("Script main.js chargé !");
-let currentPongInstance = null; // variable global pour le jeu 
+let currentPongInstance = null; // variable global pour le jeu
+let isGameOver = false; 
 
 // ÉTAT GLOBAL
 let currentUser = null;
 
 // CONFIGURATION DES ROUTES
+const playPageHTML = `
+    <div class="game-container">
+        <div id="game-controls">
+            <button id="btn-start-game" class="cyber-button">Lancer la partie</button>
+            <p id="game-status">En attente du joueur...</p>
+        </div>
+        <canvas id="pongCanvas" width="800" height="400" style="display:none;"></canvas>
+    </div>
+`;
+
+
 const routes = {
     '/': { 
         title: 'Accueil', 
@@ -15,20 +27,19 @@ const routes = {
                 <div id="auth-status"></div>
             </section>` 
     },
+    
     '/game': { 
         title: 'Jeu', 
-        render: () => `<h1>Arena</h1><canvas id="pongCanvas" width="800" height="400"></canvas>`,
+        // 1. CORRECTION : On utilise la variable avec le bouton ici !
+        render: () => playPageHTML, 
         init: initPongGame 
     },
-    '/settings': { 
-        title: 'Paramètres', 
-        render: () => `<h1>Configuration</h1><div id="profile-settings"></div>`,
-        init: fetchUserSettings 
-    },
+    
     '/404': {
         title: '404',
         render: () => `<h1>404</h1><p>Page introuvable.</p>`
     },
+    
     '/chat': { 
         title: 'Chat', 
         render: () => `
@@ -45,6 +56,8 @@ const routes = {
             </div>`,
         init: initChat
     },
+    
+    // 2. CORRECTION : On ne garde qu'une seule route /settings (la bonne)
     '/settings': { 
         title: 'Paramètres', 
         render: () => `
@@ -78,6 +91,7 @@ const routes = {
             </div>`,
         init: initSettings
     },
+    
     '/profile': { 
         title: 'Profil Utilisateur', 
         render: () => {
@@ -86,7 +100,6 @@ const routes = {
             const losses = parseInt(localStorage.getItem('pong_losses') || 0);
             const color = localStorage.getItem('user_color') || '#00babc';
 
-            // Calcul de l'XP : 100 par victoire, 20 par défaite
             const totalXP = (wins * 100) + (losses * 20);
             const level = Math.floor(totalXP / 1000) + 1;
             const currentXP = totalXP % 1000;
@@ -128,7 +141,7 @@ const routes = {
                 </div>`;
         },
         init: initProfile
-    },
+    }
 };
 
 // CORE : LE ROUTEUR (Une seule définition propre)
@@ -189,12 +202,46 @@ function renderAuthUI(isLoggedIn) {
         : `<a href="/accounts/fortytwo/login/" class="btn-42">Connexion avec 42</a>`;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ACTIONS & ÉVÉNEMENTS
 function navigateTo(url) {
+    // 1. On coupe violemment le jeu si on change de page
+    if (currentPongInstance) {
+        cancelAnimationFrame(currentPongInstance);
+        currentPongInstance = null;
+    }
+
+    // 2. Navigation standard
     history.pushState(null, null, url);
-    router();
-    isGameOver = true;
-    cancelAnimationFrame(currentPongInstance);
+    router(); // Ou handleLocation() selon le nom de ta fonction
 }
 
 // Intercepter les clics sur les liens de navigation
@@ -214,6 +261,7 @@ document.addEventListener('click', e => {
 window.addEventListener('popstate', router);
 document.addEventListener('DOMContentLoaded', router);
 
+// --- FONCTION DE PROFIL ---
 function initProfile() {
     const historyContainer = document.getElementById('match-history');
     const history = JSON.parse(localStorage.getItem('match_history') || '[]');
@@ -233,156 +281,189 @@ function initProfile() {
 }
 // LE CODE DU JEU 
 function initPongGame() {
-    if (currentPongInstance){
-        cancelAnimationFrame(currentPongInstance);
-    }
-    let animationId;
-    let isGameOver = false; // Variable de contrôle de la boucle
+    // 1. Gérer l'affichage du bouton vs Canvas
+    const btnStart = document.getElementById('btn-start-game');
     const canvas = document.getElementById('pongCanvas');
-    if (!canvas) return;
+    const statusText = document.getElementById('game-status');
+    
+    if (!canvas || !btnStart) return;
     const ctx = canvas.getContext('2d');
 
-    const userColor = localStorage.getItem('user_color') || '#00babc';
-    const aiBaseSpeed = parseFloat(localStorage.getItem('ai_level')) || 5.3;
+    // On s'assure que le bouton est visible et le canvas caché au chargement de la page
+    btnStart.style.display = 'inline-block';
+    canvas.style.display = 'none';
+    statusText.innerText = "Prêt à jouer ?";
 
-    const paddleWidth = 10, paddleHeight = 80;
-    let leftPaddleY = (canvas.height - paddleHeight) / 2;
-    let rightPaddleY = (canvas.height - paddleHeight) / 2;
-    let ballX = canvas.width / 2, ballY = canvas.height / 2;
-    let ballSpeedX = 5, ballSpeedY = 5;
-    
-    let scorePlayer = 0;
-    let scoreIA = 0;
+    // 2. L'événement du clic sur "Play"
+    btnStart.addEventListener('click', () => {
+        btnStart.style.display = 'none'; // On cache le bouton
+        statusText.style.display = 'none';
+        canvas.style.display = 'block';  // On affiche le terrain
+        startGameLogic(); // On lance la mécanique
+    });
 
-    const keys = {};
-    const handleKeyDown = e => keys[e.key] = true;
-    const handleKeyUp = e => keys[e.key] = false;
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    function gameLoop() {
-        if (isGameOver) return;
-        update();
-        draw();
-        animationId = requestAnimationFrame(gameLoop);
-        currentPongInstance = animationId;
-    }
-
-    function update() {
-        if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
-        if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
-
-        let targetY = rightPaddleY + paddleHeight / 2;
-        if (ballX > canvas.width / 2 && ballSpeedX > 0) {
-            targetY = ballY + (Math.sin(Date.now() / 1000) * 20); 
-        } else if (ballSpeedX < 0) {
-            targetY = canvas.height / 2;
-        }
-
-        let centerPaddle = rightPaddleY + paddleHeight / 2;
-        if (centerPaddle < targetY - 10) rightPaddleY += aiBaseSpeed;
-        else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
-
-        ballX += ballSpeedX;
-        ballY += ballSpeedY;
-
-        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-
-        const maxSpeed = 20;
-
-        // Collision Gauche
-        if (ballSpeedX < 0 && ballX <= paddleWidth) { 
-            if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-                ballX = paddleWidth;
-                ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
-                ballSpeedY *= 1.05;
-            }
-        }
-
-        // Collision Droite
-        if (ballSpeedX > 0 && ballX >= canvas.width - paddleWidth) {
-            if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-                ballX = canvas.width - paddleWidth;
-                ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
-                ballSpeedY *= 1.05;
-            }
-        }
-
-        // --- SCORE & FIN DE MATCH ---
-        if (ballX < 0) {
-            scoreIA++;
-            if (scoreIA >= 5) endGame("IA");
-            else resetBall();
-        } else if (ballX > canvas.width) {
-            scorePlayer++;
-            if (scorePlayer >= 5) endGame("Player");
-            else resetBall();
-        }
-    }
-
-    function endGame(winner) {
-        if (isGameOver) return;
-        isGameOver = true; // Stoppe immédiatement la logique
-        cancelAnimationFrame(animationId); // Tue le rendu
-
-        // Nettoyage des écouteurs pour éviter les bugs sur les autres pages
-        window.removeEventListener('keydown', handleKeyDown);
-        window.removeEventListener('keyup', handleKeyUp);
-
-        // Stats
-        let wins = parseInt(localStorage.getItem('pong_wins') || '0');
-        let losses = parseInt(localStorage.getItem('pong_losses') || '0');
-
-        if (winner === "Player") localStorage.setItem('pong_wins', wins + 1);
-        else localStorage.setItem('pong_losses', losses + 1);
-
-        // Historique
-        let history = JSON.parse(localStorage.getItem('match_history') || '[]');
-        history.unshift({
-            date: new Date().toLocaleString(),
-            result: winner === "Player" ? "Victoire" : "Défaite",
-            score: `${scorePlayer} - ${scoreIA}`
-        });
-        localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
-
-        alert(`Match terminé ! Vainqueur : ${winner}`);
-        navigateTo('/profile'); 
-    }
-
-    function resetBall() {
-        ballX = canvas.width / 2;
-        ballY = canvas.height / 2;
-        ballSpeedX = (Math.random() > 0.5 ? 5 : -5); // Direction aléatoire pour plus de fun
-        ballSpeedY = 5;
-    }
-
-    function draw() {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.strokeStyle = "#ffffff33";
-        ctx.setLineDash([10, 10]);
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2, 0);
-        ctx.lineTo(canvas.width / 2, canvas.height);
-        ctx.stroke();
-
-        ctx.fillStyle = userColor; 
-        ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
-        ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+    // 3. La logique du jeu (encapsulée pour ne démarrer que sur commande)
+    function startGameLogic() {
+        let isGameOver = false; // Reste LOCALE pour ne pas bloquer les parties suivantes
+        let animationId;
         
-        ctx.beginPath();
-        ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
-        ctx.fill();
+        const userColor = localStorage.getItem('user_color') || '#00babc';
+        const aiBaseSpeed = parseFloat(localStorage.getItem('ai_level')) || 5.3;
 
-        ctx.font = "30px Arial";
-        ctx.fillText(scorePlayer, canvas.width / 4, 50);
-        ctx.fillText(scoreIA, (canvas.width / 4) * 3, 50);
+        const paddleWidth = 10, paddleHeight = 80;
+        let leftPaddleY = (canvas.height - paddleHeight) / 2;
+        let rightPaddleY = (canvas.height - paddleHeight) / 2;
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballSpeedX = 5, ballSpeedY = 5;
+        
+        let scorePlayer = 0;
+        let scoreIA = 0;
+
+        const keys = {};
+        const handleKeyDown = e => keys[e.key] = true;
+        const handleKeyUp = e => keys[e.key] = false;
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
+        function gameLoop() {
+            if (isGameOver) return;
+            update();
+            draw();
+            animationId = requestAnimationFrame(gameLoop);
+            currentPongInstance = animationId; // Sauvegarde globale pour le routeur
+        }
+
+        function update() {
+            if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
+            if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
+
+            let targetY = rightPaddleY + paddleHeight / 2;
+            if (ballX > canvas.width / 2 && ballSpeedX > 0) {
+                targetY = ballY + (Math.sin(Date.now() / 1000) * 20); 
+            } else if (ballSpeedX < 0) {
+                targetY = canvas.height / 2;
+            }
+
+            let centerPaddle = rightPaddleY + paddleHeight / 2;
+            if (centerPaddle < targetY - 10) rightPaddleY += aiBaseSpeed;
+            else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
+
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
+
+            const maxSpeed = 20;
+
+            if (ballSpeedX < 0 && ballX <= paddleWidth) { 
+                if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+                    ballX = paddleWidth;
+                    ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                    ballSpeedY *= 1.05;
+                }
+            }
+
+            if (ballSpeedX > 0 && ballX >= canvas.width - paddleWidth) {
+                if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+                    ballX = canvas.width - paddleWidth;
+                    ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                    ballSpeedY *= 1.05;
+                }
+            }
+
+            if (ballX < 0) {
+                scoreIA++;
+                if (scoreIA >= 5) endGame("IA");
+                else resetBall();
+            } else if (ballX > canvas.width) {
+                scorePlayer++;
+                if (scorePlayer >= 5) endGame("Player");
+                else resetBall();
+            }
+        }
+
+        function endGame(winner) {
+            if (isGameOver) return;
+            isGameOver = true; 
+            cancelAnimationFrame(animationId); 
+            currentPongInstance = null;
+
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+
+            let wins = parseInt(localStorage.getItem('pong_wins') || '0');
+            let losses = parseInt(localStorage.getItem('pong_losses') || '0');
+
+            if (winner === "Player") localStorage.setItem('pong_wins', wins + 1);
+            else localStorage.setItem('pong_losses', losses + 1);
+
+            let history = JSON.parse(localStorage.getItem('match_history') || '[]');
+            history.unshift({
+                date: new Date().toLocaleString(),
+                result: winner === "Player" ? "Victoire" : "Défaite",
+                score: `${scorePlayer} - ${scoreIA}`
+            });
+            localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
+
+            alert(`Match terminé ! Vainqueur : ${winner}`);
+            navigateTo('/profile'); 
+        }
+
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
+            ballSpeedY = 5;
+        }
+
+        function draw() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "#ffffff33";
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            ctx.fillStyle = userColor; 
+            ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
+            ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+            
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.font = "30px Arial";
+            ctx.fillText(scorePlayer, canvas.width / 4, 50);
+            ctx.fillText(scoreIA, (canvas.width / 4) * 3, 50);
+        }
+
+        // Démarrage effectif du jeu
+        gameLoop();
     }
-
-    gameLoop();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ///////////////////
 
