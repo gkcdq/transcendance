@@ -35,6 +35,11 @@ init-django:
 
 
 # --------------------------------- COMMANDE ---------------------------------
-# docker compose up --build backend          // relance les container backend
-# docker compose up --build frontend         // relance les container frontend
-# docker compose up -d					     // relance tous les container 
+# docker compose up --build backend          // relance les containers backend
+# docker compose up --build frontend         // relance les containers frontend
+# docker compose up 					     // relance tous les containers
+# docker compose down                        // arrete tous les containers
+
+# ----------------------------------- LIEN -----------------------------------
+# https://localhost:8443/admin/
+# https://localhost:8443/api/users/me/

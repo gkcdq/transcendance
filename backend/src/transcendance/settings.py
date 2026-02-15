@@ -13,21 +13,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites', # Requis pour allauth
-    
-    # Tes librairies installées via requirements.txt
+    'django.contrib.sites',
     'channels',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'users.providers.fortytwo',
-    #'allauth.socialaccount.providers.fortytwo', # Provider 42
-    
-    # Ton application locale
     'users', 
 ]
 
-SITE_ID = 1 # Indispensable pour allauth
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
