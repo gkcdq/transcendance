@@ -13,8 +13,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites', # Requis pour allauth
+    
+    # Tes librairies installées via requirements.txt
     'channels',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #'allauth.socialaccount.providers.fortytwo', # Provider 42
+    
+    # Ton application locale
+    'users', 
 ]
+
+SITE_ID = 1 # Indispensable pour allauth
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -24,6 +36,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'transcendance.urls'

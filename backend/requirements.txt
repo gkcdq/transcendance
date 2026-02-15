@@ -3,3 +3,6 @@ psycopg2-binary  # Pour PostgreSQL
 channels         # Pour les WebSockets (pour le jeu)
 daphne           # Le serveur ASGI (temps réel)
 django-environ   # Pour gérer .env proprement
+django-allauth==0.61.1
+requests
+Pillow

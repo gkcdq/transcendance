@@ -32,3 +32,9 @@ init-django:
 	$(DOCKER_COMPOSE) run --rm backend django-admin startproject transcendence src
 
 .PHONY: all stop down clean logs init-django
+
+
+# --------------------------------- COMMANDE ---------------------------------
+# docker compose up --build backend          // relance les container backend
+# docker compose up --build frontend         // relance les container frontend
+# docker compose up -d					     // relance tous les container 
