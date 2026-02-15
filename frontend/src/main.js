@@ -142,36 +142,30 @@ function initPongGame() {
         if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
         if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
 
+//////////////////////////////////////////////////////////////////////////////////////////
+        // --- IA SEMI-INTELLIGENTE (Humaine) ---
+        let aiSpeed = 5.3; 
+        let targetY = rightPaddleY + paddleHeight / 2; // Par défaut, elle ne bouge pas
 
-        // --- IA INTELLIGENTE (Anticipation) ---
-        let aiSpeed = 6; // On peut baisser un peu sa vitesse car elle est plus maligne
-        let targetY = canvas.height / 2; // Par défaut, elle vise le centre
-
-        if (ballSpeedX > 0) {
-            // La balle vient vers l'IA : on prédit où elle sera quand elle atteindra x = canvas.width
-            // Formule simplifiée : position actuelle + (vitesse * temps restant)
-            let timeToReach = (canvas.width - ballX) / ballSpeedX;
-            let predictedY = ballY + (ballSpeedY * timeToReach);
-
-            // Simulation des rebonds sur les murs (haut/bas) pour la prédiction
-            // C'est ici que l'IA devient vraiment forte
-            while (predictedY < 0 || predictedY > canvas.height) {
-                if (predictedY < 0) predictedY = -predictedY;
-                else predictedY = 2 * canvas.height - predictedY;
-            }
-            targetY = predictedY;
-        } else {
-            // La balle s'éloigne : l'IA se replace au centre pour couvrir le terrain
+        // 1. L'IA ne "voit" la balle que si elle est dans sa moitié de terrain (x > canvas.width / 2)
+        if (ballX > canvas.width / 2 && ballSpeedX > 0) {
+            // Elle suit la balle, mais avec une petite erreur intentionnelle
+            // On ajoute un "offset" pour qu'elle ne soit pas toujours parfaitement centrée
+            targetY = ballY + (Math.sin(Date.now() / 1000) * 20); 
+        } 
+        else if (ballSpeedX < 0) {
+            // Quand la balle s'éloigne, elle se replace doucement vers le centre (fainéantise humaine)
             targetY = canvas.height / 2;
         }
 
-        // Mouvement fluide vers la cible (targetY)
+        // 2. Mouvement vers la cible
         let centerPaddle = rightPaddleY + paddleHeight / 2;
-        if (Math.abs(centerPaddle - targetY) > 10) {
-            if (centerPaddle < targetY) rightPaddleY += aiSpeed;
-            else rightPaddleY -= aiSpeed;
+        if (centerPaddle < targetY - 10) {
+            rightPaddleY += aiSpeed;
+        } else if (centerPaddle > targetY + 10) {
+            rightPaddleY -= aiSpeed;
         }
-        //
+        //////////////////////////////////////////////////////////////////////////////////////////
 
         ballX += ballSpeedX;
         ballY += ballSpeedY;
