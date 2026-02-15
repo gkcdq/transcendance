@@ -1,4 +1,5 @@
 console.log("Script main.js chargé !");
+let currentPongInstance = null; // variable global pour le jeu 
 
 // ÉTAT GLOBAL
 let currentUser = null;
@@ -77,6 +78,57 @@ const routes = {
             </div>`,
         init: initSettings
     },
+    '/profile': { 
+        title: 'Profil Utilisateur', 
+        render: () => {
+            const name = localStorage.getItem('user_name') || 'Pilote';
+            const wins = parseInt(localStorage.getItem('pong_wins') || 0);
+            const losses = parseInt(localStorage.getItem('pong_losses') || 0);
+            const color = localStorage.getItem('user_color') || '#00babc';
+
+            // Calcul de l'XP : 100 par victoire, 20 par défaite
+            const totalXP = (wins * 100) + (losses * 20);
+            const level = Math.floor(totalXP / 1000) + 1;
+            const currentXP = totalXP % 1000;
+            const xpPercentage = (currentXP / 1000) * 100;
+
+            return `
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-avatar" style="border-color: ${color}">
+                            <img src="https://ui-avatars.com/api/?name=${name}&background=0D1117&color=${color.replace('#','')}" alt="Avatar">
+                        </div>
+                        <h2>${name}</h2>
+                        <div class="level-badge">Niveau ${level}</div>
+                    </div>
+
+                    <div class="xp-section">
+                        <div class="xp-info">
+                            <span>${currentXP} / 1000 XP</span>
+                            <span>Progression vers niveau ${level + 1}</span>
+                        </div>
+                        <div class="xp-bar-container">
+                            <div class="xp-bar-fill" style="width: ${xpPercentage}%; background-color: ${color}"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value">${wins}</span>
+                            <span class="stat-label">Victoires</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">${losses}</span>
+                            <span class="stat-label">Défaites</span>
+                        </div>
+                    </div>
+
+                    <h3>Historique des Matchs</h3>
+                    <div id="match-history" class="match-history"></div>
+                </div>`;
+        },
+        init: initProfile
+    },
 };
 
 // CORE : LE ROUTEUR (Une seule définition propre)
@@ -141,6 +193,8 @@ function renderAuthUI(isLoggedIn) {
 function navigateTo(url) {
     history.pushState(null, null, url);
     router();
+    isGameOver = true;
+    cancelAnimationFrame(currentPongInstance);
 }
 
 // Intercepter les clics sur les liens de navigation
@@ -160,18 +214,37 @@ document.addEventListener('click', e => {
 window.addEventListener('popstate', router);
 document.addEventListener('DOMContentLoaded', router);
 
+function initProfile() {
+    const historyContainer = document.getElementById('match-history');
+    const history = JSON.parse(localStorage.getItem('match_history') || '[]');
+
+    if (history.length === 0) {
+        historyContainer.innerHTML = '<p style="color: #8b949e">Aucun match joué pour le moment.</p>';
+        return;
+    }
+
+    historyContainer.innerHTML = history.map(match => `
+        <div class="match-item ${match.result === 'Victoire' ? 'match-win' : 'match-loss'}">
+            <span>${match.date}</span>
+            <strong>${match.result}</strong>
+            <span>Score: ${match.score}</span>
+        </div>
+    `).join('');
+}
 // LE CODE DU JEU 
 function initPongGame() {
+    if (currentPongInstance){
+        cancelAnimationFrame(currentPongInstance);
+    }
+    let animationId;
+    let isGameOver = false; // Variable de contrôle de la boucle
     const canvas = document.getElementById('pongCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // --- NOUVEAU : RÉCUPÉRATION DES PARAMÈTRES ---
     const userColor = localStorage.getItem('user_color') || '#00babc';
     const aiBaseSpeed = parseFloat(localStorage.getItem('ai_level')) || 5.3;
-    const userName = localStorage.getItem('user_name') || 'Moi';
 
-    // 1. Paramètres du jeu & Scores
     const paddleWidth = 10, paddleHeight = 80;
     let leftPaddleY = (canvas.height - paddleHeight) / 2;
     let rightPaddleY = (canvas.height - paddleHeight) / 2;
@@ -182,92 +255,105 @@ function initPongGame() {
     let scoreIA = 0;
 
     const keys = {};
-    window.addEventListener('keydown', e => keys[e.key] = true);
-    window.addEventListener('keyup', e => keys[e.key] = false);
+    const handleKeyDown = e => keys[e.key] = true;
+    const handleKeyUp = e => keys[e.key] = false;
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
     function gameLoop() {
+        if (isGameOver) return;
         update();
         draw();
-        requestAnimationFrame(gameLoop);
+        animationId = requestAnimationFrame(gameLoop);
+        currentPongInstance = animationId;
     }
 
     function update() {
-        // Mouvement Joueur
         if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
         if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
 
-        // --- IA UTILISANT LE PARAMÈTRE DE DIFFICULTÉ ---
         let targetY = rightPaddleY + paddleHeight / 2;
-
         if (ballX > canvas.width / 2 && ballSpeedX > 0) {
             targetY = ballY + (Math.sin(Date.now() / 1000) * 20); 
-        } 
-        else if (ballSpeedX < 0) {
+        } else if (ballSpeedX < 0) {
             targetY = canvas.height / 2;
         }
 
         let centerPaddle = rightPaddleY + paddleHeight / 2;
-        if (centerPaddle < targetY - 10) {
-            rightPaddleY += aiBaseSpeed; // Utilise la vitesse des paramètres
-        } else if (centerPaddle > targetY + 10) {
-            rightPaddleY -= aiBaseSpeed; // Utilise la vitesse des paramètres
-        }
+        if (centerPaddle < targetY - 10) rightPaddleY += aiBaseSpeed;
+        else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
 
         ballX += ballSpeedX;
         ballY += ballSpeedY;
 
-        // Rebond haut/bas
         if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
 
-        // Collisions Raquettes
-        const maxSpeed = 20; // Définit ta limite ici
+        const maxSpeed = 20;
 
-
-        //
-        // 1. Collision Raquette GAUCHE (Joueur)
+        // Collision Gauche
         if (ballSpeedX < 0 && ballX <= paddleWidth) { 
             if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-                ballX = paddleWidth; // Empêche la balle de passer au travers
-                
-                // On calcule la nouvelle vitesse
-                let nextSpeed = Math.abs(ballSpeedX) * 1.1;
-                
-                // On applique la limite
-                ballSpeedX = Math.min(nextSpeed, maxSpeed);
+                ballX = paddleWidth;
+                ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
                 ballSpeedY *= 1.05;
             }
         }
 
-        // 2. Collision Raquette DROITE (IA)
+        // Collision Droite
         if (ballSpeedX > 0 && ballX >= canvas.width - paddleWidth) {
             if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-                ballX = canvas.width - paddleWidth; // Empêche la balle de passer au travers
-                
-                let nextSpeed = Math.abs(ballSpeedX) * 1.1;
-                
-                // On applique la limite (en négatif car on repart vers la gauche)
-                ballSpeedX = -Math.min(nextSpeed, maxSpeed);
+                ballX = canvas.width - paddleWidth;
+                ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
                 ballSpeedY *= 1.05;
             }
         }
-        //
 
-
-
-        // SCORE & RESET
+        // --- SCORE & FIN DE MATCH ---
         if (ballX < 0) {
             scoreIA++;
-            resetBall();
+            if (scoreIA >= 5) endGame("IA");
+            else resetBall();
         } else if (ballX > canvas.width) {
             scorePlayer++;
-            resetBall();
+            if (scorePlayer >= 5) endGame("Player");
+            else resetBall();
         }
+    }
+
+    function endGame(winner) {
+        if (isGameOver) return;
+        isGameOver = true; // Stoppe immédiatement la logique
+        cancelAnimationFrame(animationId); // Tue le rendu
+
+        // Nettoyage des écouteurs pour éviter les bugs sur les autres pages
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+
+        // Stats
+        let wins = parseInt(localStorage.getItem('pong_wins') || '0');
+        let losses = parseInt(localStorage.getItem('pong_losses') || '0');
+
+        if (winner === "Player") localStorage.setItem('pong_wins', wins + 1);
+        else localStorage.setItem('pong_losses', losses + 1);
+
+        // Historique
+        let history = JSON.parse(localStorage.getItem('match_history') || '[]');
+        history.unshift({
+            date: new Date().toLocaleString(),
+            result: winner === "Player" ? "Victoire" : "Défaite",
+            score: `${scorePlayer} - ${scoreIA}`
+        });
+        localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
+
+        alert(`Match terminé ! Vainqueur : ${winner}`);
+        navigateTo('/profile'); 
     }
 
     function resetBall() {
         ballX = canvas.width / 2;
         ballY = canvas.height / 2;
-        ballSpeedX = 5;
+        ballSpeedX = (Math.random() > 0.5 ? 5 : -5); // Direction aléatoire pour plus de fun
         ballSpeedY = 5;
     }
 
@@ -282,7 +368,6 @@ function initPongGame() {
         ctx.lineTo(canvas.width / 2, canvas.height);
         ctx.stroke();
 
-        // --- UTILISATION DE LA COULEUR DES PARAMÈTRES ---
         ctx.fillStyle = userColor; 
         ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
         ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);

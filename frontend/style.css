@@ -202,3 +202,65 @@ header {
 }
 
 .btn-save:hover { background: #008e91; }
+
+
+
+
+
+
+
+
+
+
+.profile-container { max-width: 800px; margin: 40px auto; color: white; }
+.profile-header { text-align: center; margin-bottom: 40px; }
+.profile-avatar img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid; padding: 5px; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+.stat-card { background: #161b22; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #30363d; }
+.stat-value { display: block; font-size: 2.5rem; font-weight: bold; color: #00babc; }
+.stat-label { color: #8b949e; text-transform: uppercase; font-size: 0.8rem; }
+
+.match-item { 
+    background: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 10px;
+    display: flex; justify-content: space-between; border-left: 5px solid #30363d;
+}
+.match-win { border-left-color: #2ea043; }
+.match-loss { border-left-color: #f85149; }
+
+.level-badge {
+    background: #00babc22;
+    color: #00babc;
+    padding: 5px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 10px;
+    font-weight: bold;
+    border: 1px solid #00babc;
+}
+
+.xp-section {
+    margin: 20px 0 40px 0;
+}
+
+.xp-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #8b949e;
+    margin-bottom: 8px;
+}
+
+.xp-bar-container {
+    width: 100%;
+    height: 10px;
+    background: #161b22;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #30363d;
+}
+
+.xp-bar-fill {
+    height: 100%;
+    transition: width 0.5s ease-in-out;
+}
