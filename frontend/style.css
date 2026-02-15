@@ -1,0 +1,80 @@
+:root {
+    --bg-dark: #0d1117;
+    --nav-bg: #161b22;
+    --accent: #00babc; /* Cyan 42 */
+    --text: #c9d1d9;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+header {
+    background-color: var(--nav-bg);
+    border-bottom: 2px solid var(--accent);
+    padding: 1rem 2rem;
+}
+
+#navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--accent);
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+.btn-42 {
+    background-color: var(--accent);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Ajoute un effet de lueur au titre */
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(0, 186, 188, 0.5);
+    letter-spacing: 3px;
+}
+
+/* Style pour le message de chargement */
+.loader {
+    font-style: italic;
+    color: var(--accent);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}

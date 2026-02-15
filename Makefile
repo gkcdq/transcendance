@@ -25,8 +25,6 @@ clean:
 logs:
 	$(DOCKER_COMPOSE) logs -f
 
-# --- Commandes spécifiques à ton étape actuelle ---
-
 # Pour initialiser le projet Django si ce n'est pas encore fait
 init-django:
 	$(DOCKER_COMPOSE) run --rm backend django-admin startproject transcendence src
@@ -43,3 +41,4 @@ init-django:
 # ----------------------------------- LIEN -----------------------------------
 # https://localhost:8443/admin/
 # https://localhost:8443/api/users/me/
+# https://localhost:8443/style.css
