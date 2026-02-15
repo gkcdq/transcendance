@@ -142,17 +142,9 @@ function initPongGame() {
         if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
         if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
 
-        // --- IA LOGIQUE (Raquette Droite) ---
-        // La raquette suit la balle avec un petit délai pour être battable
-
-        // let centerPaddle = rightPaddleY + paddleHeight / 2;
-        // if (centerPaddle < ballY - 10) rightPaddleY += 5;
-        // else if (centerPaddle > ballY + 10) rightPaddleY -= 5;
-
-        //
-        // --- IA LOGIQUE (Raquette Droite) avec failles ---
+        // --- IA LOGIQUE (Raquette Droite)
         let centerPaddle = rightPaddleY + paddleHeight / 2;
-        let aiSpeed = 4.5; // Plus lent que ta raquette (7) pour te donner l'avantage
+        let aiSpeed = 7; // Plus lent que ta raquette (7) pour te donner l'avantage
 
         // L'IA ne réagit que si la balle vient vers elle (ballSpeedX > 0)
         // et elle a une zone d'incertitude (marge de 20px)
@@ -169,14 +161,24 @@ function initPongGame() {
         ballY += ballSpeedY;
 
         // Rebond haut/bas
-        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
+        if (ballY <= 0 || ballY >= canvas.height)
+        {
+            ballSpeedY = -ballSpeedY
+
+        };
 
         // Collisions Raquettes
         if (ballX <= paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-            ballSpeedX = -ballSpeedX;
+            // On s'assure que la balle repart dans le bon sens (positif)
+            ballSpeedX = Math.abs(ballSpeedX) * 1.1; 
+            // On ajoute un petit effet sur la vitesse verticale pour plus de fun
+            ballSpeedY *= 1.05; 
         }
+
         if (ballX >= canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-            ballSpeedX = -ballSpeedX;
+            // On s'assure que la balle repart dans le bon sens (négatif)
+            ballSpeedX = -Math.abs(ballSpeedX) * 1.1;
+            ballSpeedY *= 1.05;
         }
 
         // --- SCORE & RESET ---
@@ -192,7 +194,8 @@ function initPongGame() {
     function resetBall() {
         ballX = canvas.width / 2;
         ballY = canvas.height / 2;
-        ballSpeedX = -ballSpeedX;
+        ballSpeedX = 5;
+        ballSpeedY = 5
     }
 
     function draw() {
