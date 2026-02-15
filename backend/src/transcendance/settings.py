@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'users.providers.fortytwo',
     #'allauth.socialaccount.providers.fortytwo', # Provider 42
     
     # Ton application locale
