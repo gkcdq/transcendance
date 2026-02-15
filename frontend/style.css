@@ -78,3 +78,127 @@ header {
     50% { opacity: 1; }
     100% { opacity: 0.5; }
 }
+
+
+
+
+
+
+
+
+
+
+
+.chat-container {
+    display: flex;
+    height: 70vh;
+    background: #0d1117;
+    border: 1px solid #00babc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chat-sidebar {
+    width: 200px;
+    background: #161b22;
+    border-right: 1px solid #30363d;
+    padding: 20px;
+}
+
+.chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message { padding: 8px 12px; border-radius: 5px; max-width: 80%; }
+.message.received { background: #21262d; align-self: flex-start; }
+.message.system { color: #8b949e; text-align: center; font-style: italic; }
+
+.chat-input-area {
+    padding: 20px;
+    background: #161b22;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input-area input {
+    flex: 1;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.chat-input-area button {
+    background: #00babc;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
+
+
+.settings-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: #161b22;
+    border-radius: 12px;
+    border: 1px solid #30363d;
+}
+
+.setting-group {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.setting-group label {
+    color: #8b949e;
+    font-weight: bold;
+}
+
+.setting-group input[type="text"], 
+.setting-group select {
+    padding: 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: white;
+    border-radius: 6px;
+}
+
+.btn-save {
+    width: 100%;
+    padding: 15px;
+    background: #00babc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.btn-save:hover { background: #008e91; }

@@ -27,7 +27,56 @@ const routes = {
     '/404': {
         title: '404',
         render: () => `<h1>404</h1><p>Page introuvable.</p>`
-    }
+    },
+    '/chat': { 
+        title: 'Chat', 
+        render: () => `
+            <div class="chat-container solo">
+                <section class="chat-window">
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message system">Bienvenue dans le canal global.</div>
+                    </div>
+                    <form id="chat-form" class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Tapez votre message..." autocomplete="off">
+                        <button type="submit" class="btn-send">Envoyer</button>
+                    </form>
+                </section>
+            </div>`,
+        init: initChat
+    },
+    '/settings': { 
+        title: 'Paramètres', 
+        render: () => `
+            <div class="settings-container">
+                <h2>Configuration du Pilote</h2>
+                <form id="settings-form">
+                    <div class="setting-group">
+                        <label>Pseudo</label>
+                        <input type="text" id="username-input" placeholder="Ton pseudo...">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Couleur de la raquette</label>
+                        <div class="color-picker">
+                            <input type="color" id="paddle-color" value="#00babc">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Difficulté IA par défaut</label>
+                        <select id="ai-difficulty">
+                            <option value="4.5">Facile</option>
+                            <option value="6">Normal</option>
+                            <option value="8">Expert</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                </form>
+                <div id="settings-msg"></div>
+            </div>`,
+        init: initSettings
+    },
 };
 
 // CORE : LE ROUTEUR (Une seule définition propre)
@@ -117,6 +166,11 @@ function initPongGame() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
+    // --- NOUVEAU : RÉCUPÉRATION DES PARAMÈTRES ---
+    const userColor = localStorage.getItem('user_color') || '#00babc';
+    const aiBaseSpeed = parseFloat(localStorage.getItem('ai_level')) || 5.3;
+    const userName = localStorage.getItem('user_name') || 'Moi';
+
     // 1. Paramètres du jeu & Scores
     const paddleWidth = 10, paddleHeight = 80;
     let leftPaddleY = (canvas.height - paddleHeight) / 2;
@@ -138,60 +192,69 @@ function initPongGame() {
     }
 
     function update() {
-        // Mouvement Joueur (W / S)
+        // Mouvement Joueur
         if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
         if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
 
-//////////////////////////////////////////////////////////////////////////////////////////
-        // --- IA SEMI-INTELLIGENTE (Humaine) ---
-        let aiSpeed = 5.3; 
-        let targetY = rightPaddleY + paddleHeight / 2; // Par défaut, elle ne bouge pas
+        // --- IA UTILISANT LE PARAMÈTRE DE DIFFICULTÉ ---
+        let targetY = rightPaddleY + paddleHeight / 2;
 
-        // 1. L'IA ne "voit" la balle que si elle est dans sa moitié de terrain (x > canvas.width / 2)
         if (ballX > canvas.width / 2 && ballSpeedX > 0) {
-            // Elle suit la balle, mais avec une petite erreur intentionnelle
-            // On ajoute un "offset" pour qu'elle ne soit pas toujours parfaitement centrée
             targetY = ballY + (Math.sin(Date.now() / 1000) * 20); 
         } 
         else if (ballSpeedX < 0) {
-            // Quand la balle s'éloigne, elle se replace doucement vers le centre (fainéantise humaine)
             targetY = canvas.height / 2;
         }
 
-        // 2. Mouvement vers la cible
         let centerPaddle = rightPaddleY + paddleHeight / 2;
         if (centerPaddle < targetY - 10) {
-            rightPaddleY += aiSpeed;
+            rightPaddleY += aiBaseSpeed; // Utilise la vitesse des paramètres
         } else if (centerPaddle > targetY + 10) {
-            rightPaddleY -= aiSpeed;
+            rightPaddleY -= aiBaseSpeed; // Utilise la vitesse des paramètres
         }
-        //////////////////////////////////////////////////////////////////////////////////////////
 
         ballX += ballSpeedX;
         ballY += ballSpeedY;
 
         // Rebond haut/bas
-        if (ballY <= 0 || ballY >= canvas.height)
-        {
-            ballSpeedY = -ballSpeedY
-
-        };
+        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
 
         // Collisions Raquettes
-        if (ballX <= paddleWidth && ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-            // On s'assure que la balle repart dans le bon sens (positif)
-            ballSpeedX = Math.abs(ballSpeedX) * 1.1; 
-            // On ajoute un petit effet sur la vitesse verticale pour plus de fun
-            ballSpeedY *= 1.05; 
+        const maxSpeed = 20; // Définit ta limite ici
+
+
+        //
+        // 1. Collision Raquette GAUCHE (Joueur)
+        if (ballSpeedX < 0 && ballX <= paddleWidth) { 
+            if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+                ballX = paddleWidth; // Empêche la balle de passer au travers
+                
+                // On calcule la nouvelle vitesse
+                let nextSpeed = Math.abs(ballSpeedX) * 1.1;
+                
+                // On applique la limite
+                ballSpeedX = Math.min(nextSpeed, maxSpeed);
+                ballSpeedY *= 1.05;
+            }
         }
 
-        if (ballX >= canvas.width - paddleWidth && ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-            // On s'assure que la balle repart dans le bon sens (négatif)
-            ballSpeedX = -Math.abs(ballSpeedX) * 1.1;
-            ballSpeedY *= 1.05;
+        // 2. Collision Raquette DROITE (IA)
+        if (ballSpeedX > 0 && ballX >= canvas.width - paddleWidth) {
+            if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+                ballX = canvas.width - paddleWidth; // Empêche la balle de passer au travers
+                
+                let nextSpeed = Math.abs(ballSpeedX) * 1.1;
+                
+                // On applique la limite (en négatif car on repart vers la gauche)
+                ballSpeedX = -Math.min(nextSpeed, maxSpeed);
+                ballSpeedY *= 1.05;
+            }
         }
+        //
 
-        // --- SCORE & RESET ---
+
+
+        // SCORE & RESET
         if (ballX < 0) {
             scoreIA++;
             resetBall();
@@ -205,15 +268,13 @@ function initPongGame() {
         ballX = canvas.width / 2;
         ballY = canvas.height / 2;
         ballSpeedX = 5;
-        ballSpeedY = 5
+        ballSpeedY = 5;
     }
 
     function draw() {
-        // Fond
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Filet central
         ctx.strokeStyle = "#ffffff33";
         ctx.setLineDash([10, 10]);
         ctx.beginPath();
@@ -221,8 +282,8 @@ function initPongGame() {
         ctx.lineTo(canvas.width / 2, canvas.height);
         ctx.stroke();
 
-        // Raquettes et Balle
-        ctx.fillStyle = "#00babc"; // Couleur 42
+        // --- UTILISATION DE LA COULEUR DES PARAMÈTRES ---
+        ctx.fillStyle = userColor; 
         ctx.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
         ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
         
@@ -230,7 +291,6 @@ function initPongGame() {
         ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Affichage Score
         ctx.font = "30px Arial";
         ctx.fillText(scorePlayer, canvas.width / 4, 50);
         ctx.fillText(scoreIA, (canvas.width / 4) * 3, 50);
@@ -249,4 +309,53 @@ async function fetchUserSettings() {
         <p>Email : ${currentUser.email || 'Non renseigné'}</p>
         <p>Stats : ${currentUser.wins || 0}W / ${currentUser.losses || 0}L</p>
     `;
+}
+
+function initChat() {
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const messagesContainer = document.getElementById('chat-messages');
+
+    if (!form) return;
+
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        if (input.value.trim() === "") return;
+
+        // Création du message local
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message sent';
+        msgDiv.style.background = '#00babc33';
+        msgDiv.style.alignSelf = 'flex-end';
+        msgDiv.innerHTML = `<span class="sender">Moi:</span> ${input.value}`;
+        
+        messagesContainer.appendChild(msgDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        input.value = "";
+    };
+}
+
+
+function initSettings() {
+    const form = document.getElementById('settings-form');
+    const msg = document.getElementById('settings-msg');
+
+    // Charger les valeurs actuelles
+    document.getElementById('username-input').value = localStorage.getItem('user_name') || 'Player';
+    document.getElementById('paddle-color').value = localStorage.getItem('user_color') || '#00babc';
+    document.getElementById('ai-difficulty').value = localStorage.getItem('ai_level') || '5.5';
+
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        
+        const newName = document.getElementById('username-input').value;
+        const newColor = document.getElementById('paddle-color').value;
+        const newDifficulty = document.getElementById('ai-difficulty').value;
+
+        localStorage.setItem('user_name', newName);
+        localStorage.setItem('user_color', newColor);
+        localStorage.setItem('ai_level', newDifficulty);
+
+        msg.innerHTML = '<p style="color: #2ea043; margin-top: 15px;">Configuration mise à jour avec succès !</p>';
+    };
 }
