@@ -142,18 +142,34 @@ function initPongGame() {
         if (keys['w'] && leftPaddleY > 0) leftPaddleY -= 7;
         if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
 
-        // --- IA LOGIQUE (Raquette Droite)
-        let centerPaddle = rightPaddleY + paddleHeight / 2;
-        let aiSpeed = 7; // Plus lent que ta raquette (7) pour te donner l'avantage
 
-        // L'IA ne réagit que si la balle vient vers elle (ballSpeedX > 0)
-        // et elle a une zone d'incertitude (marge de 20px)
+        // --- IA INTELLIGENTE (Anticipation) ---
+        let aiSpeed = 6; // On peut baisser un peu sa vitesse car elle est plus maligne
+        let targetY = canvas.height / 2; // Par défaut, elle vise le centre
+
         if (ballSpeedX > 0) {
-            if (centerPaddle < ballY - 20) {
-                rightPaddleY += aiSpeed;
-            } else if (centerPaddle > ballY + 20) {
-                rightPaddleY -= aiSpeed;
+            // La balle vient vers l'IA : on prédit où elle sera quand elle atteindra x = canvas.width
+            // Formule simplifiée : position actuelle + (vitesse * temps restant)
+            let timeToReach = (canvas.width - ballX) / ballSpeedX;
+            let predictedY = ballY + (ballSpeedY * timeToReach);
+
+            // Simulation des rebonds sur les murs (haut/bas) pour la prédiction
+            // C'est ici que l'IA devient vraiment forte
+            while (predictedY < 0 || predictedY > canvas.height) {
+                if (predictedY < 0) predictedY = -predictedY;
+                else predictedY = 2 * canvas.height - predictedY;
             }
+            targetY = predictedY;
+        } else {
+            // La balle s'éloigne : l'IA se replace au centre pour couvrir le terrain
+            targetY = canvas.height / 2;
+        }
+
+        // Mouvement fluide vers la cible (targetY)
+        let centerPaddle = rightPaddleY + paddleHeight / 2;
+        if (Math.abs(centerPaddle - targetY) > 10) {
+            if (centerPaddle < targetY) rightPaddleY += aiSpeed;
+            else rightPaddleY -= aiSpeed;
         }
         //
 
