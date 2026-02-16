@@ -19,41 +19,40 @@ const routes = {
         render: () => {
             const wins = parseInt(localStorage.getItem('pong_wins') || 0);
             const losses = parseInt(localStorage.getItem('pong_losses') || 0);
-            const totalGames = wins + losses;
-            const playTimeMinutes = totalGames * 3;
-            const hours = Math.floor(playTimeMinutes / 60);
-            const mins = playTimeMinutes % 60;
-            const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}min`;
+            const totalSeconds = parseInt(localStorage.getItem('pong_total_seconds') || 0);
+            
+            // Formatage du temps
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m ${totalSeconds % 60}s`;
 
-            const name = localStorage.getItem('user_name') || 'Pilote';
+            const name = localStorage.getItem('user_name') || 'Player';
             const color = localStorage.getItem('user_color') || '#00babc';
 
             return `
-                <section class="hero">
+                <div class="hero-container">
                     <h1>Transcendence</h1>
-                    <p>Bienvenue dans l'arène, <strong>${name}</strong>.</p>
+                    <p class="subtitle">Content de vous revoir, <span style="color:${color}">${name}</span></p>
                     
-                    <div class="dashboard-grid">
-                        <div class="dash-card">
-                            <span class="dash-value">${totalGames}</span>
-                            <span class="dash-label">Matchs joués</span>
+                    <div class="stats-dashboard">
+                        <div class="stat-card">
+                            <div class="stat-value">${wins + losses}</div>
+                            <div class="stat-label">Matchs joués</div>
                         </div>
-                        <div class="dash-card">
-                            <span class="dash-value">${timeStr}</span>
-                            <span class="dash-label">Temps de vol</span>
+                        <div class="stat-card">
+                            <div class="stat-value">${timeStr}</div>
+                            <div class="stat-label">Temps de jeu</div>
                         </div>
-                        <div class="dash-card profile-preview" onclick="navigateTo('/profile')" style="cursor:pointer; border-left: 4px solid ${color}">
-                            <span class="dash-label">Voir mon Profil</span>
-                            <span class="dash-sub">Consulter l'historique →</span>
+                        <div class="stat-card profile-link" onclick="navigateTo('/profile')">
+                            <div class="stat-value">Profil</div>
+                            <div class="stat-label">Historique →</div>
                         </div>
                     </div>
 
-                    <div id="auth-status"></div>
-                    
-                    <div class="cta-section">
-                        <button onclick="navigateTo('/game')" class="cyber-button">Reprendre le combat</button>
+                    <div class="home-actions">
+                        <button onclick="navigateTo('/game')" class="btn-play-hero">REPRENDRE LE COMBAT</button>
                     </div>
-                </section>`;
+                </div>`;
         }
     },
     '/game': { 
@@ -303,6 +302,7 @@ function initPongGame() {
     });
 
     function startGameLogic() {
+        let startTime = Date.now();
         let isGameOver = false;
         let animationId;
         
@@ -384,7 +384,10 @@ function initPongGame() {
 
         function endGame(winner) {
             if (isGameOver) return;
-            isGameOver = true; 
+            isGameOver = true;
+            let sessionSeconds = Math.floor((Date.now() - startTime) / 1000);
+            let totalTime = parseInt(localStorage.getItem('pong_total_seconds') || '0');
+            localStorage.setItem('pong_total_seconds', totalTime + sessionSeconds);
             cancelAnimationFrame(animationId); 
             currentPongInstance = null;
 
