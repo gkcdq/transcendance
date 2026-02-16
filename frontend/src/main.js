@@ -1,11 +1,7 @@
 console.log("Script main.js chargé !");
-let currentPongInstance = null; // variable global pour le jeu
+let currentPongInstance = null;
 let isGameOver = false; 
-
-// ÉTAT GLOBAL
 let currentUser = null;
-
-// CONFIGURATION DES ROUTES
 const playPageHTML = `
     <div class="game-container">
         <div id="game-controls">
@@ -20,26 +16,55 @@ const playPageHTML = `
 const routes = {
     '/': { 
         title: 'Accueil', 
-        render: () => `
-            <section class="hero">
-                <h1>Transcendence</h1>
-                <p>L'expérience ultime du Pong en SPA.</p>
-                <div id="auth-status"></div>
-            </section>` 
+        render: () => {
+            const wins = parseInt(localStorage.getItem('pong_wins') || 0);
+            const losses = parseInt(localStorage.getItem('pong_losses') || 0);
+            const totalGames = wins + losses;
+            const playTimeMinutes = totalGames * 3;
+            const hours = Math.floor(playTimeMinutes / 60);
+            const mins = playTimeMinutes % 60;
+            const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}min`;
+
+            const name = localStorage.getItem('user_name') || 'Pilote';
+            const color = localStorage.getItem('user_color') || '#00babc';
+
+            return `
+                <section class="hero">
+                    <h1>Transcendence</h1>
+                    <p>Bienvenue dans l'arène, <strong>${name}</strong>.</p>
+                    
+                    <div class="dashboard-grid">
+                        <div class="dash-card">
+                            <span class="dash-value">${totalGames}</span>
+                            <span class="dash-label">Matchs joués</span>
+                        </div>
+                        <div class="dash-card">
+                            <span class="dash-value">${timeStr}</span>
+                            <span class="dash-label">Temps de vol</span>
+                        </div>
+                        <div class="dash-card profile-preview" onclick="navigateTo('/profile')" style="cursor:pointer; border-left: 4px solid ${color}">
+                            <span class="dash-label">Voir mon Profil</span>
+                            <span class="dash-sub">Consulter l'historique →</span>
+                        </div>
+                    </div>
+
+                    <div id="auth-status"></div>
+                    
+                    <div class="cta-section">
+                        <button onclick="navigateTo('/game')" class="cyber-button">Reprendre le combat</button>
+                    </div>
+                </section>`;
+        }
     },
-    
     '/game': { 
         title: 'Jeu', 
-        // 1. CORRECTION : On utilise la variable avec le bouton ici !
         render: () => playPageHTML, 
         init: initPongGame 
     },
-    
     '/404': {
         title: '404',
         render: () => `<h1>404</h1><p>Page introuvable.</p>`
     },
-    
     '/chat': { 
         title: 'Chat', 
         render: () => `
@@ -56,8 +81,6 @@ const routes = {
             </div>`,
         init: initChat
     },
-    
-    // 2. CORRECTION : On ne garde qu'une seule route /settings (la bonne)
     '/settings': { 
         title: 'Paramètres', 
         render: () => `
@@ -91,7 +114,6 @@ const routes = {
             </div>`,
         init: initSettings
     },
-    
     '/profile': { 
         title: 'Profil Utilisateur', 
         render: () => {
@@ -143,43 +165,29 @@ const routes = {
         init: initProfile
     }
 };
-
-// CORE : LE ROUTEUR (Une seule définition propre)
 const router = async () => {
     console.log("Routeur appelé pour :", window.location.pathname);
     const path = window.location.pathname;
     const route = routes[path] || routes['/404'];
-
-    // 1. Vérification d'authentification
     const isLoggedIn = await checkAuth();
-
-    // 2. Garde de sécurité
     // if (path === '/game' && !isLoggedIn) {
     //     console.warn("Accès refusé : redirection vers l'accueil.");
     //     navigateTo('/');
     //     return;
     // }
-
-    // 3. Mise à jour du DOM
     document.title = `Transcendence - ${route.title}`;
     const appContainer = document.getElementById('app');
     if (appContainer) {
         appContainer.innerHTML = route.render();
     }
-
-    // 4. Mise à jour de l'UI d'authentification
     renderAuthUI(isLoggedIn);
-
-    // 5. Initialisation du composant si nécessaire
     if (route.init && typeof route.init === 'function') {
         route.init();
     }
 };
 
-// SERVICES : AUTHENTIFICATION & API
 async function checkAuth() {
     try {
-        // Attention : cette URL doit exister sur ton backend
         const response = await fetch('/api/users/me/');
         if (response.ok) {
             currentUser = await response.json();
@@ -231,26 +239,18 @@ function renderAuthUI(isLoggedIn) {
 
 
 
-// ACTIONS & ÉVÉNEMENTS
 function navigateTo(url) {
-    // 1. On coupe violemment le jeu si on change de page
     if (currentPongInstance) {
         cancelAnimationFrame(currentPongInstance);
         currentPongInstance = null;
     }
-
-    // 2. Navigation standard
     history.pushState(null, null, url);
-    router(); // Ou handleLocation() selon le nom de ta fonction
+    router();
 }
-
-// Intercepter les clics sur les liens de navigation
 document.addEventListener('click', e => {
     const link = e.target.closest('a'); 
-    // On vérifie si c'est un lien interne (pas un lien vers l'API ou externe)
     if (link && link.getAttribute('href').startsWith('/')) {
         const href = link.getAttribute('href');
-        // Si c'est un lien de déconnexion ou login 42, on laisse le navigateur gérer
         if (href.includes('/accounts/')) return;
 
         e.preventDefault();
@@ -261,7 +261,6 @@ document.addEventListener('click', e => {
 window.addEventListener('popstate', router);
 document.addEventListener('DOMContentLoaded', router);
 
-// --- FONCTION DE PROFIL ---
 function initProfile() {
     const historyContainer = document.getElementById('match-history');
     const history = JSON.parse(localStorage.getItem('match_history') || '[]');
@@ -279,32 +278,32 @@ function initProfile() {
         </div>
     `).join('');
 }
-// LE CODE DU JEU 
+
+
+
+
+
+
+
+
 function initPongGame() {
-    // 1. Gérer l'affichage du bouton vs Canvas
     const btnStart = document.getElementById('btn-start-game');
     const canvas = document.getElementById('pongCanvas');
     const statusText = document.getElementById('game-status');
-    
     if (!canvas || !btnStart) return;
     const ctx = canvas.getContext('2d');
-
-    // On s'assure que le bouton est visible et le canvas caché au chargement de la page
     btnStart.style.display = 'inline-block';
     canvas.style.display = 'none';
     statusText.innerText = "Prêt à jouer ?";
-
-    // 2. L'événement du clic sur "Play"
     btnStart.addEventListener('click', () => {
-        btnStart.style.display = 'none'; // On cache le bouton
+        btnStart.style.display = 'none'; 
         statusText.style.display = 'none';
-        canvas.style.display = 'block';  // On affiche le terrain
-        startGameLogic(); // On lance la mécanique
+        canvas.style.display = 'block';  
+        startGameLogic(); 
     });
 
-    // 3. La logique du jeu (encapsulée pour ne démarrer que sur commande)
     function startGameLogic() {
-        let isGameOver = false; // Reste LOCALE pour ne pas bloquer les parties suivantes
+        let isGameOver = false;
         let animationId;
         
         const userColor = localStorage.getItem('user_color') || '#00babc';
@@ -331,7 +330,7 @@ function initPongGame() {
             update();
             draw();
             animationId = requestAnimationFrame(gameLoop);
-            currentPongInstance = animationId; // Sauvegarde globale pour le routeur
+            currentPongInstance = animationId;
         }
 
         function update() {
@@ -440,8 +439,6 @@ function initPongGame() {
             ctx.fillText(scorePlayer, canvas.width / 4, 50);
             ctx.fillText(scoreIA, (canvas.width / 4) * 3, 50);
         }
-
-        // Démarrage effectif du jeu
         gameLoop();
     }
 }
@@ -465,8 +462,6 @@ function initPongGame() {
 
 
 
-///////////////////
-
 async function fetchUserSettings() {
     const settingsContainer = document.getElementById('profile-settings');
     if (!settingsContainer || !currentUser) return;
@@ -476,7 +471,6 @@ async function fetchUserSettings() {
         <p>Stats : ${currentUser.wins || 0}W / ${currentUser.losses || 0}L</p>
     `;
 }
-
 function initChat() {
     const form = document.getElementById('chat-form');
     const input = document.getElementById('chat-input');
@@ -500,28 +494,20 @@ function initChat() {
         input.value = "";
     };
 }
-
-
 function initSettings() {
     const form = document.getElementById('settings-form');
     const msg = document.getElementById('settings-msg');
-
-    // Charger les valeurs actuelles
     document.getElementById('username-input').value = localStorage.getItem('user_name') || 'Player';
     document.getElementById('paddle-color').value = localStorage.getItem('user_color') || '#00babc';
     document.getElementById('ai-difficulty').value = localStorage.getItem('ai_level') || '5.5';
-
     form.onsubmit = (e) => {
         e.preventDefault();
-        
         const newName = document.getElementById('username-input').value;
         const newColor = document.getElementById('paddle-color').value;
         const newDifficulty = document.getElementById('ai-difficulty').value;
-
         localStorage.setItem('user_name', newName);
         localStorage.setItem('user_color', newColor);
         localStorage.setItem('ai_level', newDifficulty);
-
         msg.innerHTML = '<p style="color: #2ea043; margin-top: 15px;">Configuration mise à jour avec succès !</p>';
     };
 }
