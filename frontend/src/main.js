@@ -61,25 +61,152 @@ const routes = {
     '/game': { 
         title: 'Jeu', 
         render: () => {
-            // On affiche un titre différent selon le mode pour être sûr
             if (tournamentState.isActive && tournamentState.isMatchRunning) {
                 const m = tournamentState.matches[tournamentState.currentMatchIndex];
                 return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
             }
-            return `<h2>Match Amical</h2>` + playPageHTML;
+
+            // Récupération de ton nom de profil (ex: MILIN)
+            const myName = localStorage.getItem('user_name') || 'Joueur';
+
+            return `
+                <div id="setup-container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                    <h2>Pong Match</h2>
+                    
+                    <div id="amical-options" style="display: flex; flex-direction: column; gap: 15px; width: 320px;">
+                        
+                        <div class="setup-group" style="border: 1px solid #00babc; padding: 15px; border-radius: 8px; background: rgba(0, 186, 188, 0.05);">
+                            <label style="color: #00babc; font-size: 0.8rem; display: block; margin-bottom: 5px;"></label>
+                            <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
+                            <button id="btn-play-ia" class="cyber-button" style="width: 100%;">Player vs IA</button>
+                        </div>
+
+                        <div style="color: #00babc; font-weight: bold; text-align: center;"></div>
+
+
+                        <div class="setup-group" style="border: 1px solid #ff0055; padding: 15px; border-radius: 8px; background: rgba(255, 0, 85, 0.05);">
+                            <label style="color: #ff0055; font-size: 0.8rem; display: block; margin-bottom: 5px;">Player 1</label>
+                            <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
+                            
+                            <label style="color: #ff0055; font-size: 0.8rem; display: block; margin-bottom: 5px;">Player 2</label>
+                            <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width: 100%; margin-bottom: 15px;" autofocus>
+                            
+                            <button id="btn-play-friend" class="cyber-button" style="width: 100%; background: #ff0055;">1 VS 1</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="pong-game-wrapper" style="display:none;">
+                    ${playPageHTML}
+                </div>`;
         }, 
         init: () => {
-            // On vérifie DEUX conditions : le tournoi est actif ET on a cliqué sur "Lancer le match"
             if (tournamentState.isActive && tournamentState.isMatchRunning) {
                 const m = tournamentState.matches[tournamentState.currentMatchIndex];
-                console.log("Démarrage match tournoi");
                 initPongGame(m.p1, m.p2);
-            } else {
-                console.log("Démarrage match solo IA");
-                initPongGame(); // Solo contre IA
+                return;
+            }
+
+            const btnIA = document.getElementById('btn-play-ia');
+            const btnFriend = document.getElementById('btn-play-friend');
+            const setupContainer = document.getElementById('setup-container');
+            const gameWrapper = document.getElementById('pong-game-wrapper');
+
+            if (btnIA && btnFriend) {
+                btnIA.onclick = () => {
+                    const name = localStorage.getItem('user_name') || "Joueur";
+                    setupContainer.style.display = 'none';
+                    gameWrapper.style.display = 'block';
+                    initPongGame(name, "IA");
+                };
+
+                btnFriend.onclick = () => {
+                    const name1 = localStorage.getItem('user_name') || "Joueur 1";
+                    const name2 = document.getElementById('p2-name').value || "Invité";
+                    setupContainer.style.display = 'none';
+                    gameWrapper.style.display = 'block';
+                    initPongGame(name1, name2); 
+                };
             }
         }
     },
+    // '/game': { 
+    //     title: 'Jeu', 
+    //     render: () => {
+    //         // Mode Tournoi : On garde l'affichage strict avec les noms des pilotes
+    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
+    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
+    //             return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
+    //         }
+
+    //         // Mode Amical : On injecte un conteneur avec les deux choix possibles
+    //         return `
+    //             <h2>Match Amical</h2>
+    //             <div id="amical-options" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+    //                 <button id="btn-play-ia" class="cyber-button">Lancer contre l'IA</button>
+    //                 <button id="btn-play-friend" class="cyber-button" style="background: #ff0055;">Lancer contre un Ami</button>
+    //             </div>
+    //             <div id="pong-game-wrapper" style="display:none;">
+    //                 ${playPageHTML}
+    //             </div>`;
+    //     }, 
+    //     init: () => {
+    //         // 1. Logique Tournoi (inchangée)
+    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
+    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
+    //             initPongGame(m.p1, m.p2);
+    //             return;
+    //         }
+
+    //         // 2. Logique Amicale
+    //         const btnIA = document.getElementById('btn-play-ia');
+    //         const btnFriend = document.getElementById('btn-play-friend');
+    //         const optionsDiv = document.getElementById('amical-options');
+    //         const gameWrapper = document.getElementById('pong-game-wrapper');
+
+    //         if (btnIA && btnFriend) {
+    //             // Option VS IA
+    //             btnIA.onclick = () => {
+    //                 optionsDiv.style.display = 'none';
+    //                 gameWrapper.style.display = 'block';
+    //                 initPongGame(); // Appelle ton init par défaut (Joueur vs IA)
+    //             };
+
+    //             // Option VS AMI
+    //             btnFriend.onclick = () => {
+    //                 optionsDiv.style.display = 'none';
+    //                 gameWrapper.style.display = 'block';
+    //                 // On passe deux noms pour forcer le mode 2 joueurs local
+    //                 initPongGame("Joueur 1", "Joueur 2"); 
+    //             };
+    //         }
+    //     }
+    // },
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // '/game': { 
+    //     title: 'Jeu', 
+    //     render: () => {
+    //         // On affiche un titre différent selon le mode pour être sûr
+    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
+    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
+    //             return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
+    //         }
+    //         return `<h2>Match Amical</h2>` + playPageHTML;
+    //     }, 
+    //     init: () => {
+    //         // On vérifie DEUX conditions : le tournoi est actif ET on a cliqué sur "Lancer le match"
+    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
+    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
+    //             console.log("Démarrage match tournoi");
+    //             initPongGame(m.p1, m.p2);
+    //         } else {
+    //             console.log("Démarrage match solo IA");
+    //             initPongGame(); // Solo contre IA
+    //         }
+    //     }
+    // },
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // '/game': { 
     //     title: 'Jeu', 
     //     render: () => playPageHTML, 
