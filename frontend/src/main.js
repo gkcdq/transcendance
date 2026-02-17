@@ -1,3 +1,24 @@
+// Configuration OAuth 42
+const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
+// On utilise l'URL EXACTE de ta capture d'écran (image_05a39a.png)
+const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
+
+const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
+
+// Injection du bouton
+const authBtnContainer = document.getElementById('auth-status');
+if (authBtnContainer) {
+    authBtnContainer.innerHTML = `<a href="${authUrl}" class="cyber-button">Connexion avec 42</a>`;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+////////////////////////////////////////////////////
+
+
+
 console.log("Script main.js chargé !");
 let currentPongInstance = null;
 let isGameOver = false; 
@@ -11,6 +32,8 @@ const playPageHTML = `
         <canvas id="pongCanvas" width="800" height="400" style="display:none;"></canvas>
     </div>
 `;
+
+
 
 let tournamentState = {
     isActive: false, 
@@ -39,7 +62,7 @@ const routes = {
             return `
                 <div class="hero-container">
                     <h1>Transcendence !</h1>
-                    <p class="subtitle">Content de vous revoir, <span style="color:${color}">${name}</span></p>
+                    <p class="subtitle">🎾⚾🎾
                     
                     <div class="stats-dashboard">
                         <div class="stat-card">
@@ -71,28 +94,42 @@ const routes = {
 
             return `
                 <div id="setup-container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                    <h2>Pong Match</h2>
+                    <h2 style="text-transform: uppercase; letter-spacing: 2px;">Pong Match</h2>
                     
-                    <div id="amical-options" style="display: flex; flex-direction: column; gap: 15px; width: 320px;">
+                    <div id="amical-options" style="display: flex; flex-direction: column; gap: 25px; width: 320px;">
                         
-                        <div class="setup-group" style="border: 1px solid #00babc; padding: 15px; border-radius: 8px; background: rgba(0, 186, 188, 0.05);">
-                            <label style="color: #00babc; font-size: 0.8rem; display: block; margin-bottom: 5px;"></label>
-                            <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
-                            <button id="btn-play-ia" class="cyber-button" style="width: 100%;">Player vs IA</button>
+                        <div class="category-block">
+                            <h3 style="color: #00babc; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #00babc; padding-left: 10px; letter-spacing: 1px;">Entraînement</h3>
+                            <div class="setup-group" style="border: 1px solid #00babc; padding: 15px; border-radius: 8px; background: rgba(0, 186, 188, 0.05);">
+                                <label style="color: #00babc; font-size: 0.7rem; display: block; margin-bottom: 5px; text-transform: uppercase; opacity: 0.8;">Votre Profil</label>
+                                <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
+                                <button id="btn-play-ia" class="cyber-button" style="width: 100%;">Player vs IA</button>
+                            </div>
                         </div>
 
-                        <div style="color: #00babc; font-weight: bold; text-align: center;"></div>
-
-
-                        <div class="setup-group" style="border: 1px solid #ff0055; padding: 15px; border-radius: 8px; background: rgba(255, 0, 85, 0.05);">
-                            <label style="color: #ff0055; font-size: 0.8rem; display: block; margin-bottom: 5px;">Player 1</label>
-                            <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
-                            
-                            <label style="color: #ff0055; font-size: 0.8rem; display: block; margin-bottom: 5px;">Player 2</label>
-                            <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width: 100%; margin-bottom: 15px;" autofocus>
-                            
-                            <button id="btn-play-friend" class="cyber-button" style="width: 100%; background: #ff0055;">1 VS 1</button>
+                        <div class="category-block">
+                            <h3 style="color: #ffb921; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #ffb921; padding-left: 10px; letter-spacing: 1px;">Local</h3>
+                            <div class="setup-group" style="border: 1px solid #ffb921; padding: 15px; border-radius: 8px; background: rgba(247, 255, 0, 0.05);">
+                                <label style="color: #ffb921; font-size: 0.7rem; display: block; margin-bottom: 5px; text-transform: uppercase; opacity: 0.8;">Joueur 1</label>
+                                <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
+                                
+                                <label style="color: #ffb921; font-size: 0.7rem; display: block; margin-bottom: 5px; text-transform: uppercase; opacity: 0.8;">Joueur 2</label>
+                                <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width: 100%; margin-bottom: 15px;" autofocus>
+                                
+                                <button id="btn-play-friend" class="cyber-button" style="width: 100%; background: #ffb921;">1 VS 1</button>
+                            </div>
                         </div>
+                        <div class="category-block">
+                            <h3 style="color: #ff0055; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #ff0055; padding-left: 10px; letter-spacing: 1px;">Online</h3>
+                            <div class="setup-group" style="border: 1px solid #ff0055; padding: 15px; border-radius: 8px; background: rgba(247, 255, 0, 0.05);">
+                                <p style="color: #ff0055; font-size: 0.7rem; margin-bottom: 10px;">Défiez un pilote du réseau Transcendence.</p>
+                                <button id="btn-matchmaking" class="cyber-button" style="width: 100%; background: #ff0055  ;border-color: #ff0055; color: #050505;">Lancer la recherche</button>
+                                <div id="mm-status" style="margin-top: 10px; font-size: 0.8rem; color: #ff0055; display:none;">
+                                    <span class="loader-dots">Recherche en cours</span>
+                                </div>
+                        </div>
+                </div>
+
                     </div>
                 </div>
                 
@@ -221,7 +258,21 @@ const routes = {
     // },
     '/404': {
         title: '404',
-        render: () => `<h1>404</h1><p>Page introuvable.</p>`
+        render: () => `<h1>404</h1><p>MOUAHAHAHAHAHAHAHAHAHAH.</p>`
+    },
+    '/accounts/fortytwo/login/callback/': {
+        title: 'Authentification',
+        render: () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                // On envoie le code au serveur qui attend sur le port 3000
+                window.location.href = `http://localhost:3000/auth/42/callback?code=${code}`;
+                return `<h1>Connexion à l'Intra réussie !</h1><p>Redirection vers le serveur...</p>`;
+            }
+            return `<h1>Erreur : Pas de code reçu de 42.</h1>`;
+        }
     },
     '/chat': { 
         title: 'Chat', 
@@ -495,52 +546,107 @@ const router = async () => {
     }
 };
 
+
+
+
 async function checkAuth() {
+    // 1. D'abord, on regarde si on revient juste de 42 (données dans l'URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const login = urlParams.get('login');
+    const avatar = urlParams.get('avatar');
+
+    if (login && avatar) {
+        currentUser = { username: login, avatar: avatar };
+        localStorage.setItem('user_data', JSON.stringify(currentUser));
+        
+        // Nettoyage de l'URL pour enlever les paramètres login/avatar
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return true;
+    }
+
+    // 2. Sinon, on regarde si on a déjà un utilisateur en mémoire locale
+    const savedUser = localStorage.getItem('user_data');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        return true;
+    }
+
+    // 3. Enfin, ton ancienne logique fetch (si tu as toujours un backend API)
     try {
         const response = await fetch('/api/users/me/');
-        
-        // On vérifie le type de la réponse. Si ce n'est pas du JSON (ex: HTML), on ignore.
         const contentType = response.headers.get("content-type");
         if (response.ok && contentType && contentType.includes("application/json")) {
             currentUser = await response.json();
             return true;
-        } else {
-            // Le backend renvoie du HTML car l'API n'est pas encore faite, c'est normal.
-            currentUser = null;
-            return false;
         }
     } catch (err) {
-        // On ne loggue l'erreur que si le serveur est carrément éteint (erreur réseau)
-        // On enlève le console.error pour ne pas polluer ta console inutilement pour le moment
-        // console.warn("Serveur injoignable ou API absente.");
+        // Serveur injoignable
     }
+
     currentUser = null;
     return false;
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////
 // async function checkAuth() {
 //     try {
 //         const response = await fetch('/api/users/me/');
-//         if (response.ok) {
+        
+//         // On vérifie le type de la réponse. Si ce n'est pas du JSON (ex: HTML), on ignore.
+//         const contentType = response.headers.get("content-type");
+//         if (response.ok && contentType && contentType.includes("application/json")) {
 //             currentUser = await response.json();
 //             return true;
+//         } else {
+//             // Le backend renvoie du HTML car l'API n'est pas encore faite, c'est normal.
+//             currentUser = null;
+//             return false;
 //         }
 //     } catch (err) {
-//         console.error("Erreur Backend :", err);
+//         // On ne loggue l'erreur que si le serveur est carrément éteint (erreur réseau)
+//         // On enlève le console.error pour ne pas polluer ta console inutilement pour le moment
+//         // console.warn("Serveur injoignable ou API absente.");
 //     }
 //     currentUser = null;
 //     return false;
 // }
 
+
+
 function renderAuthUI(isLoggedIn) {
     const container = document.getElementById('auth-status');
     if (!container) return;
 
-    container.innerHTML = isLoggedIn 
-        ? `<p>Pilote : <strong>${currentUser.username}</strong></p>
-           <a href="/accounts/logout/" class="btn-logout">Déconnexion</a>`
-        : `<a href="/accounts/fortytwo/login/" class="btn-42">Connexion avec 42</a>`;
+    if (isLoggedIn && currentUser) {
+        container.innerHTML = `
+            <div class="pilot-profile">
+                <div class="pilot-info">
+                    <span class="pilot-label">PILOTE SYSTEM</span>
+                    <span class="pilot-name">${currentUser.username}</span>
+                </div>
+                <img src="${currentUser.avatar}" class="pilot-avatar">
+                <button onclick="logout(); return false;" class="btn-logout-cyber">EXIT</button>
+            </div>
+        `;
+    } else {
+        // ... garde ton lien authUrl vers 42 ...
+    }
 }
+
+// function renderAuthUI(isLoggedIn) {
+//     const container = document.getElementById('auth-status');
+//     if (!container) return;
+
+//     // Configuration pour 42
+//     const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
+//     const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
+//     const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
+
+//     container.innerHTML = isLoggedIn 
+//         ? `<p>Pilote : <strong>${currentUser.username}</strong></p>
+//            <a href="#" onclick="logout(); return false;" class="btn-logout">Déconnexion</a>`
+//         : `<a href="${authUrl}" class="btn-42">Connexion avec 42</a>`; 
+//         // Note : On utilise authUrl (API 42) et pas un lien local
+// }
 
 
 
@@ -579,16 +685,27 @@ function navigateTo(url) {
     history.pushState(null, null, url);
     router();
 }
+
+
 document.addEventListener('click', e => {
     const link = e.target.closest('a'); 
-    if (link && link.getAttribute('href').startsWith('/')) {
-        const href = link.getAttribute('href');
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+
+    // SI LE LIEN EST EXTERNE (commence par http ou https)
+    // On laisse le navigateur gérer normalement, on ne fait pas de e.preventDefault()
+    if (href.startsWith('http')) {
+        return; 
+    }
+
+    // SI LE LIEN EST INTERNE (commence par /)
+    if (href.startsWith('/')) {
+        // Exclusion spécifique pour tes anciennes routes accounts si besoin
         if (href.includes('/accounts/')) return;
 
         e.preventDefault();
 
-        // NOUVEAU : Si on clique sur un lien de la navbar (ou n'importe quel <a>), 
-        // on considère qu'on ne lance pas un match spécifique du tournoi.
         if (typeof tournamentState !== 'undefined') {
             tournamentState.isMatchRunning = false;
         }
@@ -665,7 +782,7 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         let leftPaddleY = (canvas.height - paddleHeight) / 2;
         let rightPaddleY = (canvas.height - paddleHeight) / 2;
         let ballX = canvas.width / 2, ballY = canvas.height / 2;
-        let ballSpeedX = 1.5, ballSpeedY = 1.5;
+        let ballSpeedX = 2, ballSpeedY = 2;
         let score1 = 0;
         let score2 = 0;
         const keys = {};
@@ -815,9 +932,9 @@ function endGame(winnerName) {
             ballX = canvas.width / 2;
             ballY = canvas.height / 2;
             // On remet la vitesse de base à 1 (ou -1 pour aller vers la gauche)
-            ballSpeedX = (Math.random() > 0.5 ? 1 : -1);
+            ballSpeedX = (Math.random() > 0.5 ? 2 : -2);
             // On peut aussi randomiser la direction Haut/Bas pour plus de fun
-            ballSpeedY = (Math.random() > 0.5 ? 1 : -1); 
+            ballSpeedY = (Math.random() > 0.5 ? 2 : -2); 
         }
         function draw() {
             ctx.fillStyle = "black";

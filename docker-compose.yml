@@ -14,8 +14,6 @@ services:
     container_name: backend
     volumes:
       - ./backend:/app
-      #- ./backend/staticfiles:/app/staticfiles
-      #- static_volume:/app/staticfiles
     env_file: .env
     depends_on:
       - db

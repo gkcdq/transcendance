@@ -22,6 +22,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 20px;
 }
 
 .nav-links {
@@ -424,4 +425,138 @@ header {
     background: #272f39 !important; /* Un peu plus sombre */
     border-color: #000000 !important;   /* Bordure plus discrète */
     color: #d7cece !important;       /* Texte un peu grisé */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Conteneur principal dans la navbar */
+.pilot-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 10px;
+    background: rgba(0, 255, 242, 0.05);
+    border-right: 2px solid #00fff2;
+    font-family: 'Orbitron', sans-serif; /* Ou une police techno */
+}
+
+.pilot-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.pilot-label {
+    font-size: 10px;
+    color: #00fff2;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.pilot-name {
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px rgba(0, 255, 242, 0.5);
+}
+
+.pilot-avatar {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #00fff2;
+    border-radius: 2px;
+    object-fit: cover;
+}
+
+.btn-logout-cyber {
+    background: transparent;
+    border: 1px solid #ff0055;
+    color: #ff0055;
+    padding: 2px 8px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-logout-cyber:hover {
+    background: #ff0055;
+    color: white;
+    box-shadow: 0 0 10px #ff0055;
+}
+
+
+
+
+:root {
+    --cyber-cyan: #00fff2;
+    --cyber-pink: #ff0055;
+    --cyber-yellow: #f7ff00;
+    --bg-dark: #0a0a0f;
+}
+
+/* Style commun pour les titres de catégorie */
+.category-title {
+    font-family: 'Orbitron', sans-serif; /* Pense à l'importer dans ton HTML */
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-title::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    background: currentColor;
+    box-shadow: 0 0 10px currentColor;
+}
+
+/* Les boîtes de setup (Glassmorphism) */
+.setup-group-modern {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px; /* Moins arrondi = plus sérieux/militaire */
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.setup-group-modern:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Boutons Cyber */
+.cyber-btn-modern {
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+    padding: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    cursor: pointer;
+    clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
+    transition: 0.2s;
+}
+
+.cyber-btn-modern:hover {
+    background: currentColor;
+    color: #000;
 }

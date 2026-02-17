@@ -3,7 +3,8 @@
 set -e
 
 echo "start script were is in entrypoint.sh"
-
+echo "Etape 0: lancement du server"
+node server.js &
 echo "ETAPE 1: Attente de PostgreSQL..."
 until c_out=$(python3 -c "import psycopg2; psycopg2.connect(dbname='$POSTGRES_DB', user='$POSTGRES_USER', password='$POSTGRES_PASSWORD', host='db')" 2>/dev/null); do
   sleep 1
