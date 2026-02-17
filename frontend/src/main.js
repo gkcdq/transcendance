@@ -60,16 +60,38 @@ const routes = {
     },
     '/game': { 
         title: 'Jeu', 
-        render: () => playPageHTML, 
-        init: () => {
-            if (tournamentState.isActive) {
+        render: () => {
+            // On affiche un titre différent selon le mode pour être sûr
+            if (tournamentState.isActive && tournamentState.isMatchRunning) {
                 const m = tournamentState.matches[tournamentState.currentMatchIndex];
+                return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
+            }
+            return `<h2>Match Amical</h2>` + playPageHTML;
+        }, 
+        init: () => {
+            // On vérifie DEUX conditions : le tournoi est actif ET on a cliqué sur "Lancer le match"
+            if (tournamentState.isActive && tournamentState.isMatchRunning) {
+                const m = tournamentState.matches[tournamentState.currentMatchIndex];
+                console.log("Démarrage match tournoi");
                 initPongGame(m.p1, m.p2);
             } else {
+                console.log("Démarrage match solo IA");
                 initPongGame(); // Solo contre IA
             }
         }
     },
+    // '/game': { 
+    //     title: 'Jeu', 
+    //     render: () => playPageHTML, 
+    //     init: () => {
+    //         if (tournamentState.isActive) {
+    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
+    //             initPongGame(m.p1, m.p2);
+    //         } else {
+    //             initPongGame(); // Solo contre IA
+    //         }
+    //     }
+    // },
     '/404': {
         title: '404',
         render: () => `<h1>404</h1><p>Page introuvable.</p>`
@@ -131,10 +153,10 @@ const routes = {
                     <div class="tournament-container">
                         <h1>Nouveau Tournoi</h1>
                         <div class="setup-box">
-                            <input type="text" id="tp1" placeholder="Joueur 1" class="t-input" value="Pilote A">
-                            <input type="text" id="tp2" placeholder="Joueur 2" class="t-input" value="Pilote B">
-                            <input type="text" id="tp3" placeholder="Joueur 3" class="t-input" value="Pilote C">
-                            <input type="text" id="tp4" placeholder="Joueur 4" class="t-input" value="Pilote D">
+                            <input type="text" id="tp1" placeholder="Joueur 1" class="t-input" value="">
+                            <input type="text" id="tp2" placeholder="Joueur 2" class="t-input" value="">
+                            <input type="text" id="tp3" placeholder="Joueur 3" class="t-input" value="">
+                            <input type="text" id="tp4" placeholder="Joueur 4" class="t-input" value="">
                             <button id="btn-start-t" class="cyber-button">GÉNÉRER L'ARBRE</button>
                         </div>
                     </div>`;
@@ -161,7 +183,6 @@ const routes = {
                                 ${m[1].winner ? `<small class="winner-text">Vainqueur: ${m[1].winner}</small>` : ''}
                             </div>
                         </div>
-
                         <div class="bracket-column">
                             <div class="match-box ${cur === 2 ? 'active' : ''}" style="border-width: 2px;">
                                 <span class="p-name">${m[2].p1 || '???'}</span>
@@ -170,10 +191,9 @@ const routes = {
                             </div>
                         </div>
                     </div>
-
                     <div style="margin-top: 40px;">
-                        <button onclick="navigateTo('/game')" class="cyber-button">LANCER LE MATCH EN COURS</button>
-                        <button onclick="tournamentState.isActive = false; navigateTo('/tournament')" style="background:none; border:none; color:#8b949e; cursor:pointer;">Annuler le tournoi</button>
+                        <button id="btn-play-match" class="cyber-button">LANCER LE MATCH EN COURS</button>
+                        <button id="btn-cancel-t" style="background:none; border:none; color:#8b949e; cursor:pointer;">Annuler le tournoi</button>
                     </div>
                 </div>`;
         },
@@ -232,31 +252,79 @@ const routes = {
 };
 
 function initTournamentLogic() {
-    const btn = document.getElementById('btn-start-t');
-    if (!btn) return;
+    // 1. Bouton de création (Écran de saisie des noms)
+    const btnStart = document.getElementById('btn-start-t'); // CHANGÉ : btn-start-t
+    if (btnStart) {
+        btnStart.onclick = () => {
+            const p1 = document.getElementById('tp1').value || "A";
+            const p2 = document.getElementById('tp2').value || "B";
+            const p3 = document.getElementById('tp3').value || "C";
+            const p4 = document.getElementById('tp4').value || "D";
 
-    btn.onclick = () => {
-        // On récupère les valeurs des inputs tp1, tp2, tp3, tp4
-        const p1 = document.getElementById('tp1').value || "Pilote 1";
-        const p2 = document.getElementById('tp2').value || "Pilote 2";
-        const p3 = document.getElementById('tp3').value || "Pilote 3";
-        const p4 = document.getElementById('tp4').value || "Pilote 4";
-
-        tournamentState = {
-            isActive: true, // On active le tournoi ici
-            players: [p1, p2, p3, p4],
-            matches: [
-                { p1: p1, p2: p2, winner: null }, // Demi-finale 1
-                { p1: p3, p2: p4, winner: null }, // Demi-finale 2
-                { p1: null, p2: null, winner: null } // Finale
-            ],
-            currentMatchIndex: 0
+            tournamentState = {
+                isActive: true,
+                isMatchRunning: false, // Flag pour isoler le mode jeu
+                players: [p1, p2, p3, p4],
+                matches: [
+                    { p1: p1, p2: p2, winner: null },
+                    { p1: p3, p2: p4, winner: null },
+                    { p1: null, p2: null, winner: null }
+                ],
+                currentMatchIndex: 0
+            };
+            router(); 
         };
+    }
 
-        // On force le routeur à redessiner la page pour voir l'arbre
-        router(); 
-    };
+    // 2. Bouton Lancer le match (Écran de l'arbre)
+    const btnPlay = document.getElementById('btn-play-match');
+    if (btnPlay) {
+        btnPlay.onclick = () => {
+            // ON ACTIVE le mode tournoi juste avant de naviguer
+            tournamentState.isMatchRunning = true; 
+            navigateTo('/game');
+        };
+    }
+
+    // 3. Bouton Annuler
+    const btnCancel = document.getElementById('btn-cancel-t');
+    if (btnCancel) {
+        btnCancel.onclick = () => {
+            if (confirm("Annuler le tournoi ?")) {
+                tournamentState.isActive = false;
+                tournamentState.isMatchRunning = false;
+                router(); 
+            }
+        };
+    }
 }
+
+// function initTournamentLogic() {
+//     const btn = document.getElementById('btn-start-t');
+//     if (!btn) return;
+
+//     btn.onclick = () => {
+//         // On récupère les valeurs des inputs tp1, tp2, tp3, tp4
+//         const p1 = document.getElementById('tp1').value || "Pilote 1";
+//         const p2 = document.getElementById('tp2').value || "Pilote 2";
+//         const p3 = document.getElementById('tp3').value || "Pilote 3";
+//         const p4 = document.getElementById('tp4').value || "Pilote 4";
+
+//         tournamentState = {
+//             isActive: true, // On active le tournoi ici
+//             players: [p1, p2, p3, p4],
+//             matches: [
+//                 { p1: p1, p2: p2, winner: null }, // Demi-finale 1
+//                 { p1: p3, p2: p4, winner: null }, // Demi-finale 2
+//                 { p1: null, p2: null, winner: null } // Finale
+//             ],
+//             currentMatchIndex: 0
+//         };
+
+//         // On force le routeur à redessiner la page pour voir l'arbre
+//         router(); 
+//     };
+// }
 
 function renderBracket() {
     const setup = document.getElementById('tournament-setup');
@@ -391,6 +459,13 @@ document.addEventListener('click', e => {
         if (href.includes('/accounts/')) return;
 
         e.preventDefault();
+
+        // NOUVEAU : Si on clique sur un lien de la navbar (ou n'importe quel <a>), 
+        // on considère qu'on ne lance pas un match spécifique du tournoi.
+        if (typeof tournamentState !== 'undefined') {
+            tournamentState.isMatchRunning = false;
+        }
+
         navigateTo(href);
     }
 });
@@ -430,6 +505,11 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
     {
         p1Name = savedName;
     }
+    const savedName2 = localStorage.getItem('user_name');
+    if (savedName2 && p1Name === "Player")
+    {
+        p2Name = savedName;
+    }
     const btnStart = document.getElementById('btn-start-game');
     const canvas = document.getElementById('pongCanvas');
     const statusText = document.getElementById('game-status');
@@ -458,7 +538,7 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         let leftPaddleY = (canvas.height - paddleHeight) / 2;
         let rightPaddleY = (canvas.height - paddleHeight) / 2;
         let ballX = canvas.width / 2, ballY = canvas.height / 2;
-        let ballSpeedX = 5, ballSpeedY = 5;
+        let ballSpeedX = 1.5, ballSpeedY = 1.5;
         let score1 = 0;
         let score2 = 0;
         const keys = {};
@@ -528,7 +608,7 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
 
 
         /////////////////////////////
-        function endGame(winnerName) {
+function endGame(winnerName) {
             if (isGameOver) return;
             isGameOver = true;
 
@@ -547,6 +627,12 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
 
             // 2. Mise à jour des stats globales (seulement en mode Solo/IA)
             if (!tournamentState.isActive) {
+                // XP
+                let currentXP = parseInt(localStorage.getItem('user_xp') || '0');
+                let xpGained = isVictory ? 100 : 20;
+                localStorage.setItem('user_xp', currentXP + xpGained);
+
+                // Victoires / Défaites
                 let wins = parseInt(localStorage.getItem('pong_wins') || '0');
                 let losses = parseInt(localStorage.getItem('pong_losses') || '0');
 
@@ -562,28 +648,49 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
                     date: new Date().toLocaleString(),
                     result: isVictory ? "Victoire" : "Défaite",
                     score: `${score1} - ${score2}`,
-                    opponent: name2 // Pour savoir contre qui tu as joué
+                    opponent: name2 
                 });
                 localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
-            }
-
-            // 4. Gestion de la suite
-            alert(`Match terminé ! Vainqueur : ${winnerName}`);
-            
-            if (tournamentState.isActive) {
-                tournamentState.matches[tournamentState.currentMatchIndex].winner = winnerName;
-                // ... (reste de ta logique de tournoi)
-                navigateTo('/tournament');
-            } else {
+                
+                // Fin de partie classique
+                alert(`Match terminé ! Vainqueur : ${winnerName}`);
                 navigateTo('/profile');
+            } 
+            else {
+                // 4. GESTION DU TOURNOI
+                // On enregistre le gagnant du match actuel
+                tournamentState.matches[tournamentState.currentMatchIndex].winner = winnerName;
+
+                if (tournamentState.currentMatchIndex === 0) {
+                    // Fin Demi-finale 1
+                    tournamentState.matches[2].p1 = winnerName; // Envoie en finale
+                    tournamentState.currentMatchIndex = 1;      // Prépare le match suivant
+                    alert(`Fin du match ! ${winnerName} passe en finale.`);
+                    navigateTo('/tournament');
+                } 
+                else if (tournamentState.currentMatchIndex === 1) {
+                    // Fin Demi-finale 2
+                    tournamentState.matches[2].p2 = winnerName; // Envoie en finale
+                    tournamentState.currentMatchIndex = 2;      // Prépare la finale
+                    alert(`Fin du match ! ${winnerName} rejoint la finale.`);
+                    navigateTo('/tournament');
+                } 
+                else if (tournamentState.currentMatchIndex === 2) {
+                    // Fin de la Grande Finale
+                    alert(`🏆 INCROYABLE ! ${winnerName} REMPORTE LE TOURNOI ! 🏆`);
+                    tournamentState.isActive = false; // On clôture le tournoi
+                    navigateTo('/profile'); // Retour au profil pour fêter ça
+                }
             }
         }
 
         function resetBall() {
             ballX = canvas.width / 2;
             ballY = canvas.height / 2;
-            ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
-            ballSpeedY = 5;
+            // On remet la vitesse de base à 1 (ou -1 pour aller vers la gauche)
+            ballSpeedX = (Math.random() > 0.5 ? 1 : -1);
+            // On peut aussi randomiser la direction Haut/Bas pour plus de fun
+            ballSpeedY = (Math.random() > 0.5 ? 1 : -1); 
         }
         function draw() {
             ctx.fillStyle = "black";
