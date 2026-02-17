@@ -1,11 +1,7 @@
 // Configuration OAuth 42
-const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
-// On utilise l'URL EXACTE de ta capture d'écran (image_05a39a.png)
+const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
-
 const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
-
-// Injection du bouton
 const authBtnContainer = document.getElementById('auth-status');
 if (authBtnContainer) {
     authBtnContainer.innerHTML = `<a href="${authUrl}" class="cyber-button">Connexion avec 42</a>`;
@@ -49,8 +45,6 @@ const routes = {
             const wins = parseInt(localStorage.getItem('pong_wins') || 0);
             const losses = parseInt(localStorage.getItem('pong_losses') || 0);
             const totalSeconds = parseInt(localStorage.getItem('pong_total_seconds') || 0);
-            
-            // Formatage du temps de jeu réel
             const h = Math.floor(totalSeconds / 3600);
             const m = Math.floor((totalSeconds % 3600) / 60);
             const s = totalSeconds % 60;
@@ -88,10 +82,7 @@ const routes = {
                 const m = tournamentState.matches[tournamentState.currentMatchIndex];
                 return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
             }
-
-            // Récupération de ton nom de profil (ex: MILIN)
-            const myName = localStorage.getItem('user_name') || 'Joueur';
-
+            const myName = localStorage.getItem('user_name') || 'Player';
             return `
                 <div id="setup-container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
                     <h2 style="text-transform: uppercase; letter-spacing: 2px;">Pong Match</h2>
@@ -167,95 +158,6 @@ const routes = {
             }
         }
     },
-    // '/game': { 
-    //     title: 'Jeu', 
-    //     render: () => {
-    //         // Mode Tournoi : On garde l'affichage strict avec les noms des pilotes
-    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
-    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
-    //             return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
-    //         }
-
-    //         // Mode Amical : On injecte un conteneur avec les deux choix possibles
-    //         return `
-    //             <h2>Match Amical</h2>
-    //             <div id="amical-options" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
-    //                 <button id="btn-play-ia" class="cyber-button">Lancer contre l'IA</button>
-    //                 <button id="btn-play-friend" class="cyber-button" style="background: #ff0055;">Lancer contre un Ami</button>
-    //             </div>
-    //             <div id="pong-game-wrapper" style="display:none;">
-    //                 ${playPageHTML}
-    //             </div>`;
-    //     }, 
-    //     init: () => {
-    //         // 1. Logique Tournoi (inchangée)
-    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
-    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
-    //             initPongGame(m.p1, m.p2);
-    //             return;
-    //         }
-
-    //         // 2. Logique Amicale
-    //         const btnIA = document.getElementById('btn-play-ia');
-    //         const btnFriend = document.getElementById('btn-play-friend');
-    //         const optionsDiv = document.getElementById('amical-options');
-    //         const gameWrapper = document.getElementById('pong-game-wrapper');
-
-    //         if (btnIA && btnFriend) {
-    //             // Option VS IA
-    //             btnIA.onclick = () => {
-    //                 optionsDiv.style.display = 'none';
-    //                 gameWrapper.style.display = 'block';
-    //                 initPongGame(); // Appelle ton init par défaut (Joueur vs IA)
-    //             };
-
-    //             // Option VS AMI
-    //             btnFriend.onclick = () => {
-    //                 optionsDiv.style.display = 'none';
-    //                 gameWrapper.style.display = 'block';
-    //                 // On passe deux noms pour forcer le mode 2 joueurs local
-    //                 initPongGame("Joueur 1", "Joueur 2"); 
-    //             };
-    //         }
-    //     }
-    // },
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // '/game': { 
-    //     title: 'Jeu', 
-    //     render: () => {
-    //         // On affiche un titre différent selon le mode pour être sûr
-    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
-    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
-    //             return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
-    //         }
-    //         return `<h2>Match Amical</h2>` + playPageHTML;
-    //     }, 
-    //     init: () => {
-    //         // On vérifie DEUX conditions : le tournoi est actif ET on a cliqué sur "Lancer le match"
-    //         if (tournamentState.isActive && tournamentState.isMatchRunning) {
-    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
-    //             console.log("Démarrage match tournoi");
-    //             initPongGame(m.p1, m.p2);
-    //         } else {
-    //             console.log("Démarrage match solo IA");
-    //             initPongGame(); // Solo contre IA
-    //         }
-    //     }
-    // },
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // '/game': { 
-    //     title: 'Jeu', 
-    //     render: () => playPageHTML, 
-    //     init: () => {
-    //         if (tournamentState.isActive) {
-    //             const m = tournamentState.matches[tournamentState.currentMatchIndex];
-    //             initPongGame(m.p1, m.p2);
-    //         } else {
-    //             initPongGame(); // Solo contre IA
-    //         }
-    //     }
-    // },
     '/404': {
         title: '404',
         render: () => `<h1>404</h1><p>MOUAHAHAHAHAHAHAHAHAHAH.</p>`
@@ -430,8 +332,7 @@ const routes = {
 };
 
 function initTournamentLogic() {
-    // 1. Bouton de création (Écran de saisie des noms)
-    const btnStart = document.getElementById('btn-start-t'); // CHANGÉ : btn-start-t
+    const btnStart = document.getElementById('btn-start-t');
     if (btnStart) {
         btnStart.onclick = () => {
             const p1 = document.getElementById('tp1').value || "A";
@@ -441,7 +342,7 @@ function initTournamentLogic() {
 
             tournamentState = {
                 isActive: true,
-                isMatchRunning: false, // Flag pour isoler le mode jeu
+                isMatchRunning: false, 
                 players: [p1, p2, p3, p4],
                 matches: [
                     { p1: p1, p2: p2, winner: null },
@@ -453,18 +354,13 @@ function initTournamentLogic() {
             router(); 
         };
     }
-
-    // 2. Bouton Lancer le match (Écran de l'arbre)
     const btnPlay = document.getElementById('btn-play-match');
     if (btnPlay) {
         btnPlay.onclick = () => {
-            // ON ACTIVE le mode tournoi juste avant de naviguer
             tournamentState.isMatchRunning = true; 
             navigateTo('/game');
         };
     }
-
-    // 3. Bouton Annuler
     const btnCancel = document.getElementById('btn-cancel-t');
     if (btnCancel) {
         btnCancel.onclick = () => {
@@ -476,33 +372,6 @@ function initTournamentLogic() {
         };
     }
 }
-
-// function initTournamentLogic() {
-//     const btn = document.getElementById('btn-start-t');
-//     if (!btn) return;
-
-//     btn.onclick = () => {
-//         // On récupère les valeurs des inputs tp1, tp2, tp3, tp4
-//         const p1 = document.getElementById('tp1').value || "Pilote 1";
-//         const p2 = document.getElementById('tp2').value || "Pilote 2";
-//         const p3 = document.getElementById('tp3').value || "Pilote 3";
-//         const p4 = document.getElementById('tp4').value || "Pilote 4";
-
-//         tournamentState = {
-//             isActive: true, // On active le tournoi ici
-//             players: [p1, p2, p3, p4],
-//             matches: [
-//                 { p1: p1, p2: p2, winner: null }, // Demi-finale 1
-//                 { p1: p3, p2: p4, winner: null }, // Demi-finale 2
-//                 { p1: null, p2: null, winner: null } // Finale
-//             ],
-//             currentMatchIndex: 0
-//         };
-
-//         // On force le routeur à redessiner la page pour voir l'arbre
-//         router(); 
-//     };
-// }
 
 function renderBracket() {
     const setup = document.getElementById('tournament-setup');
@@ -550,7 +419,6 @@ const router = async () => {
 
 
 async function checkAuth() {
-    // 1. D'abord, on regarde si on revient juste de 42 (données dans l'URL)
     const urlParams = new URLSearchParams(window.location.search);
     const login = urlParams.get('login');
     const avatar = urlParams.get('avatar');
@@ -558,20 +426,14 @@ async function checkAuth() {
     if (login && avatar) {
         currentUser = { username: login, avatar: avatar };
         localStorage.setItem('user_data', JSON.stringify(currentUser));
-        
-        // Nettoyage de l'URL pour enlever les paramètres login/avatar
         window.history.replaceState({}, document.title, window.location.pathname);
         return true;
     }
-
-    // 2. Sinon, on regarde si on a déjà un utilisateur en mémoire locale
     const savedUser = localStorage.getItem('user_data');
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         return true;
     }
-
-    // 3. Enfin, ton ancienne logique fetch (si tu as toujours un backend API)
     try {
         const response = await fetch('/api/users/me/');
         const contentType = response.headers.get("content-type");
@@ -580,35 +442,14 @@ async function checkAuth() {
             return true;
         }
     } catch (err) {
+        navigateTo('/404');
         // Serveur injoignable
     }
 
     currentUser = null;
     return false;
 }
-//////////////////////////////////////////////////////////////////////////////////////////////
-// async function checkAuth() {
-//     try {
-//         const response = await fetch('/api/users/me/');
-        
-//         // On vérifie le type de la réponse. Si ce n'est pas du JSON (ex: HTML), on ignore.
-//         const contentType = response.headers.get("content-type");
-//         if (response.ok && contentType && contentType.includes("application/json")) {
-//             currentUser = await response.json();
-//             return true;
-//         } else {
-//             // Le backend renvoie du HTML car l'API n'est pas encore faite, c'est normal.
-//             currentUser = null;
-//             return false;
-//         }
-//     } catch (err) {
-//         // On ne loggue l'erreur que si le serveur est carrément éteint (erreur réseau)
-//         // On enlève le console.error pour ne pas polluer ta console inutilement pour le moment
-//         // console.warn("Serveur injoignable ou API absente.");
-//     }
-//     currentUser = null;
-//     return false;
-// }
+
 
 
 
@@ -628,25 +469,10 @@ function renderAuthUI(isLoggedIn) {
             </div>
         `;
     } else {
-        // ... garde ton lien authUrl vers 42 ...
+        // ... garde le lien authUrl vers 42 ...
     }
 }
 
-// function renderAuthUI(isLoggedIn) {
-//     const container = document.getElementById('auth-status');
-//     if (!container) return;
-
-//     // Configuration pour 42
-//     const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
-//     const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
-//     const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
-
-//     container.innerHTML = isLoggedIn 
-//         ? `<p>Pilote : <strong>${currentUser.username}</strong></p>
-//            <a href="#" onclick="logout(); return false;" class="btn-logout">Déconnexion</a>`
-//         : `<a href="${authUrl}" class="btn-42">Connexion avec 42</a>`; 
-//         // Note : On utilise authUrl (API 42) et pas un lien local
-// }
 
 
 
@@ -685,23 +511,15 @@ function navigateTo(url) {
     history.pushState(null, null, url);
     router();
 }
-
-
 document.addEventListener('click', e => {
     const link = e.target.closest('a'); 
     if (!link) return;
-
     const href = link.getAttribute('href');
-
-    // SI LE LIEN EST EXTERNE (commence par http ou https)
-    // On laisse le navigateur gérer normalement, on ne fait pas de e.preventDefault()
     if (href.startsWith('http')) {
         return; 
     }
 
-    // SI LE LIEN EST INTERNE (commence par /)
     if (href.startsWith('/')) {
-        // Exclusion spécifique pour tes anciennes routes accounts si besoin
         if (href.includes('/accounts/')) return;
 
         e.preventDefault();
@@ -742,7 +560,6 @@ function initProfile() {
 
 
 
-// On ajoute des paramètres par défaut
 function initPongGame(p1Name = "Player", p2Name = "IA") {
     const savedName = localStorage.getItem('user_name');
     if (savedName && p1Name === "Player")
@@ -759,7 +576,6 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
     const statusText = document.getElementById('game-status');
     if (!canvas || !btnStart) return;
     const ctx = canvas.getContext('2d');
-    // On affiche qui va jouer
     statusText.innerText = `${p1Name} VS ${p2Name}`;
     btnStart.style.display = 'inline-block';
     canvas.style.display = 'none';
@@ -814,25 +630,17 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
             }
             ballX += ballSpeedX;
             ballY += ballSpeedY;
-
-            // Rebond haut et bas
             if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-
-            // On définit une vitesse maximale pour éviter la téléportation
             const maxSpeed = 20;
-
-            // COLLISION GAUCHE (Joueur 1)
             if (ballSpeedX < 0 && ballX <= paddleWidth) {
                 if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-                    ballX = paddleWidth; // On repousse la balle sur le bord de la raquette
+                    ballX = paddleWidth;
                     ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
                 }
             }
-
-            // COLLISION DROITE (Joueur 2 / IA)
             if (ballSpeedX > 0 && ballX >= canvas.width - paddleWidth) {
                 if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-                    ballX = canvas.width - paddleWidth; // On repousse la balle sur le bord
+                    ballX = canvas.width - paddleWidth;
                     ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
                 }
             }
@@ -855,28 +663,18 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
 function endGame(winnerName) {
             if (isGameOver) return;
             isGameOver = true;
-
-            // 1. Calcul du temps
             let sessionSeconds = Math.floor((Date.now() - startTime) / 1000);
             let totalTime = parseInt(localStorage.getItem('pong_total_seconds') || '0');
             localStorage.setItem('pong_total_seconds', totalTime + sessionSeconds);
-
             cancelAnimationFrame(animationId);
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
-
-            // On récupère ton nom actuel pour comparer
             const myName = localStorage.getItem('user_name') || 'Player';
             const isVictory = (winnerName === myName);
-
-            // 2. Mise à jour des stats globales (seulement en mode Solo/IA)
             if (!tournamentState.isActive) {
-                // XP
                 let currentXP = parseInt(localStorage.getItem('user_xp') || '0');
                 let xpGained = isVictory ? 100 : 20;
                 localStorage.setItem('user_xp', currentXP + xpGained);
-
-                // Victoires / Défaites
                 let wins = parseInt(localStorage.getItem('pong_wins') || '0');
                 let losses = parseInt(localStorage.getItem('pong_losses') || '0');
 
@@ -885,8 +683,6 @@ function endGame(winnerName) {
                 } else {
                     localStorage.setItem('pong_losses', losses + 1);
                 }
-
-                // 3. Enregistrement dans l'historique
                 let history = JSON.parse(localStorage.getItem('match_history') || '[]');
                 history.unshift({
                     date: new Date().toLocaleString(),
@@ -895,35 +691,28 @@ function endGame(winnerName) {
                     opponent: name2 
                 });
                 localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
-                
-                // Fin de partie classique
                 alert(`Match terminé ! Vainqueur : ${winnerName}`);
                 navigateTo('/profile');
             } 
             else {
-                // 4. GESTION DU TOURNOI
-                // On enregistre le gagnant du match actuel
                 tournamentState.matches[tournamentState.currentMatchIndex].winner = winnerName;
 
                 if (tournamentState.currentMatchIndex === 0) {
-                    // Fin Demi-finale 1
-                    tournamentState.matches[2].p1 = winnerName; // Envoie en finale
-                    tournamentState.currentMatchIndex = 1;      // Prépare le match suivant
+                    tournamentState.matches[2].p1 = winnerName; 
+                    tournamentState.currentMatchIndex = 1;      
                     alert(`Fin du match ! ${winnerName} passe en finale.`);
                     navigateTo('/tournament');
                 } 
                 else if (tournamentState.currentMatchIndex === 1) {
-                    // Fin Demi-finale 2
-                    tournamentState.matches[2].p2 = winnerName; // Envoie en finale
-                    tournamentState.currentMatchIndex = 2;      // Prépare la finale
+                    tournamentState.matches[2].p2 = winnerName; 
+                    tournamentState.currentMatchIndex = 2;   
                     alert(`Fin du match ! ${winnerName} rejoint la finale.`);
                     navigateTo('/tournament');
                 } 
                 else if (tournamentState.currentMatchIndex === 2) {
-                    // Fin de la Grande Finale
                     alert(`🏆 INCROYABLE ! ${winnerName} REMPORTE LE TOURNOI ! 🏆`);
-                    tournamentState.isActive = false; // On clôture le tournoi
-                    navigateTo('/profile'); // Retour au profil pour fêter ça
+                    tournamentState.isActive = false; 
+                    navigateTo('/profile'); 
                 }
             }
         }
@@ -931,9 +720,7 @@ function endGame(winnerName) {
         function resetBall() {
             ballX = canvas.width / 2;
             ballY = canvas.height / 2;
-            // On remet la vitesse de base à 1 (ou -1 pour aller vers la gauche)
             ballSpeedX = (Math.random() > 0.5 ? 2 : -2);
-            // On peut aussi randomiser la direction Haut/Bas pour plus de fun
             ballSpeedY = (Math.random() > 0.5 ? 2 : -2); 
         }
         function draw() {
