@@ -560,3 +560,39 @@ header {
     background: currentColor;
     color: #000;
 }
+
+
+.home-profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.home-avatar-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #00babc;
+    object-fit: cover;
+    margin-bottom: 10px;
+    box-shadow: 0 0 15px rgba(0, 186, 188, 0.3);
+}
+
+.welcome-text {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+
+.home-chat-section {
+    width: 100%;
+    display: block;
+}
+
+.home-chat-section .chat-container.solo {
+    margin: 0;
+    border: 1px solid rgba(0, 186, 188, 0.2);
+    background: rgba(13, 17, 23, 0.8);
+}

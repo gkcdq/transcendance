@@ -32,7 +32,9 @@ window.logout = function() {
     localStorage.setItem('pong_wins', '0');
     localStorage.setItem('pong_losses', '0');
     localStorage.setItem('pong_total_seconds', '0');
+    localStorage.setItem('user_xp', '0');
     localStorage.removeItem('match_history');
+    localStorage.removeItem('global_chat_history')
 
     // 3. Redirection vers l'accueil pour rafraîchir le routeur et l'UI
     window.location.href = '/'; 
@@ -77,13 +79,40 @@ const routes = {
             const s = totalSeconds % 60;
             const timeStr = h > 0 ? `${h}h ${m}s` : `${m}m ${s}s`;
 
-            const name = localStorage.getItem('user_name') || 'Milin';
+            const name = localStorage.getItem('user_name') || 'Pilote';
+            const avatar = localStorage.getItem('user_avatar');
             const color = localStorage.getItem('user_color') || '#00babc';
+
+            // On ne définit le bloc Chat que si l'utilisateur est connecté
+            const chatSection = avatar ? `
+                <div class="home-chat-section" style="width: 100%; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                    <h3 style="text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: #8b949e; margin-bottom: 15px;">Canal Global</h3>
+                    <div class="chat-container solo" style="max-width: 100%; width: 100%; height: 300px;">
+                        <section class="chat-window" style="height: 100%;">
+                            <div id="chat-messages" class="chat-messages" style="height: 200px;">
+                                <div class="message system">Bienvenue dans le canal global.</div>
+                            </div>
+                            <form id="chat-form" class="chat-input-area">
+                                <input type="text" id="chat-input" placeholder="Tapez votre message..." autocomplete="off">
+                                <button type="submit" class="btn-send">Envoyer</button>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+            ` : '';
+
+            const profileHeader = avatar ? `
+                <div class="home-profile-header">
+                    <img src="${avatar}" class="home-avatar-img" style="border-color: ${color}">
+                    <p class="welcome-text">Content de vous revoir, <span style="color: ${color}">${name}</span></p>
+                </div>
+            ` : '';
 
             return `
                 <div class="hero-container">
+                    ${profileHeader}
                     <h1>Transcendence !</h1>
-                    <p class="subtitle">🎾⚾🎾
+                    <p class="subtitle">🎾⚾🎾</p>
                     
                     <div class="stats-dashboard">
                         <div class="stat-card">
@@ -99,7 +128,13 @@ const routes = {
                             <div class="stat-label">Historique →</div>
                         </a>
                     </div>
-                </div>`;
+                    ${chatSection} </div>`;
+        },
+        init: () => {
+            // On n'initialise le chat que si le formulaire existe dans le DOM
+            if (document.getElementById('chat-form')) {
+                initChat();
+            }
         }
     },
     '/game': { 
@@ -187,7 +222,7 @@ const routes = {
     },
     '/404': {
         title: '404',
-        render: () => `<h1>404</h1><p>MOUAHAHAHAHAHAHAHAHAHAH.</p>`
+        render: () => `<h1>404</h1><p>Invalid.</p>`
     },
     '/accounts/fortytwo/login/callback/': {
         title: 'Authentification',
@@ -209,7 +244,7 @@ const routes = {
             <div class="chat-container solo">
                 <section class="chat-window">
                     <div id="chat-messages" class="chat-messages">
-                        <div class="message system">Bienvenue dans le canal global.</div>
+                        <div class="message system">Canal Global</div>
                     </div>
                     <form id="chat-form" class="chat-input-area">
                         <input type="text" id="chat-input" placeholder="Tapez votre message..." autocomplete="off">
@@ -838,6 +873,18 @@ function initChat() {
     const form = document.getElementById('chat-form');
     const input = document.getElementById('chat-input');
     const messagesContainer = document.getElementById('chat-messages');
+    
+    // 1. CHARGER les messages existants au démarrage
+    const savedMessages = JSON.parse(localStorage.getItem('global_chat_history') || '[]');
+    messagesContainer.innerHTML = ''; // On vide pour éviter les doublons
+    savedMessages.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${msg.type}`;
+        if (msg.type === 'sent') msgDiv.style.background = '#00babc33';
+        msgDiv.innerHTML = `<span class="sender">${msg.sender}:</span> ${msg.text}`;
+        messagesContainer.appendChild(msgDiv);
+    });
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
     if (!form) return;
 
@@ -845,7 +892,19 @@ function initChat() {
         e.preventDefault();
         if (input.value.trim() === "") return;
 
-        // Création du message local
+        const newMsg = {
+            sender: "Moi",
+            text: input.value,
+            type: 'sent',
+            date: Date.now()
+        };
+
+        // 2. ENREGISTRER le nouveau message dans le localStorage
+        const history = JSON.parse(localStorage.getItem('global_chat_history') || '[]');
+        history.push(newMsg);
+        localStorage.setItem('global_chat_history', JSON.stringify(history));
+
+        // 3. Affichage immédiat
         const msgDiv = document.createElement('div');
         msgDiv.className = 'message sent';
         msgDiv.style.background = '#00babc33';

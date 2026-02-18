@@ -41,6 +41,7 @@ init-django:
 # docker compose down                        // arrete tous les containers
 
 # ----------------------------------- LIEN -----------------------------------
+# https://localhost:8443/
 # https://localhost:8443/admin/
 # https://localhost:8443/api/users/me/
 # https://localhost:8443/style.css
