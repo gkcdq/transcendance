@@ -255,37 +255,38 @@ const routes = {
         init: initChat
     },
     '/settings': { 
-        title: 'Paramètres', 
-        render: () => `
-            <div class="settings-container">
-                <h2>Configuration du Joueur</h2>
-                <form id="settings-form">
-                    <div class="setting-group">
-                        <label>Pseudo</label>
-                        <input type="text" id="username-input" placeholder="Ton pseudo...">
-                    </div>
-                    
-                    <div class="setting-group">
-                        <label>Couleur de la raquette</label>
-                        <div class="color-picker">
-                            <input type="color" id="paddle-color" value="#00babc">
+            title: 'Paramètres', 
+            render: () => `
+                <div class="settings-container">
+                    <h2>Configuration du Joueur</h2>
+                    <form id="settings-form">
+                        <div class="setting-group">
+                            <label>Pseudo (Verrouillé)</label>
+                            <input type="text" id="username-input" readonly 
+                                style="background: rgba(255,255,255,0.05); cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: #8b949e;">
                         </div>
-                    </div>
+                        
+                        <div class="setting-group">
+                            <label>Couleur de la raquette</label>
+                            <div class="color-picker">
+                                <input type="color" id="paddle-color" value="#00babc">
+                            </div>
+                        </div>
 
-                    <div class="setting-group">
-                        <label>Difficulté IA par défaut</label>
-                        <select id="ai-difficulty">
-                            <option value="0.3">Facile</option>
-                            <option value="5">Normal</option>
-                            <option value="8">Expert</option>
-                        </select>
-                    </div>
+                        <div class="setting-group">
+                            <label>Difficulté IA par défaut</label>
+                            <select id="ai-difficulty">
+                                <option value="0.3">Facile</option>
+                                <option value="5">Normal</option>
+                                <option value="8">Expert</option>
+                            </select>
+                        </div>
 
-                    <button type="submit" class="btn-save">Enregistrer les modifications</button>
-                </form>
-                <div id="settings-msg"></div>
-            </div>`,
-        init: initSettings
+                        <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                    </form>
+                    <div id="settings-msg"></div>
+                </div>`,
+            init: initSettings
         },
         '/tournament': { 
         title: 'Tournoi Local', 
@@ -919,17 +920,26 @@ function initChat() {
 function initSettings() {
     const form = document.getElementById('settings-form');
     const msg = document.getElementById('settings-msg');
-    document.getElementById('username-input').value = localStorage.getItem('user_name') || 'Player';
+    
+    // On affiche le pseudo actuel sans permettre la modification
+    const currentName = localStorage.getItem('user_name') || 'Player';
+    document.getElementById('username-input').value = currentName;
     document.getElementById('paddle-color').value = localStorage.getItem('user_color') || '#00babc';
-    document.getElementById('ai-difficulty').value = localStorage.getItem('ai_level') || '5.5';
+    document.getElementById('ai-difficulty').value = localStorage.getItem('ai_level') || '5';
+
+    if (!form) return;
+
     form.onsubmit = (e) => {
         e.preventDefault();
-        const newName = document.getElementById('username-input').value;
+        
+        // On récupère uniquement la couleur et la difficulté
         const newColor = document.getElementById('paddle-color').value;
         const newDifficulty = document.getElementById('ai-difficulty').value;
-        localStorage.setItem('user_name', newName);
+
+        // On sauvegarde tout SAUF le pseudo
         localStorage.setItem('user_color', newColor);
         localStorage.setItem('ai_level', newDifficulty);
-        msg.innerHTML = '<p style="color: #2ea043; margin-top: 15px;">Configuration mise à jour avec succès !</p>';
+        
+        msg.innerHTML = '<p style="color: #2ea043; margin-top: 15px;">Préférences mises à jour (Pseudo conservé) !</p>';
     };
 }
