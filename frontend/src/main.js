@@ -8,7 +8,16 @@ if (authBtnContainer) {
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+const urlParams = new URLSearchParams(window.location.search);
+const avatarFromUrl = urlParams.get('avatar');
+const loginFromUrl = urlParams.get('login');
 
+if (avatarFromUrl) {
+    localStorage.setItem('user_avatar', avatarFromUrl);
+}
+if (loginFromUrl) {
+    localStorage.setItem('user_name', loginFromUrl);
+}
 
 
 ////////////////////////////////////////////////////
@@ -113,7 +122,7 @@ const routes = {
                         <div class="category-block">
                             <h3 style="color: #ff0055; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #ff0055; padding-left: 10px; letter-spacing: 1px;">Online</h3>
                             <div class="setup-group" style="border: 1px solid #ff0055; padding: 15px; border-radius: 8px; background: rgba(247, 255, 0, 0.05);">
-                                <p style="color: #ff0055; font-size: 0.7rem; margin-bottom: 10px;">Défiez un pilote du réseau Transcendence.</p>
+                                <p style="color: #ff0055; font-size: 0.7rem; margin-bottom: 10px;">Défiez un joueur.</p>
                                 <button id="btn-matchmaking" class="cyber-button" style="width: 100%; background: #ff0055  ;border-color: #ff0055; color: #050505;">Lancer la recherche</button>
                                 <div id="mm-status" style="margin-top: 10px; font-size: 0.8rem; color: #ff0055; display:none;">
                                     <span class="loader-dots">Recherche en cours</span>
@@ -196,7 +205,7 @@ const routes = {
         title: 'Paramètres', 
         render: () => `
             <div class="settings-container">
-                <h2>Configuration du Pilote</h2>
+                <h2>Configuration du Joueur</h2>
                 <form id="settings-form">
                     <div class="setting-group">
                         <label>Pseudo</label>
@@ -282,7 +291,9 @@ const routes = {
     '/profile': { 
         title: 'Profil Utilisateur', 
         render: () => {
-            const name = localStorage.getItem('user_name') || 'Pilote';
+            const name = localStorage.getItem('user_name') || 'Player';
+            const avatar = localStorage.getItem('user_avatar') || `https://ui-avatars.com/api/?name=${name}&background=0D1117&color=00babc`;
+
             const wins = parseInt(localStorage.getItem('pong_wins') || 0);
             const losses = parseInt(localStorage.getItem('pong_losses') || 0);
             const color = localStorage.getItem('user_color') || '#00babc';
@@ -296,7 +307,7 @@ const routes = {
                 <div class="profile-container">
                     <div class="profile-header">
                         <div class="profile-avatar" style="border-color: ${color}">
-                            <img src="https://ui-avatars.com/api/?name=${name}&background=0D1117&color=${color.replace('#','')}" alt="Avatar">
+                            <img src="${avatar}" alt="Avatar" class="avatar-img">
                         </div>
                         <h2>${name}</h2>
                         <div class="level-badge">Niveau ${level}</div>
@@ -461,7 +472,7 @@ function renderAuthUI(isLoggedIn) {
         container.innerHTML = `
             <div class="pilot-profile">
                 <div class="pilot-info">
-                    <span class="pilot-label">PILOTE SYSTEM</span>
+                    <span class="pilot-label">PLAYER SYSTEM</span>
                     <span class="pilot-name">${currentUser.username}</span>
                 </div>
                 <img src="${currentUser.avatar}" class="pilot-avatar">
