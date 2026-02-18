@@ -1,5 +1,5 @@
 // Configuration OAuth 42
-const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43
+const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
 const authBtnContainer = document.getElementById('auth-status');

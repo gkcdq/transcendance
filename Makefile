@@ -19,6 +19,8 @@ down:
 # reinitialise la base de donne
 clean:
 	$(DOCKER_COMPOSE) down -v
+	rm -rf backend/node_modules
+	rm -f backend/package-lock.json
 	@echo "Nettoyage complet effectué."
 
 # voir les logs en temps reel
