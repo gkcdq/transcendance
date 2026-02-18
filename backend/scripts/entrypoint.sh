@@ -20,7 +20,6 @@ echo "EATEPE 5: Verification du Superuser..."
 python3 manage.py createsuperuser --noinput || echo "Superuser deja la."
 echo "ETAPE 6: Collecte des fichiers statiques"
 python3 manage.py collectstatic --noinput --clear
-# Ajoute cette ligne pour donner les droits de lecture à Nginx
 chmod -R 755 /app/staticfiles
 echo " entrypoint.sh done / Lancement de Daphne"
 exec daphne -b 0.0.0.0 -p 8000 transcendance.asgi:application
