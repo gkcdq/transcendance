@@ -527,12 +527,12 @@ header {
     box-shadow: 0 0 10px currentColor;
 }
 
-/* Les boîtes de setup (Glassmorphism) */
+
 .setup-group-modern {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px; /* Moins arrondi = plus sérieux/militaire */
+    border-radius: 4px;
     padding: 20px;
     transition: all 0.3s ease;
 }
@@ -543,7 +543,7 @@ header {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
 
-/* Boutons Cyber */
+
 .cyber-btn-modern {
     background: transparent;
     border: 1px solid currentColor;

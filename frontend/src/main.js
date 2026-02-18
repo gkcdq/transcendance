@@ -7,7 +7,7 @@ if (authBtnContainer) {
     authBtnContainer.innerHTML = `<a href="${authUrl}" class="cyber-button">Connexion avec 42</a>`;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// pour la pp
 const urlParams = new URLSearchParams(window.location.search);
 const avatarFromUrl = urlParams.get('avatar');
 const loginFromUrl = urlParams.get('login');
@@ -21,7 +21,24 @@ if (loginFromUrl) {
 
 
 ////////////////////////////////////////////////////
+// Pour le bouton exit
+window.logout = function() {
+    // 1. Suppression des identifiants
+    localStorage.removeItem('user_name');
+    localStorage.removeItem('user_avatar');
+    localStorage.removeItem('user_data');
 
+    // 2. Remise à zéro des statistiques locales
+    localStorage.setItem('pong_wins', '0');
+    localStorage.setItem('pong_losses', '0');
+    localStorage.setItem('pong_total_seconds', '0');
+
+    // 3. Redirection vers l'accueil pour rafraîchir le routeur et l'UI
+    window.location.href = '/'; 
+};
+
+
+///////////////////////////////////////////////////
 
 
 console.log("Script main.js chargé !");
@@ -339,6 +356,18 @@ const routes = {
                 </div>`;
         },
         init: initProfile
+    },
+    '/access-denied': {
+        title: 'Accès Refusé',
+        render: () => `
+            <div class="access-denied-container">
+                <h1>🚫 Accès Interdit 🚫</h1>
+                <div class="denied-actions">
+                </div>
+                 <p>Désolé, tu dois être connecté pour jouer.</p>
+            </div>
+            <a href="/" class="cyber-button secondary">Retour à l'accueil</a>
+        `
     }
 };
 
@@ -410,11 +439,10 @@ const router = async () => {
     const path = window.location.pathname;
     const route = routes[path] || routes['/404'];
     const isLoggedIn = await checkAuth();
-    // if (path === '/game' && !isLoggedIn) {
-    //     console.warn("Accès refusé : redirection vers l'accueil.");
-    //     navigateTo('/');
-    //     return;
-    // }
+    if (path === '/game' && !isLoggedIn) {
+        navigateTo('/access-denied');
+        return;
+    }
     document.title = `Transcendence - ${route.title}`;
     const appContainer = document.getElementById('app');
     if (appContainer) {
@@ -464,35 +492,41 @@ async function checkAuth() {
 
 
 
+
+
+
+
+
+
 function renderAuthUI(isLoggedIn) {
     const container = document.getElementById('auth-status');
     if (!container) return;
 
-    if (isLoggedIn && currentUser) {
+    // On récupère les infos soit dans currentUser, soit dans le localStorage
+    const name = currentUser?.username || localStorage.getItem('user_name');
+    const avatar = currentUser?.avatar || localStorage.getItem('user_avatar');
+
+    if (isLoggedIn && name && avatar) {
+        // SI CONNECTÉ : On affiche tout, y compris le bouton EXIT
         container.innerHTML = `
             <div class="pilot-profile">
                 <div class="pilot-info">
                     <span class="pilot-label">PLAYER SYSTEM</span>
-                    <span class="pilot-name">${currentUser.username}</span>
+                    <span class="pilot-name">${name}</span>
                 </div>
-                <img src="${currentUser.avatar}" class="pilot-avatar">
+                <img src="${avatar}" class="pilot-avatar">
                 <button onclick="logout(); return false;" class="btn-logout-cyber">EXIT</button>
             </div>
         `;
     } else {
-        // ... garde le lien authUrl vers 42 ...
+        // SI DÉCONNECTÉ : On affiche le bouton de connexion 42
+        const UID = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
+        const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
+        const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
+        
+        container.innerHTML = `<a href="${authUrl}" class="cyber-button">Connexion avec 42</a>`;
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -609,7 +643,7 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         let leftPaddleY = (canvas.height - paddleHeight) / 2;
         let rightPaddleY = (canvas.height - paddleHeight) / 2;
         let ballX = canvas.width / 2, ballY = canvas.height / 2;
-        let ballSpeedX = 2, ballSpeedY = 2;
+        let ballSpeedX = 15, ballSpeedY = 15;
         let score1 = 0;
         let score2 = 0;
         const keys = {};
@@ -731,8 +765,8 @@ function endGame(winnerName) {
         function resetBall() {
             ballX = canvas.width / 2;
             ballY = canvas.height / 2;
-            ballSpeedX = (Math.random() > 0.5 ? 2 : -2);
-            ballSpeedY = (Math.random() > 0.5 ? 2 : -2); 
+            ballSpeedX = (Math.random() > 0.5 ? 15 : -15);
+            ballSpeedY = (Math.random() > 0.5 ? 15 : -15); 
         }
         function draw() {
             ctx.fillStyle = "black";
