@@ -32,6 +32,7 @@ window.logout = function() {
     localStorage.setItem('pong_wins', '0');
     localStorage.setItem('pong_losses', '0');
     localStorage.setItem('pong_total_seconds', '0');
+    localStorage.removeItem('match_history');
 
     // 3. Redirection vers l'accueil pour rafraîchir le routeur et l'UI
     window.location.href = '/'; 
@@ -257,7 +258,7 @@ const routes = {
             if (!tournamentState.isActive) {
                 return `
                     <div class="tournament-container">
-                        <h1>Nouveau Tournoi</h1>
+                        <h1>Tournoi Local</h1>
                         <div class="setup-box">
                             <input type="text" id="tp1" placeholder="Joueur 1" class="t-input" value="">
                             <input type="text" id="tp2" placeholder="Joueur 2" class="t-input" value="">
@@ -357,15 +358,27 @@ const routes = {
         },
         init: initProfile
     },
-    '/access-denied': {
+    '/jouer-denied': {
         title: 'Accès Refusé',
         render: () => `
             <div class="access-denied-container">
                 <h1>🚫 Accès Interdit 🚫</h1>
                 <div class="denied-actions">
                 </div>
-                 <p>Désolé, tu dois être connecté pour jouer.</p>
             </div>
+            <p>Connecte-toi pour jouer 🎾 .</p>
+            <a href="/" class="cyber-button secondary">Retour à l'accueil</a>
+        `
+    },
+        '/chat-denied': {
+        title: 'Accès Refusé',
+        render: () => `
+            <div class="access-denied-container">
+                <h1>🚫 Accès Interdit 🚫</h1>
+                <div class="denied-actions">
+                </div>
+            </div>
+            <p>Connecte-toi pour envoyer des messages 📨.</p>
             <a href="/" class="cyber-button secondary">Retour à l'accueil</a>
         `
     }
@@ -439,8 +452,13 @@ const router = async () => {
     const path = window.location.pathname;
     const route = routes[path] || routes['/404'];
     const isLoggedIn = await checkAuth();
-    if (path === '/game' && !isLoggedIn) {
-        navigateTo('/access-denied');
+    if ((path === '/game' && !isLoggedIn)) {
+        navigateTo('/jouer-denied');
+        return;
+    }
+    if ((path === '/chat' && !isLoggedIn))
+    {
+        navigateTo('/chat-denied');
         return;
     }
     document.title = `Transcendence - ${route.title}`;
@@ -757,7 +775,7 @@ function endGame(winnerName) {
                 else if (tournamentState.currentMatchIndex === 2) {
                     alert(`🏆 INCROYABLE ! ${winnerName} REMPORTE LE TOURNOI ! 🏆`);
                     tournamentState.isActive = false; 
-                    navigateTo('/profile'); 
+                    navigateTo('/tournament'); 
                 }
             }
         }
