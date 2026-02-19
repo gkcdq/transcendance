@@ -134,25 +134,27 @@ export const userStore = {
         const newXp     = xp + (isVictory ? 100 : 20);
         const newSecs   = seconds + durationSeconds;
 
-        const matchEntry = {
+        // ← Mise à jour cache + localStorage SEULEMENT, pas d'appel API ici
+        this._cache['pong_wins']          = newWins;
+        this._cache['pong_losses']        = newLosses;
+        this._cache['user_xp']            = newXp;
+        this._cache['pong_total_seconds'] = newSecs;
+        localStorage.setItem('pong_wins',          newWins);
+        localStorage.setItem('pong_losses',        newLosses);
+        localStorage.setItem('user_xp',            newXp);
+        localStorage.setItem('pong_total_seconds', newSecs);
+
+        // Historique local
+        const history = JSON.parse(localStorage.getItem('match_history') || '[]');
+        history.unshift({
             date:     new Date().toLocaleString(),
             result:   isVictory ? 'Victoire' : 'Défaite',
             score:    `${score1} - ${score2}`,
             opponent: opponentName,
-        };
-
-        // Mise à jour du cache & localStorage
-        await this.set('pong_wins',          newWins);
-        await this.set('pong_losses',         newLosses);
-        await this.set('user_xp',             newXp);
-        await this.set('pong_total_seconds',  newSecs);
-
-        // Historique local (les 10 derniers)
-        const history = JSON.parse(localStorage.getItem('match_history') || '[]');
-        history.unshift(matchEntry);
+        });
         localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
 
-        // Si connecté, envoie tout en une seule requête
+        // ← Un seul appel API qui gère tout en DB
         if (this._isAuthenticated) {
             try {
                 await apiFetch('/me/match/', {
@@ -166,11 +168,9 @@ export const userStore = {
                     }),
                 });
             } catch (err) {
-                console.warn('[userStore] Sauvegarde match API échouée, données locales conservées', err);
+                console.warn('[userStore] Sauvegarde match API échouée', err);
             }
         }
-
-        return matchEntry;
     },
 
     /** Déconnexion propre : invalide session Django + vide localStorage */

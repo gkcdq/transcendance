@@ -485,8 +485,30 @@ async function checkAuth() {
     const avatar    = urlParams.get('avatar');
 
     if (login && avatar) {
-        currentUser = { username: login, avatar: avatar };
-        localStorage.setItem('user_data', JSON.stringify(currentUser));
+        // Appeler Django pour créer la session ET récupérer les stats
+        try {
+            const res = await fetch('/api/users/oauth-login/', {
+                method:      'POST',
+                credentials: 'include',
+                headers:     { 'Content-Type': 'application/json' },
+                body:        JSON.stringify({ username: login, avatar: avatar }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                currentUser = {
+                    username: data.username,
+                    avatar:   data.avatar,
+                    wins:     data.wins,
+                    losses:   data.losses,
+                };
+                await userStore.init(); // session active maintenant
+                localStorage.setItem('user_data', JSON.stringify(currentUser));
+            }
+        } catch (err) {
+            console.warn('[checkAuth] oauth-login échoué', err);
+            currentUser = { username: login, avatar: avatar };
+            localStorage.setItem('user_data', JSON.stringify(currentUser));
+        }
         window.history.replaceState({}, document.title, window.location.pathname);
         return true;
     }
@@ -498,8 +520,8 @@ async function checkAuth() {
     }
 
     try {
-        const response     = await fetch('/api/users/me/');
-        const contentType  = response.headers.get("content-type");
+        const response    = await fetch('/api/users/me/', { credentials: 'include' });
+        const contentType = response.headers.get("content-type");
         if (response.ok && contentType && contentType.includes("application/json")) {
             currentUser = await response.json();
             return true;

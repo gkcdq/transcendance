@@ -10,10 +10,6 @@ import json
 @csrf_exempt
 @require_http_methods(["POST"])
 def oauth_login(request):
-    """
-    Appelé par Node.js après le callback OAuth 42.
-    Crée ou met à jour le user en DB.
-    """
     data     = json.loads(request.body)
     username = data.get('username')
     avatar   = data.get('avatar', '')
@@ -23,14 +19,12 @@ def oauth_login(request):
 
     user, created = User.objects.get_or_create(username=username)
 
-    # Mettre à jour l'avatar dans le profil
     profile = user.profile
     if avatar:
         profile.avatar = avatar
     profile.is_online = True
     profile.save()
 
-    # Connecter l'utilisateur (crée la session Django)
     user.backend = 'django.contrib.auth.backends.ModelBackend'
     login(request, user)
 
@@ -38,7 +32,10 @@ def oauth_login(request):
         "status":   "ok",
         "created":  created,
         "username": user.username,
-        "avatar":   profile.avatar,
+        "avatar":   profile.avatar or avatar,
+        "wins":     profile.wins,
+        "losses":   profile.losses,
+        "xp":       profile.xp,
     })
 
 
