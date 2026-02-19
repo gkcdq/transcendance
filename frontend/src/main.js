@@ -348,6 +348,7 @@ const routes = {
                         <h2>${name}</h2>
                         <div class="level-badge">Niveau ${level}</div>
                     </div>
+
                     <div class="xp-section">
                         <div class="xp-info">
                             <span>${currentXP} / 1000 XP</span>
@@ -357,6 +358,7 @@ const routes = {
                             <div class="xp-bar-fill" style="width: ${xpPercentage}%; background-color: ${color}"></div>
                         </div>
                     </div>
+
                     <div class="stats-grid">
                         <div class="stat-card">
                             <span class="stat-value">${wins}</span>
@@ -367,8 +369,33 @@ const routes = {
                             <span class="stat-label">Défaites</span>
                         </div>
                     </div>
+
                     <h3>Historique des Matchs</h3>
                     <div id="match-history" class="match-history"></div>
+
+                    <!-- SECTION AMIS -->
+                    <div class="friends-section">
+                        <h3>Amis</h3>
+
+                        <!-- Recherche -->
+                        <div class="friend-search">
+                            <input type="text" id="friend-search-input" placeholder="Rechercher un joueur..." class="cyber-input" style="width:70%; margin-right:10px;">
+                            <button id="friend-search-btn" class="cyber-button" style="width:25%;">Rechercher</button>
+                        </div>
+                        <div id="search-results" style="margin-top:10px;"></div>
+
+                        <!-- Demandes reçues -->
+                        <div id="friend-requests-section" style="margin-top:20px; display:none;">
+                            <h4 style="color:#ffb921;">Demandes reçues</h4>
+                            <div id="friend-requests-list"></div>
+                        </div>
+
+                        <!-- Liste d'amis -->
+                        <div style="margin-top:20px;">
+                            <h4>Mes amis</h4>
+                            <div id="friends-list"><p style="color:#8b949e">Chargement...</p></div>
+                        </div>
+                    </div>
                 </div>`;
         },
         init: initProfile
@@ -587,22 +614,181 @@ window.addEventListener('popstate', router);
 router();
 
 // ─── Profil ───────────────────────────────────────────────────────────────────
-function initProfile() {
+async function initProfile() {
+    // Historique des matchs
     const historyContainer = document.getElementById('match-history');
     const history          = JSON.parse(localStorage.getItem('match_history') || '[]');
 
     if (history.length === 0) {
         historyContainer.innerHTML = '<p style="color: #8b949e">Aucun match joué pour le moment.</p>';
-        return;
+    } else {
+        historyContainer.innerHTML = history.map(match => `
+            <div class="match-item ${match.result === 'Victoire' ? 'match-win' : 'match-loss'}">
+                <span>${match.date}</span>
+                <strong>${match.result}</strong>
+                <span>Score: ${match.score}</span>
+            </div>
+        `).join('');
     }
 
-    historyContainer.innerHTML = history.map(match => `
-        <div class="match-item ${match.result === 'Victoire' ? 'match-win' : 'match-loss'}">
-            <span>${match.date}</span>
-            <strong>${match.result}</strong>
-            <span>Score: ${match.score}</span>
-        </div>
-    `).join('');
+    // Charger amis + demandes en parallèle
+    await loadFriends();
+    await loadFriendRequests();
+
+    // Recherche d'utilisateurs
+    const searchBtn   = document.getElementById('friend-search-btn');
+    const searchInput = document.getElementById('friend-search-input');
+
+    if (searchBtn) {
+        searchBtn.onclick = () => searchUsers(searchInput.value.trim());
+        searchInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') searchUsers(searchInput.value.trim());
+        });
+    }
+}
+
+async function loadFriends() {
+    const container = document.getElementById('friends-list');
+    if (!container) return;
+
+    try {
+        const res   = await fetch('/api/users/friends/', { credentials: 'include' });
+        const data  = await res.json();
+
+        if (data.friends.length === 0) {
+            container.innerHTML = '<p style="color:#8b949e">Aucun ami pour le moment.</p>';
+            return;
+        }
+
+        container.innerHTML = data.friends.map(f => `
+            <div class="friend-item" style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid #1e2330;">
+                <img src="${f.avatar || `https://ui-avatars.com/api/?name=${f.username}&background=0D1117&color=00babc`}"
+                     style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+                <span style="flex:1; font-weight:700;">${f.username}</span>
+                <span style="font-size:0.75rem; color:${f.is_online ? '#2ea043' : '#8b949e'}">
+                    ${f.is_online ? '● En ligne' : '○ Hors ligne'}
+                </span>
+                <button onclick="removeFriend('${f.username}')"
+                    style="background:none; border:1px solid #ff4d6d; color:#ff4d6d; padding:3px 10px; border-radius:4px; cursor:pointer; font-size:0.75rem;">
+                    Retirer
+                </button>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = '<p style="color:#8b949e">Impossible de charger les amis.</p>';
+    }
+}
+
+async function loadFriendRequests() {
+    const section   = document.getElementById('friend-requests-section');
+    const container = document.getElementById('friend-requests-list');
+    if (!section || !container) return;
+
+    try {
+        const res  = await fetch('/api/users/friends/requests/', { credentials: 'include' });
+        const data = await res.json();
+
+        if (data.requests.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        container.innerHTML   = data.requests.map(r => `
+            <div style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid #1e2330;">
+                <img src="${r.avatar || `https://ui-avatars.com/api/?name=${r.username}&background=0D1117&color=00babc`}"
+                     style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+                <span style="flex:1; font-weight:700;">${r.username}</span>
+                <button onclick="respondFriendRequest(${r.id}, 'accept')"
+                    style="background:#2ea043; border:none; color:white; padding:4px 12px; border-radius:4px; cursor:pointer; margin-right:6px;">
+                    ✓ Accepter
+                </button>
+                <button onclick="respondFriendRequest(${r.id}, 'reject')"
+                    style="background:none; border:1px solid #8b949e; color:#8b949e; padding:4px 12px; border-radius:4px; cursor:pointer;">
+                    ✕ Refuser
+                </button>
+            </div>
+        `).join('');
+    } catch (err) {
+        section.style.display = 'none';
+    }
+}
+
+async function searchUsers(query) {
+    const container = document.getElementById('search-results');
+    if (!container || query.length < 2) return;
+
+    try {
+        const res  = await fetch(`/api/users/search/?q=${encodeURIComponent(query)}`, { credentials: 'include' });
+        const data = await res.json();
+
+        if (data.users.length === 0) {
+            container.innerHTML = '<p style="color:#8b949e; font-size:0.85rem;">Aucun résultat.</p>';
+            return;
+        }
+
+        container.innerHTML = data.users.map(u => `
+            <div style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid #1e2330;">
+                <img src="${u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=0D1117&color=00babc`}"
+                     style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+                <span style="flex:1; font-weight:700;">${u.username}</span>
+                <span style="font-size:0.75rem; color:${u.is_online ? '#2ea043' : '#8b949e'}; margin-right:10px;">
+                    ${u.is_online ? '● En ligne' : '○ Hors ligne'}
+                </span>
+                <button onclick="sendFriendRequest('${u.username}')"
+                    style="background:var(--cyan,#00babc); border:none; color:#000; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:700;">
+                    + Ajouter
+                </button>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = '<p style="color:#8b949e">Erreur de recherche.</p>';
+    }
+}
+
+async function sendFriendRequest(username) {
+    try {
+        const res  = await fetch('/api/users/friends/send/', {
+            method:      'POST',
+            credentials: 'include',
+            headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body:        JSON.stringify({ username }),
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+    } catch (err) {
+        alert('Erreur lors de l\'envoi de la demande.');
+    }
+}
+
+async function respondFriendRequest(requestId, action) {
+    try {
+        await fetch(`/api/users/friends/respond/${requestId}/`, {
+            method:      'POST',
+            credentials: 'include',
+            headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body:        JSON.stringify({ action }),
+        });
+        // Recharger les deux sections
+        await loadFriends();
+        await loadFriendRequests();
+    } catch (err) {
+        alert('Erreur.');
+    }
+}
+
+async function removeFriend(username) {
+    if (!confirm(`Retirer ${username} de tes amis ?`)) return;
+    try {
+        await fetch(`/api/users/friends/remove/${username}/`, {
+            method:      'DELETE',
+            credentials: 'include',
+            headers:     { 'X-CSRFToken': getCsrfToken() },
+        });
+        await loadFriends();
+    } catch (err) {
+        alert('Erreur.');
+    }
 }
 
 async function fetchUserSettings() {
