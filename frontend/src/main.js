@@ -1,5 +1,9 @@
 // Variable global pour le chat
 let globalChatWS = null;
+// touche pour les amis
+window.sendFriendRequest    = sendFriendRequest;
+window.respondFriendRequest = respondFriendRequest;
+window.removeFriend         = removeFriend;
 // ─── Import userStore ────────────────────────────────────────────────────────
 import { userStore } from './utils/userStore.js';
 
@@ -754,12 +758,37 @@ async function sendFriendRequest(username) {
             headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
             body:        JSON.stringify({ username }),
         });
+        console.log('[Friend] Status:', res.status);  // ← ajoute ça
         const data = await res.json();
+        console.log('[Friend] Response:', data);       // ← et ça
         alert(data.message || data.error);
     } catch (err) {
+        console.error('[Friend] Erreur:', err);        // ← et ça
         alert('Erreur lors de l\'envoi de la demande.');
     }
 }
+
+function getCsrfToken() {
+    const cookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='));
+    return cookie ? cookie.split('=')[1] : '';
+}
+
+// async function sendFriendRequest(username) {
+//     try {
+//         const res  = await fetch('/api/users/friends/send/', {
+//             method:      'POST',
+//             credentials: 'include',
+//             headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+//             body:        JSON.stringify({ username }),
+//         });
+//         const data = await res.json();
+//         alert(data.message || data.error);
+//     } catch (err) {
+//         alert('Erreur lors de l\'envoi de la demande.');
+//     }
+// }
 
 async function respondFriendRequest(requestId, action) {
     try {
@@ -939,7 +968,7 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         let leftPaddleY    = (canvas.height - paddleHeight) / 2;
         let rightPaddleY   = (canvas.height - paddleHeight) / 2;
         let ballX = canvas.width / 2, ballY = canvas.height / 2;
-        let ballSpeedX = 15, ballSpeedY = 15;
+        let ballSpeedX = 5, ballSpeedY = 5;
         let score1 = 0, score2 = 0;
         const keys          = {};
         const handleKeyDown = e => keys[e.key] = true;
@@ -1043,8 +1072,8 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         function resetBall() {
             ballX      = canvas.width  / 2;
             ballY      = canvas.height / 2;
-            ballSpeedX = (Math.random() > 0.5 ? 15 : -15);
-            ballSpeedY = (Math.random() > 0.5 ? 15 : -15);
+            ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
+            ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
         }
 
         function draw() {

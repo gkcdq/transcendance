@@ -87,3 +87,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False

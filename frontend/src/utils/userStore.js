@@ -17,10 +17,15 @@ const API_BASE = '/api/users';
 // Helpers fetch avec CSRF Django
 // ─────────────────────────────────────────────
 function getCsrfToken() {
-    return document.cookie
+    // Essaie d'abord le cookie csrftoken
+    const cookie = document.cookie
         .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1] || '';
+        .find(row => row.startsWith('csrftoken='));
+    if (cookie) return cookie.split('=')[1];
+    
+    // Fallback : cherche dans le DOM
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
 }
 
 async function apiFetch(path, options = {}) {
