@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'users.providers.fortytwo',
     'users',
+    'chat',
 ]
 
 SITE_ID = 1
@@ -77,3 +78,12 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}

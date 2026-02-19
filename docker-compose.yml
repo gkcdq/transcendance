@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   db:
     image: postgres:15
@@ -9,8 +8,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+
   backend:
-    build: ./backend         
+    build: ./backend
     container_name: backend
     volumes:
       - ./backend:/app
@@ -18,9 +22,10 @@ services:
     env_file: .env
     depends_on:
       - db
+      - redis
 
   frontend:
-    build: ./frontend           
+    build: ./frontend
     container_name: frontend
     volumes:
       - ./frontend:/app
@@ -33,9 +38,8 @@ services:
     ports:
       - "8443:443"
     volumes:
-      - ./frontend:/var/www/html 
+      - ./frontend:/var/www/html
       - ./backend/staticfiles:/var/www/static:ro
-      #- static_volume:/var/www/static:ro
     depends_on:
       - backend
 

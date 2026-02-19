@@ -6,3 +6,4 @@ django-environ   # Pour gérer .env proprement
 django-allauth==0.61.1
 requests
 Pillow
+channels_redis

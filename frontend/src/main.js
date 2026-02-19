@@ -1,3 +1,5 @@
+// Variable global pour le chat
+let globalChatWS = null;
 // ─── Import userStore ────────────────────────────────────────────────────────
 import { userStore } from './utils/userStore.js';
 
@@ -614,41 +616,84 @@ async function fetchUserSettings() {
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 function initChat() {
-    const form             = document.getElementById('chat-form');
-    const input            = document.getElementById('chat-input');
-    const messagesContainer = document.getElementById('chat-messages');
+    // Fermer l'ancienne connexion si elle existe
+    if (globalChatWS && globalChatWS.readyState === WebSocket.OPEN) {
+        globalChatWS.close();
+    }
 
-    const savedMessages = JSON.parse(localStorage.getItem('global_chat_history') || '[]');
+    const form              = document.getElementById('chat-form');
+    const input             = document.getElementById('chat-input');
+    const messagesContainer = document.getElementById('chat-messages');
+    if (!messagesContainer) return;
     messagesContainer.innerHTML = '';
-    savedMessages.forEach(msg => {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${msg.type}`;
-        if (msg.type === 'sent') msgDiv.style.background = '#00babc33';
-        msgDiv.innerHTML = `<span class="sender">${msg.sender}:</span> ${msg.text}`;
-        messagesContainer.appendChild(msgDiv);
-    });
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    globalChatWS   = new WebSocket(`${protocol}//${window.location.host}/ws/chat/`);
+    const ws       = globalChatWS;
+
+    ws.onopen = () => console.log('[Chat] WebSocket connecté, readyState:', ws.readyState);
+
+    ws.onmessage = (event) => {
+        console.log('[Chat] Message reçu:', event.data);
+        const container = document.getElementById('chat-messages');
+        console.log('[Chat] Container:', container);
+        if (!container) return;
+        const data = JSON.parse(event.data);
+        appendMessage(data.message, data.type === 'history');
+    };
+
+    ws.onerror  = () => appendSystemMessage('Connexion au chat perdue.');
+    ws.onclose  = () => console.warn('[Chat] WebSocket fermé');
 
     if (!form) return;
 
     form.onsubmit = (e) => {
         e.preventDefault();
-        if (input.value.trim() === "") return;
-
-        const newMsg = { sender: "Moi", text: input.value, type: 'sent', date: Date.now() };
-        const history = JSON.parse(localStorage.getItem('global_chat_history') || '[]');
-        history.push(newMsg);
-        localStorage.setItem('global_chat_history', JSON.stringify(history));
-
-        const msgDiv = document.createElement('div');
-        msgDiv.className          = 'message sent';
-        msgDiv.style.background   = '#00babc33';
-        msgDiv.style.alignSelf    = 'flex-end';
-        msgDiv.innerHTML          = `<span class="sender">Moi:</span> ${input.value}`;
-        messagesContainer.appendChild(msgDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        const content = input.value.trim();
+        if (!content || ws.readyState !== WebSocket.OPEN) return;
+        ws.send(JSON.stringify({ content }));
         input.value = "";
     };
+
+    function appendMessage(msg, isHistory = false) {
+        const container = document.getElementById('chat-messages');
+        if (!container) return;
+        const myName  = userStore.get('user_name', '');
+        const isMe    = msg.sender === myName;
+        const msgDiv  = document.createElement('div');
+        msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
+        if (isMe) msgDiv.style.background = '#00babc33';
+        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        msgDiv.innerHTML = `
+            <span class="sender">${msg.sender}</span>
+            <span class="msg-text">${escapeHtml(msg.content)}</span>
+            <span class="msg-time">${time}</span>
+        `;
+        container.appendChild(msgDiv);
+        if (!isHistory) container.scrollTop = container.scrollHeight;
+    }
+
+    function appendSystemMessage(text) {
+        const container = document.getElementById('chat-messages');
+        if (!container) return;
+        const div       = document.createElement('div');
+        div.className   = 'message system';
+        div.textContent = text;
+        container.appendChild(div);
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    setTimeout(() => {
+        const container = document.getElementById('chat-messages');
+        if (container) container.scrollTop = container.scrollHeight;
+    }, 100);
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
