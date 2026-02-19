@@ -4,7 +4,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-debug-key-42')
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend', 'nginx']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -19,7 +20,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'users.providers.fortytwo',
-    'users', 
+    'users',
 ]
 
 SITE_ID = 1
@@ -69,8 +70,6 @@ DATABASES = {
 
 STATIC_ROOT = '/app/staticfiles'
 STATIC_URL = '/static/'
-
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://localhost:8443',

@@ -39,6 +39,8 @@ init-django:
 # docker compose up --build frontend         // relance les containers frontend
 # docker compose up 					     // relance tous les containers
 # docker compose down                        // arrete tous les containers
+# docker builder prune -f                    // nettoi le cache docker
+
 
 # ----------------------------------- LIEN -----------------------------------
 # https://localhost:8443/
