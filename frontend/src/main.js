@@ -42,17 +42,45 @@ const routes = {
         render: () => {
             const wins         = parseInt(userStore.get('pong_wins', 0));
             const losses       = parseInt(userStore.get('pong_losses', 0));
-            const totalSeconds = parseInt(userStore.get('pong_total_seconds', 0));
-            const h = Math.floor(totalSeconds / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = totalSeconds % 60;
-            const timeStr = h > 0 ? `${h}h ${m}s` : `${m}m ${s}s`;
-            const name   = userStore.get('user_name', 'Pilote');
+            const name = userStore.get('user_name');
             const avatar = userStore.get('user_avatar');
             const color  = userStore.get('user_color', '#00babc');
+            if (name == null)
+            {
+                                return `
+                            <canvas id="pong-canvas-bg"></canvas>
 
-            const chatSection = avatar ? `
-                <div class="home-chat-section" style="width:100%;margin-top:40px;border-top:1px solid rgba(255,255,255,0.1);padding-top:20px;">
+                            <div class="hero-container" style="position:relative; z-index:1;">
+                                <div class="home-profile-header">
+                                    ${avatar ? `<img src="${avatar}" class="home-avatar-img" style="border-color:${color}">` : ''}
+                                    <h5>📌 connecte toi pour jouer 📌</h5>
+                                    <h1>Pong Game 🎾</h1>
+                                </div>
+                                <div class="pong-showcase">
+                                    <div class="pong-gif-mockup">
+                                        <div class="pong-animation-lite">
+                                            <div class="paddle left"></div>
+                                            <div class="ball-mid"></div>
+                                            <div class="paddle right"></div>
+                                        </div>
+                                        <span class="badge-live">LIVE PREVIEW</span>
+                                    </div>
+                                    
+                                    <div class="pong-controls-guide">
+                                        <h3>Des regles simples :</h3>
+                                        <p class="subtitle">Une balle, deux raquettes, un seul vainqueur.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h1>Contenu :</h1>
+                                </div>
+                            </div>`;
+            }
+            else
+            {
+                const chatSection = avatar ? `
+                <div class="home-chat-section" style="width:100%;margin-top:40px;border-top:1px solid rgb(4, 163, 168);padding-top:20px;">
                     <h3 style="text-align:left;font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:#8b949e;margin-bottom:15px;">Canal Global</h3>
                     <div class="chat-container solo" style="max-width:100%;width:100%;height:300px;">
                         <section class="chat-window" style="height:100%;">
@@ -66,38 +94,61 @@ const routes = {
                         </section>
                     </div>
                 </div>` : '';
+                return `
+                            <canvas id="pong-canvas-bg"></canvas>
 
-            const profileHeader = avatar ? `
-                <div class="home-profile-header">
-                    <img src="${avatar}" class="home-avatar-img" style="border-color:${color}">
-                    <p class="welcome-text">Content de vous revoir, <span style="color:${color}">${name}</span></p>
-                </div>` : '';
-
-            return `
-                <div class="hero-container">
-                    ${profileHeader}
-                    <h1>Transcendence !</h1>
-                    <p class="subtitle">🎾⚾🎾</p>
-                    <div class="stats-dashboard">
-                        <div class="stat-card">
-                            <div class="stat-value">${wins + losses}</div>
-                            <div class="stat-label">Matchs joués</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${timeStr}</div>
-                            <div class="stat-label">Temps de jeu</div>
-                        </div>
-                        <a href="/profile" class="stat-card profile-link-card">
-                            <div class="stat-value" style="color:#00babc">Profil</div>
-                            <div class="stat-label">Historique →</div>
-                        </a>
-                    </div>
-                    ${chatSection}
-                </div>`;
-        },
-        init: () => { if (document.getElementById('chat-form')) initChat(); }
-    },
-
+                            <div class="hero-container" style="position:relative; z-index:1;">
+                                <div class="home-profile-header">
+                                    ${avatar ? `<img src="${avatar}" class="home-avatar-img" style="border-color:${color}">` : ''}
+                                    <h5>👑 Content de te voir ${name} 👑</h5>
+                                    <h1>Pong Game 🎾</h1>
+                                </div>
+                                <div class="pong-showcase">
+                                    <div class="pong-gif-mockup">
+                                        <div class="pong-animation-lite">
+                                            <div class="paddle left"></div>
+                                            <div class="ball-mid"></div>
+                                            <div class="paddle right"></div>
+                                        </div>
+                                        <span class="badge-live">LIVE PREVIEW</span>
+                                    </div>
+                                    <div class="pong-controls-guide">
+                                        <h3>Reminder :</h3>
+                                        <p class="subtitle">Une balle, deux raquettes, un seul vainqueur.</p>
+                                        <div class="controls-grid">
+                                            <div class="player-keys">
+                                            <div>
+                                                <p>Local Game : Raquette Gauche ⤵</p>
+                                            </div>
+                                                <div class="keys"><span class="key">W</span> <span class="key">S</span></div>
+                                            </div>
+                                            <div class="divider"></div>
+                                            <div class="player-keys">
+                                                <p>Local Game : Raquette Droite ⤵</p>
+                                                <div class="keys"><span class="key">↑</span> <span class="key">↓</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="stats-dashboard">
+                                    <div class="stat-card">
+                                        <div class="stat-value">${wins + losses}</div>
+                                        <div class="stat-label">Matchs joués</div>
+                                    </div>
+                                    <a href="/game" class="stat-card play-link-card">
+                                        <div class="stat-value" style="color:#ff0055">Play</div>
+                                        <div class="stat-label">Lancer une partie →</div>
+                                    </a>
+                                </div>
+                                ${chatSection}
+                            </div>`;
+                    }
+                },
+                init: () => {
+                    initBouncingBalls();
+                    if (document.getElementById('chat-form')) initChat();
+                }
+            },
     '/game': {
         title: 'Jeu',
         render: () => {
@@ -316,61 +367,85 @@ const routes = {
     },
 
     '/profile': {
-        title: 'Profil Utilisateur',
-        render: () => {
-            const name   = userStore.get('user_name', 'Player');
-            const avatar = userStore.get('user_avatar') || `https://ui-avatars.com/api/?name=${name}&background=0D1117&color=00babc`;
-            const wins   = parseInt(userStore.get('pong_wins', 0));
-            const losses = parseInt(userStore.get('pong_losses', 0));
-            const color  = userStore.get('user_color', '#00babc');
-            const totalXP      = (wins * 100) + (losses * 20);
-            const level        = Math.floor(totalXP / 1000) + 1;
-            const currentXP    = totalXP % 1000;
-            const xpPercentage = (currentXP / 1000) * 100;
-            return `
-                <div class="profile-container">
-                    <div class="profile-header">
-                        <div class="profile-avatar" style="border-color:${color}">
-                            <img src="${avatar}" alt="Avatar" class="avatar-img">
+            title: 'Profil Utilisateur',
+            render: () => {
+                const name   = userStore.get('user_name', 'Player');
+                const avatar = userStore.get('user_avatar') || `https://ui-avatars.com/api/?name=${name}&background=0D1117&color=00babc`;
+                const wins   = parseInt(userStore.get('pong_wins', 0));
+                const losses = parseInt(userStore.get('pong_losses', 0));
+                const color  = userStore.get('user_color', '#00babc');
+                
+                // calcul du temps de jeu
+                const totalSeconds = parseInt(userStore.get('pong_total_seconds', 0));
+                const h = Math.floor(totalSeconds / 3600);
+                const m = Math.floor((totalSeconds % 3600) / 60);
+                const s = totalSeconds % 60;
+                const timeStr = h > 0 ? `${h}h ${m}s` : `${m}m ${s}s`;
+
+                const totalXP      = (wins * 100) + (losses * 20);
+                const level        = Math.floor(totalXP / 1000) + 1;
+                const currentXP    = totalXP % 1000;
+                const xpPercentage = (currentXP / 1000) * 100;
+
+                return `
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <div class="profile-avatar" style="border-color:${color}">
+                                <img src="${avatar}" alt="Avatar" class="avatar-img">
+                            </div>
+                            <h2>${name}</h2>
+                            <div class="level-badge">Niveau ${level}</div>
                         </div>
-                        <h2>${name}</h2>
-                        <div class="level-badge">Niveau ${level}</div>
-                    </div>
-                    <div class="xp-section">
-                        <div class="xp-info">
-                            <span>${currentXP} / 1000 XP</span>
-                            <span>Progression vers niveau ${level + 1}</span>
+                        <div class="xp-section">
+                            <div class="xp-info">
+                                <span>${currentXP} / 1000 XP</span>
+                                <span>Progression vers niveau ${level + 1}</span>
+                            </div>
+                            <div class="xp-bar-container">
+                                <div class="xp-bar-fill" style="width:${xpPercentage}%;background-color:${color}"></div>
+                            </div>
                         </div>
-                        <div class="xp-bar-container">
-                            <div class="xp-bar-fill" style="width:${xpPercentage}%;background-color:${color}"></div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <span class="stat-value">${wins}</span>
+                                <span class="stat-label">Victoires</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">${losses}</span>
+                                <span class="stat-label">Défaites</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-value">${timeStr}</span>
+                                <span class="stat-label">Temps de jeu</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card"><span class="stat-value">${wins}</span><span class="stat-label">Victoires</span></div>
-                        <div class="stat-card"><span class="stat-value">${losses}</span><span class="stat-label">Défaites</span></div>
-                    </div>
-                    <h3>Historique des Matchs</h3>
-                    <div id="match-history" class="match-history"></div>
-                    <div class="friends-section">
-                        <h3>Amis</h3>
-                        <div class="friend-search">
-                            <input type="text" id="friend-search-input" placeholder="Rechercher un joueur..." class="cyber-input" style="width:70%;margin-right:10px;">
-                            <button id="friend-search-btn" class="cyber-button" style="width:25%;">Rechercher</button>
+                        
+                        <h3>Historique des Matchs</h3>
+                        <div id="match-history" class="match-history"></div>
+                        
+                        <div class="friends-section">
+                            <h3>Amis</h3>
+                            <div class="friend-search">
+                                <input type="text" id="friend-search-input" placeholder="Rechercher un joueur..." class="cyber-input" style="width:70%;margin-right:10px;">
+                                <button id="friend-search-btn" class="cyber-button" style="width:25%;">Rechercher</button>
+                            </div>
+                            <div id="search-results" style="margin-top:10px;"></div>
+                            <div id="friend-requests-section" style="margin-top:20px;display:none;">
+                                <h4 style="color:#ffb921;">Demandes reçues</h4>
+                                <div id="friend-requests-list"></div>
+                            </div>
+                            <div style="margin-top:20px;">
+                                <h4>Mes amis</h4>
+                                <div id="friends-list"><p style="color:#8b949e">Chargement...</p></div>
+                            </div>
                         </div>
-                        <div id="search-results" style="margin-top:10px;"></div>
-                        <div id="friend-requests-section" style="margin-top:20px;display:none;">
-                            <h4 style="color:#ffb921;">Demandes reçues</h4>
-                            <div id="friend-requests-list"></div>
-                        </div>
-                        <div style="margin-top:20px;">
-                            <h4>Mes amis</h4>
-                            <div id="friends-list"><p style="color:#8b949e">Chargement...</p></div>
-                        </div>
-                    </div>
-                </div>`;
+                    </div>`;
+            },
+            init: () => {
+                initBouncingBalls();
+                initProfile(); // Appelle ta logique de profil (fetch amis, historique, etc.) // Lance l'animation des balles en arrière-plan
+            }
         },
-        init: initProfile
-    },
 
     '/jouer-denied': {
         title: 'Accès Refusé',
@@ -435,38 +510,99 @@ async function loadLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
     try {
-        const res  = await fetch('/api/users/leaderboard/', { credentials: 'include' });
+        const res = await fetch('/api/users/leaderboard/', { credentials: 'include' });
         const data = await res.json();
         const myName = userStore.get('user_name', '');
 
-        container.innerHTML = data.leaderboard.map(p => `
-            <div style="display:flex; align-items:center; gap:15px; padding:14px 16px;
-                margin-bottom:8px; border-radius:8px;
-                background:${p.username === myName ? 'rgba(0,186,188,0.1)' : 'rgba(255,255,255,0.03)'};
-                border:1px solid ${p.username === myName ? '#00babc' : '#1e2330'};">
-                <span style="font-size:1.2rem; font-weight:900; color:${p.rank <= 3 ? ['#ffd700','#c0c0c0','#cd7f32'][p.rank-1] : '#8b949e'}; width:30px;">
-                    ${p.rank <= 3 ? ['🥇','🥈','🥉'][p.rank-1] : `#${p.rank}`}
-                </span>
-                <img src="${p.avatar}" style="width:38px; height:38px; border-radius:50%; object-fit:cover;">
-                <span style="flex:1; font-weight:700; color:${p.username === myName ? '#00babc' : '#fff'};">
-                    ${p.username} ${p.username === myName ? '← toi' : ''}
-                </span>
-                <span style="font-size:0.8rem; color:#2ea043; min-width:60px; text-align:center;">
-                    ${p.wins}W / ${p.losses}L
-                </span>
-                <span style="font-size:0.8rem; color:#8b949e; min-width:50px; text-align:center;">
-                    ${p.winrate}%
-                </span>
-                <span style="font-size:0.75rem; color:#ffb921; min-width:60px; text-align:right;">
-                    ${p.xp} XP
-                </span>
-            </div>
-        `).join('') || '<p style="color:#8b949e; text-align:center;">Aucun joueur pour le moment.</p>';
+        container.innerHTML = data.leaderboard.map(p => {
+            const isMe = p.username === myName;
+            const rankClass = p.rank <= 3 ? `rank-${p.rank}` : '';
+            const rankIcon = p.rank === 1 ? '🥇' : p.rank === 2 ? '🥈' : p.rank === 3 ? '🥉' : `#${p.rank}`;
+
+            return `
+            <div class="leaderboard-item ${isMe ? 'is-me' : ''}">
+                <div class="rank-badge ${rankClass}">${rankIcon}</div>
+                
+                <div class="user-info">
+                    <img src="${p.avatar}" class="leaderboard-avatar">
+                    <span class="username">${p.username} ${isMe ? '<span class="me-tag">TOI</span>' : ''}</span>
+                </div>
+
+                <div class="stats-group">
+                    <div class="stat-unit">
+                        <span class="stat-val win">${p.wins}W</span>
+                        <span class="stat-val loss">${p.losses}L</span>
+                    </div>
+                    <div class="stat-unit perc">${p.winrate}%</div>
+                    <div class="stat-unit xp">${p.xp} <small>XP</small></div>
+                </div>
+            </div>`;
+        }).join('') || '<p class="empty-msg">Aucun joueur pour le moment.</p>';
     } catch (err) {
-        container.innerHTML = '<p style="color:#8b949e; text-align:center;">Erreur de chargement.</p>';
+        container.innerHTML = '<p class="empty-msg">Erreur de chargement du classement.</p>';
     }
 }
+//////////////////////////////////////////////////////////////////////////////////////
+function initBouncingBalls() {
+    const canvas = document.getElementById('pong-canvas-bg');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
+    const resize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    // On passe à 40 balles pour un effet de "pluie de néons"
+    const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
+    const balls = Array.from({ length: 400}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        // On varie un peu plus les vitesses pour plus de dynamisme
+        dx: (Math.random() - 0.5) * 5, 
+        dy: (Math.random() - 0.5) * 5,
+        radius: Math.random() * 4 + 1, // Des balles de tailles variées
+        color: colors[Math.floor(Math.random() * colors.length)]
+    }));
+
+    function animate() {
+        if (!document.body.contains(canvas)) {
+            window.removeEventListener('resize', resize);
+            return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        balls.forEach(b => {
+            if (b.x + b.radius > canvas.width || b.x - b.radius < 0) b.dx *= -1;
+            if (b.y + b.radius > canvas.height || b.y - b.radius < 0) b.dy *= -1;
+            
+            b.x += b.dx;
+            b.y += b.dy;
+
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fillStyle = b.color;
+            
+            // Note : shadowBlur est gourmand en performance. 
+            // Avec 40 balles, on le baisse un peu à 5 ou 8.
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = b.color;
+            
+            ctx.fill();
+            ctx.closePath();
+        });
+
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
 // ─── Tournoi ─────────────────────────────────────────────────────────────────
 function initTournamentLogic() {
     const btnStart = document.getElementById('btn-start-t');
@@ -567,7 +703,7 @@ function renderAuthUI(isLoggedIn) {
                 <button onclick="logout(); return false;" class="btn-logout-cyber">EXIT</button>
             </div>`;
     } else {
-        container.innerHTML = `<a href="${authUrl}" class="cyber-button">Connexion avec 42</a>`;
+        container.innerHTML = `<a href="${authUrl}" class="cyber-button">42</a>`;
     }
 }
 

@@ -47,3 +47,8 @@ init-django:
 # https://localhost:8443/admin/
 # https://localhost:8443/api/users/me/
 # https://localhost:8443/style.css
+
+
+
+
+# quand on lance un tournois et qu'on part rejouer ailleur ca compte dans le tournois ?

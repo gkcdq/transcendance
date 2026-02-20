@@ -9,7 +9,8 @@ import json
 
 
 def get_leaderboard(request):
-    profiles = User.objects.select_related('profile').order_by(
+    # On utilise .exclude(username='windows') pour retirer cet utilisateur spécifique
+    profiles = User.objects.select_related('profile').exclude(username='windows').order_by(
         '-profile__wins', '-profile__xp'
     )[:10]
     

@@ -217,8 +217,31 @@ header {
 .profile-header { text-align: center; margin-bottom: 40px; }
 .profile-avatar img { width: 120px; height: 120px; border-radius: 50%; border: 4px solid; padding: 5px; }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
-.stat-card { background: #161b22; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #30363d; }
+.stats-grid {
+    display: grid;
+    /* Crée 3 colonnes égales */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 20px;
+    margin: 30px 0;
+    width: 100%;
+}
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+/* Responsive : sur petit écran, on repasse à 1 ou 2 colonnes */
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
 .stat-value { display: block; font-size: 2.5rem; font-weight: bold; color: #00babc; }
 .stat-label { color: #8b949e; text-transform: uppercase; font-size: 0.8rem; }
 
@@ -595,4 +618,380 @@ header {
     margin: 0;
     border: 1px solid rgba(0, 186, 188, 0.2);
     background: rgba(13, 17, 23, 0.8);
+}
+
+
+
+
+/* Arrière-plan canvas */
+#pong-canvas-bg {
+    position: fixed; /* Reste en place même si on scroll */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Se place DERRIÈRE tout le contenu HTML */
+    pointer-events: none; /* Laisse passer les clics vers tes boutons/liens */
+    opacity: 0.3; /* Pour que ce soit discret et lisible */
+}
+
+/* Container de présentation */
+.pong-showcase {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    align-items: center;     /* Aligne verticalement au centre */
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(0, 186, 188, 0.2);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 30px 0;
+    backdrop-filter: blur(8px);
+}
+
+/* Mockup du jeu (Simulation de GIF en CSS) */
+.pong-gif-mockup {
+    flex: 1;
+    min-width: 250px;
+    height: 150px;
+    background: #000;
+    border: 3px solid #333;
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    overflow: hidden;
+}
+
+.pong-animation-lite .paddle {
+    width: 8px;
+    height: 50px;
+    background: #00babc;
+    box-shadow: 0 0 10px #00babc;
+    border-radius: 4px;
+}
+
+@keyframes ballTravel {
+    0%, 100% { transform: translate(-60px, -30px); }
+    50% { transform: translate(60px, 30px); }
+}
+
+/* Style des Touches du Clavier */
+.key {
+    display: inline-block;
+    min-width: 35px;
+    height: 35px;
+    line-height: 35px;
+    text-align: center;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #00babc;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 4px 0 #000, 0 5px 10px rgba(0,0,0,0.5);
+    margin: 0 5px;
+    transition: transform 0.1s;
+}
+
+.key:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #000;
+}
+
+.badge-live {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff0055;
+    color: white;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Container de l'animation */
+.pong-animation-lite {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Place les raquettes aux bords */
+    width: 100%;
+    height: 100%;
+    padding: 0 5px;
+    position: relative;
+}
+
+/* Style commun des raquettes */
+.pong-animation-lite .paddle {
+    width: 6px;
+    height: 40px;
+    background: #00babc;
+    box-shadow: 0 0 10px #00babc;
+    border-radius: 3px;
+    position: relative;
+    z-index: 2;
+    /* Animation pour que les raquettes "suivent" un peu la balle */
+    animation: paddleMove 2.5s infinite ease-in-out;
+}
+
+/* La raquette droite peut avoir une couleur différente si tu veux */
+.pong-animation-lite .paddle.right {
+    background: #ff0055;
+    box-shadow: 0 0 10px #ff0055;
+}
+
+/* La balle */
+.pong-animation-lite .ball-mid {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 60%;
+    position: absolute;
+    left: 50%; /* Part du centre */
+    top: 50%;
+    box-shadow: 0 0 10px #fff;
+    z-index: 1;
+    animation: ballBounceAction 2.5s infinite linear;
+}
+
+/* --- ANIMATIONS --- */
+
+/* La balle voyage d'une raquette à l'autre */
+@keyframes ballBounceAction {
+    0% { transform: translate(-110px, -20px); } /* Touche raquette gauche */
+    50% { transform: translate(100px, 20px); }  /* Touche raquette droite */
+    100% { transform: translate(-110px, -20px); } /* Retour à gauche */
+}
+
+/* Les raquettes montent et descendent légèrement pour simuler un jeu */
+@keyframes paddleMove {
+    0%, 100% { transform: translateY(-15px); }
+    50% { transform: translateY(15px); }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+#leaderboard-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 10px;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.leaderboard-item:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.leaderboard-item.is-me {
+    background: rgba(0, 186, 188, 0.1);
+    border: 1px solid #00babc;
+    box-shadow: 0 0 15px rgba(0, 186, 188, 0.1);
+}
+
+/* Rangs */
+.rank-badge {
+    width: 45px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #8b949e;
+}
+.rank-1 { color: #ffd700; font-size: 1.5rem; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+.rank-2 { color: #c0c0c0; }
+.rank-3 { color: #cd7f32; }
+
+/* Utilisateur */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.leaderboard-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.username {
+    font-weight: 700;
+    color: #fff;
+}
+
+.me-tag {
+    font-size: 0.65rem;
+    background: #00babc;
+    color: #000;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Statistiques */
+.stats-group {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    font-family: 'Courier New', monospace;
+}
+
+.stat-unit { text-align: center; min-width: 60px; }
+
+.win { color: #2ea043; font-weight: bold; }
+.loss { color: #f85149; margin-left: 5px; opacity: 0.8; }
+.perc { color: #8b949e; font-size: 0.9rem; border-left: 1px solid #333; padding-left: 20px; }
+.xp { color: #ffb921; font-weight: bold; min-width: 80px; text-align: right; }
+
+.empty-msg {
+    text-align: center;
+    color: #8b949e;
+    padding: 40px;
+}
+
+/* Container principal */
+#leaderboard-container {
+    max-width: 700px;
+    margin: 20px auto;
+    padding: 0 10px;
+}
+
+/* Ligne de classement */
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+/* Effet au survol */
+.leaderboard-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(5px);
+    border-color: rgba(0, 186, 188, 0.3);
+}
+
+/* Style spécifique pour "Moi" */
+.leaderboard-item.is-me {
+    background: rgba(0, 186, 188, 0.1);
+    border: 1px solid #00babc;
+    box-shadow: 0 0 15px rgba(0, 186, 188, 0.1);
+}
+
+/* Badges de rang */
+.rank-badge {
+    width: 50px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #8b949e;
+}
+.rank-1 { color: #ffd700; font-size: 1.4rem; text-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
+.rank-2 { color: #c0c0c0; }
+.rank-3 { color: #cd7f32; }
+
+/* Info Utilisateur */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.leaderboard-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.username {
+    font-weight: 700;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.me-tag {
+    font-size: 0.65rem;
+    background: #00babc;
+    color: #0d1117;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 800;
+}
+
+/* Groupe de Stats */
+.stats-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-family: 'Courier New', monospace;
+}
+
+.stat-unit { text-align: right; }
+.stat-val.win { color: #2ea043; font-weight: bold; }
+.stat-val.loss { color: #f85149; margin-left: 5px; opacity: 0.7; }
+.perc { color: #8b949e; font-size: 0.85rem; min-width: 50px; }
+.xp { color: #ffb921; font-weight: bold; min-width: 70px; }
+
+.empty-msg { text-align: center; color: #8b949e; padding: 40px; }
+
+
+
+
+
+
+
+.logo {
+    animation: blink-colors 4s linear infinite; /* 8s pour que ce soit fluide */
+    transition: text-shadow 0.3s ease;
+}
+@keyframes blink-colors {
+    0%   { color: #00babc; text-shadow: 0 0 12px #00babc; }
+    10%  { color: #5d55ff; text-shadow: 0 0 12px #5d55ff; }
+    20%  { color: #bf00ff; text-shadow: 0 0 12px #bf00ff; } 
+    30%  { color: #ff00ff; text-shadow: 0 0 12px #ff00ff; } 
+    40%  { color: #ff0055; text-shadow: 0 0 12px #ff0055; } 
+    50%  { color: #ff4e00; text-shadow: 0 0 12px #ff4e00; }
+    60%  { color: #fdf900; text-shadow: 0 0 12px #fdf900; } 
+    70%  { color: #02ff17; text-shadow: 0 0 12px #02ff17; } 
+    80%  { color: #00ffcc; text-shadow: 0 0 12px #00ffcc; } 
+    90%  { color: #33d9ff; text-shadow: 0 0 12px #33d9ff; } 
+    100% { color: #00babc; text-shadow: 0 0 12px #00babc; } 
 }
