@@ -152,10 +152,6 @@ const routes = {
     '/game': {
         title: 'Jeu',
         render: () => {
-            if (tournamentState.isActive && tournamentState.isMatchRunning) {
-                const m = tournamentState.matches[tournamentState.currentMatchIndex];
-                return `<h2>Tournoi : ${m.p1} VS ${m.p2}</h2>` + playPageHTML;
-            }
             const myName = userStore.get('user_name', 'Player');
             return `
                 <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;">
@@ -203,11 +199,6 @@ const routes = {
                 </div>`;
         },
         init: () => {
-            if (tournamentState.isActive && tournamentState.isMatchRunning) {
-                const m = tournamentState.matches[tournamentState.currentMatchIndex];
-                initPongGame(m.p1, m.p2);
-                return;
-            }
             const setupContainer = document.getElementById('setup-container');
             const gameWrapper    = document.getElementById('pong-game-wrapper');
             const btnIA          = document.getElementById('btn-play-ia');
@@ -312,7 +303,6 @@ const routes = {
             </div>`,
         init: initSettings
     },
-
     '/tournament': {
         title: 'Tournoi Local',
         render: () => {
@@ -503,6 +493,26 @@ const routes = {
             </div>`,
         init: loadLeaderboard
     },
+    '/tournament-game': {
+        title: 'Match Tournoi',
+        render: () => {
+            if (!tournamentState.isActive || !tournamentState.isMatchRunning) {
+                navigateTo('/tournament');
+                return '';
+            }
+            const m = tournamentState.matches[tournamentState.currentMatchIndex];
+            return `
+                <h2 style="text-align:center; margin-bottom:20px; text-transform:uppercase; letter-spacing:2px;">
+                    ⚔️ ${m.p1} VS ${m.p2}
+                </h2>
+                ${playPageHTML}`;
+        },
+        init: () => {
+            if (!tournamentState.isActive || !tournamentState.isMatchRunning) return;
+            const m = tournamentState.matches[tournamentState.currentMatchIndex];
+            initPongGame(m.p1, m.p2);
+        }
+    },
 };
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
@@ -619,7 +629,7 @@ function initTournamentLogic() {
         router();
     };
     const btnPlay = document.getElementById('btn-play-match');
-    if (btnPlay) btnPlay.onclick = () => { tournamentState.isMatchRunning = true; navigateTo('/game'); };
+    if (btnPlay) btnPlay.onclick = () => { tournamentState.isMatchRunning = true; navigateTo('/tournament-game'); };
     const btnCancel = document.getElementById('btn-cancel-t');
     if (btnCancel) btnCancel.onclick = () => {
         if (confirm("Annuler le tournoi ?")) {
@@ -640,6 +650,7 @@ const router = async () => {
     if (path === '/tournament' && !isLoggedIn) { navigateTo('/tournament-denied');  return; }
     if (path === '/settings' && !isLoggedIn) { navigateTo('/settings-denied');  return; }
     if (path === '/leaderboard' && !isLoggedIn) { navigateTo('/leaderboard-denied');  return; }
+    if (path === '/tournament-game' && !isLoggedIn) { navigateTo('/tournament-denied'); return; }
     document.title = `Transcendence - ${route.title}`;
     const appContainer = document.getElementById('app');
     if (appContainer) appContainer.innerHTML = route.render();
@@ -1056,9 +1067,12 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
             cancelAnimationFrame(animationId);
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup',   handleKeyUp);
+
+            const isTournamentMatch = tournamentState.isActive && window.location.pathname === '/tournament-game'; // ← CHANGE ICI
             const myName    = userStore.get('user_name', 'Player');
             const isVictory = (winnerName === myName);
-            if (!tournamentState.isActive) {
+
+            if (!isTournamentMatch) {  // ← CHANGE ICI
                 await userStore.recordMatch({ isVictory, score1, score2, opponentName: name2, durationSeconds: sessionSeconds });
                 alert(`Match terminé ! Vainqueur : ${winnerName}`);
                 navigateTo('/profile');
