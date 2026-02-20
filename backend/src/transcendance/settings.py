@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'users.providers.fortytwo',
     'users',
     'chat',
+    'game',
 ]
 
 SITE_ID = 1

@@ -1,13 +1,5 @@
-// Variable global pour le chat
-let globalChatWS = null;
-// touche pour les amis
-window.sendFriendRequest    = sendFriendRequest;
-window.respondFriendRequest = respondFriendRequest;
-window.removeFriend         = removeFriend;
 // ─── Import userStore ────────────────────────────────────────────────────────
 import { userStore } from './utils/userStore.js';
-
-// Initialisation au démarrage : tente l'API Django, fallback localStorage
 await userStore.init();
 
 // ─── OAuth 42 ────────────────────────────────────────────────────────────────
@@ -15,22 +7,18 @@ const UID      = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
 
-// ─── Récupération avatar/login depuis l'URL après callback OAuth ─────────────
-const urlParams      = new URLSearchParams(window.location.search);
-const avatarFromUrl  = urlParams.get('avatar');
-const loginFromUrl   = urlParams.get('login');
-
+const urlParams     = new URLSearchParams(window.location.search);
+const avatarFromUrl = urlParams.get('avatar');
+const loginFromUrl  = urlParams.get('login');
 if (avatarFromUrl) await userStore.set('user_avatar', avatarFromUrl);
 if (loginFromUrl)  await userStore.set('user_name',   loginFromUrl);
 
-// ─── Déconnexion ─────────────────────────────────────────────────────────────
 window.logout = () => userStore.logout();
 
-// ─── État global ─────────────────────────────────────────────────────────────
 console.log("Script main.js chargé !");
 let currentPongInstance = null;
-let isGameOver          = false;
 let currentUser         = null;
+let globalChatWS        = null;
 
 const playPageHTML = `
     <div class="game-container">
@@ -43,37 +31,32 @@ const playPageHTML = `
 `;
 
 let tournamentState = {
-    isActive:          false,
-    players:           [],
-    matches:           [],
-    currentMatchIndex: 0
+    isActive: false, players: [], matches: [], currentMatchIndex: 0
 };
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 const routes = {
 
-    // ── Accueil ──────────────────────────────────────────────────────────────
     '/': {
         title: 'Accueil',
         render: () => {
             const wins         = parseInt(userStore.get('pong_wins', 0));
             const losses       = parseInt(userStore.get('pong_losses', 0));
             const totalSeconds = parseInt(userStore.get('pong_total_seconds', 0));
-            const h       = Math.floor(totalSeconds / 3600);
-            const m       = Math.floor((totalSeconds % 3600) / 60);
-            const s       = totalSeconds % 60;
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
             const timeStr = h > 0 ? `${h}h ${m}s` : `${m}m ${s}s`;
-
             const name   = userStore.get('user_name', 'Pilote');
             const avatar = userStore.get('user_avatar');
             const color  = userStore.get('user_color', '#00babc');
 
             const chatSection = avatar ? `
-                <div class="home-chat-section" style="width: 100%; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                    <h3 style="text-align: left; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: #8b949e; margin-bottom: 15px;">Canal Global</h3>
-                    <div class="chat-container solo" style="max-width: 100%; width: 100%; height: 300px;">
-                        <section class="chat-window" style="height: 100%;">
-                            <div id="chat-messages" class="chat-messages" style="height: 200px;">
+                <div class="home-chat-section" style="width:100%;margin-top:40px;border-top:1px solid rgba(255,255,255,0.1);padding-top:20px;">
+                    <h3 style="text-align:left;font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;color:#8b949e;margin-bottom:15px;">Canal Global</h3>
+                    <div class="chat-container solo" style="max-width:100%;width:100%;height:300px;">
+                        <section class="chat-window" style="height:100%;">
+                            <div id="chat-messages" class="chat-messages" style="height:200px;">
                                 <div class="message system">Bienvenue dans le canal global.</div>
                             </div>
                             <form id="chat-form" class="chat-input-area">
@@ -82,15 +65,13 @@ const routes = {
                             </form>
                         </section>
                     </div>
-                </div>
-            ` : '';
+                </div>` : '';
 
             const profileHeader = avatar ? `
                 <div class="home-profile-header">
-                    <img src="${avatar}" class="home-avatar-img" style="border-color: ${color}">
-                    <p class="welcome-text">Content de vous revoir, <span style="color: ${color}">${name}</span></p>
-                </div>
-            ` : '';
+                    <img src="${avatar}" class="home-avatar-img" style="border-color:${color}">
+                    <p class="welcome-text">Content de vous revoir, <span style="color:${color}">${name}</span></p>
+                </div>` : '';
 
             return `
                 <div class="hero-container">
@@ -107,19 +88,16 @@ const routes = {
                             <div class="stat-label">Temps de jeu</div>
                         </div>
                         <a href="/profile" class="stat-card profile-link-card">
-                            <div class="stat-value" style="color: #00babc">Profil</div>
+                            <div class="stat-value" style="color:#00babc">Profil</div>
                             <div class="stat-label">Historique →</div>
                         </a>
                     </div>
                     ${chatSection}
                 </div>`;
         },
-        init: () => {
-            if (document.getElementById('chat-form')) initChat();
-        }
+        init: () => { if (document.getElementById('chat-form')) initChat(); }
     },
 
-    // ── Jeu ──────────────────────────────────────────────────────────────────
     '/game': {
         title: 'Jeu',
         render: () => {
@@ -129,37 +107,40 @@ const routes = {
             }
             const myName = userStore.get('user_name', 'Player');
             return `
-                <div id="setup-container" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                    <h2 style="text-transform: uppercase; letter-spacing: 2px;">Pong Match</h2>
-                    <div id="amical-options" style="display: flex; flex-direction: column; gap: 25px; width: 320px;">
+                <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                    <h2 style="text-transform:uppercase;letter-spacing:2px;">Pong Match</h2>
+                    <div id="amical-options" style="display:flex;flex-direction:column;gap:25px;width:320px;">
 
                         <div class="category-block">
-                            <h3 style="color: #00babc; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #00babc; padding-left: 10px; letter-spacing: 1px;">Entraînement</h3>
-                            <div class="setup-group" style="border: 1px solid #00babc; padding: 15px; border-radius: 8px; background: rgba(0, 186, 188, 0.05);">
-                                <label style="color: #00babc; font-size: 0.7rem; display: block; margin-bottom: 5px; text-transform: uppercase; opacity: 0.8;">Votre Profil</label>
-                                <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
-                                <button id="btn-play-ia" class="cyber-button" style="width: 100%;">Player vs IA</button>
+                            <h3 style="color:#00babc;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #00babc;padding-left:10px;letter-spacing:1px;">Entraînement</h3>
+                            <div class="setup-group" style="border:1px solid #00babc;padding:15px;border-radius:8px;background:rgba(0,186,188,0.05);">
+                                <label style="color:#00babc;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Votre Profil</label>
+                                <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width:100%;margin-bottom:10px;cursor:not-allowed;opacity:0.8;">
+                                <button id="btn-play-ia" class="cyber-button" style="width:100%;">Player vs IA</button>
                             </div>
                         </div>
 
                         <div class="category-block">
-                            <h3 style="color: #ffb921; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #ffb921; padding-left: 10px; letter-spacing: 1px;">Local</h3>
-                            <div class="setup-group" style="border: 1px solid #ffb921; padding: 15px; border-radius: 8px; background: rgba(247, 255, 0, 0.05);">
-                                <label style="color: #ffb921; font-size: 0.7rem; display: block; margin-bottom: 5px; text-transform: uppercase; opacity: 0.8;">Joueur 1</label>
-                                <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width: 100%; margin-bottom: 10px; cursor: not-allowed; opacity: 0.8;">
-                                <label style="color: #ffb921; font-size: 0.7rem; display: block; margin-bottom: 5px; text-transform: uppercase; opacity: 0.8;">Joueur 2</label>
-                                <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width: 100%; margin-bottom: 15px;" autofocus>
-                                <button id="btn-play-friend" class="cyber-button" style="width: 100%; background: #ffb921;">1 VS 1</button>
+                            <h3 style="color:#ffb921;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ffb921;padding-left:10px;letter-spacing:1px;">Local</h3>
+                            <div class="setup-group" style="border:1px solid #ffb921;padding:15px;border-radius:8px;background:rgba(247,255,0,0.05);">
+                                <label style="color:#ffb921;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 1</label>
+                                <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width:100%;margin-bottom:10px;cursor:not-allowed;opacity:0.8;">
+                                <label style="color:#ffb921;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 2</label>
+                                <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width:100%;margin-bottom:15px;" autofocus>
+                                <button id="btn-play-friend" class="cyber-button" style="width:100%;background:#ffb921;">1 VS 1</button>
                             </div>
                         </div>
 
                         <div class="category-block">
-                            <h3 style="color: #ff0055; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 10px; border-left: 3px solid #ff0055; padding-left: 10px; letter-spacing: 1px;">Online</h3>
-                            <div class="setup-group" style="border: 1px solid #ff0055; padding: 15px; border-radius: 8px; background: rgba(247, 255, 0, 0.05);">
-                                <p style="color: #ff0055; font-size: 0.7rem; margin-bottom: 10px;">Défiez un joueur.</p>
-                                <button id="btn-matchmaking" class="cyber-button" style="width: 100%; background: #ff0055; border-color: #ff0055; color: #050505;">Lancer la recherche</button>
-                                <div id="mm-status" style="margin-top: 10px; font-size: 0.8rem; color: #ff0055; display:none;">
-                                    <span class="loader-dots">Recherche en cours</span>
+                            <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ff0055;padding-left:10px;letter-spacing:1px;">Online</h3>
+                            <div class="setup-group" style="border:1px solid #ff0055;padding:15px;border-radius:8px;background:rgba(255,0,85,0.05);">
+                                <p style="color:#ff0055;font-size:0.7rem;margin-bottom:10px;">Joue contre un adversaire en ligne.</p>
+                                <button id="btn-matchmaking" class="cyber-button" style="width:100%;background:#ff0055;border-color:#ff0055;color:#050505;margin-bottom:10px;">🔍 Créer une room</button>
+                                <div id="mm-status" style="margin-top:8px;font-size:0.8rem;color:#ff0055;display:none;"></div>
+                                <div style="border-top:1px solid rgba(255,0,85,0.2);padding-top:10px;margin-top:10px;">
+                                    <label style="color:#ff0055;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Rejoindre une room</label>
+                                    <input type="text" id="room-id-input" placeholder="Code de la room..." class="cyber-input" style="width:100%;margin-bottom:8px;">
+                                    <button id="btn-join-room" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">Rejoindre</button>
                                 </div>
                             </div>
                         </div>
@@ -176,38 +157,52 @@ const routes = {
                 initPongGame(m.p1, m.p2);
                 return;
             }
-
-            const btnIA         = document.getElementById('btn-play-ia');
-            const btnFriend     = document.getElementById('btn-play-friend');
             const setupContainer = document.getElementById('setup-container');
-            const gameWrapper   = document.getElementById('pong-game-wrapper');
+            const gameWrapper    = document.getElementById('pong-game-wrapper');
+            const btnIA          = document.getElementById('btn-play-ia');
+            const btnFriend      = document.getElementById('btn-play-friend');
+            const btnMatchmaking = document.getElementById('btn-matchmaking');
+            const btnJoin        = document.getElementById('btn-join-room');
 
-            if (btnIA && btnFriend) {
-                btnIA.onclick = () => {
-                    const name = userStore.get('user_name', 'Joueur');
+            if (btnIA) btnIA.onclick = () => {
+                setupContainer.style.display = 'none';
+                gameWrapper.style.display    = 'block';
+                initPongGame(userStore.get('user_name', 'Joueur'), "IA");
+            };
+
+            if (btnFriend) btnFriend.onclick = () => {
+                const name2 = document.getElementById('p2-name').value || "Invité";
+                setupContainer.style.display = 'none';
+                gameWrapper.style.display    = 'block';
+                initPongGame(userStore.get('user_name', 'Joueur 1'), name2);
+            };
+
+            if (btnMatchmaking) btnMatchmaking.onclick = async () => {
+                try {
+                    const res    = await fetch('/api/game/create/', { method:'POST', credentials:'include', headers:{'X-CSRFToken':getCsrfToken()} });
+                    const data   = await res.json();
+                    const roomId = data.room_id;
+                    const mmStatus = document.getElementById('mm-status');
+                    mmStatus.style.display = 'block';
+                    mmStatus.innerHTML = `Code : <strong style="font-size:1.2rem;letter-spacing:3px;">${roomId}</strong><br><small style="color:#8b949e;">Partage ce code. En attente...</small>`;
                     setupContainer.style.display = 'none';
                     gameWrapper.style.display    = 'block';
-                    initPongGame(name, "IA");
-                };
+                    initOnlinePong(roomId);
+                } catch (e) { alert('Erreur création room.'); }
+            };
 
-                btnFriend.onclick = () => {
-                    const name1 = userStore.get('user_name', 'Joueur 1');
-                    const name2 = document.getElementById('p2-name').value || "Invité";
-                    setupContainer.style.display = 'none';
-                    gameWrapper.style.display    = 'block';
-                    initPongGame(name1, name2);
-                };
-            }
+            if (btnJoin) btnJoin.onclick = () => {
+                const code = document.getElementById('room-id-input').value.trim();
+                if (!code) return;
+                setupContainer.style.display = 'none';
+                gameWrapper.style.display    = 'block';
+                initOnlinePong(code);
+            };
         }
     },
 
-    // ── 404 ──────────────────────────────────────────────────────────────────
-    '/404': {
-        title: '404',
-        render: () => `<h1>404</h1><p>Invalid.</p>`
-    },
+    '/404': { title: '404', render: () => `<h1>404</h1><p>Invalid.</p>` },
 
-    // ── Callback OAuth ────────────────────────────────────────────────────────
     '/accounts/fortytwo/login/callback/': {
         title: 'Authentification',
         render: () => {
@@ -215,13 +210,12 @@ const routes = {
             const code = urlParams.get('code');
             if (code) {
                 window.location.href = `http://localhost:3000/auth/42/callback?code=${code}`;
-                return `<h1>Connexion à l'Intra réussie !</h1><p>Redirection vers le serveur...</p>`;
+                return `<h1>Connexion à l'Intra réussie !</h1><p>Redirection...</p>`;
             }
             return `<h1>Erreur : Pas de code reçu de 42.</h1>`;
         }
     },
 
-    // ── Chat ─────────────────────────────────────────────────────────────────
     '/chat': {
         title: 'Chat',
         render: () => `
@@ -239,7 +233,6 @@ const routes = {
         init: initChat
     },
 
-    // ── Settings ──────────────────────────────────────────────────────────────
     '/settings': {
         title: 'Paramètres',
         render: () => `
@@ -248,14 +241,11 @@ const routes = {
                 <form id="settings-form">
                     <div class="setting-group">
                         <label>Pseudo (Verrouillé)</label>
-                        <input type="text" id="username-input" readonly
-                            style="background: rgba(255,255,255,0.05); cursor: not-allowed; border-color: rgba(255,255,255,0.1); color: #8b949e;">
+                        <input type="text" id="username-input" readonly style="background:rgba(255,255,255,0.05);cursor:not-allowed;border-color:rgba(255,255,255,0.1);color:#8b949e;">
                     </div>
                     <div class="setting-group">
                         <label>Couleur de la raquette</label>
-                        <div class="color-picker">
-                            <input type="color" id="paddle-color" value="#00babc">
-                        </div>
+                        <div class="color-picker"><input type="color" id="paddle-color" value="#00babc"></div>
                     </div>
                     <div class="setting-group">
                         <label>Difficulté IA par défaut</label>
@@ -272,7 +262,6 @@ const routes = {
         init: initSettings
     },
 
-    // ── Tournoi ───────────────────────────────────────────────────────────────
     '/tournament': {
         title: 'Tournoi Local',
         render: () => {
@@ -281,18 +270,16 @@ const routes = {
                     <div class="tournament-container">
                         <h1>Tournoi Local</h1>
                         <div class="setup-box">
-                            <input type="text" id="tp1" placeholder="Joueur 1" class="t-input" value="">
-                            <input type="text" id="tp2" placeholder="Joueur 2" class="t-input" value="">
-                            <input type="text" id="tp3" placeholder="Joueur 3" class="t-input" value="">
-                            <input type="text" id="tp4" placeholder="Joueur 4" class="t-input" value="">
+                            <input type="text" id="tp1" placeholder="Joueur 1" class="t-input">
+                            <input type="text" id="tp2" placeholder="Joueur 2" class="t-input">
+                            <input type="text" id="tp3" placeholder="Joueur 3" class="t-input">
+                            <input type="text" id="tp4" placeholder="Joueur 4" class="t-input">
                             <button id="btn-start-t" class="cyber-button">GÉNÉRER L'ARBRE</button>
                         </div>
                     </div>`;
             }
-
             const m   = tournamentState.matches;
             const cur = tournamentState.currentMatchIndex;
-
             return `
                 <div class="tournament-container">
                     <h1>Tableau du Tournoi</h1>
@@ -312,23 +299,22 @@ const routes = {
                             </div>
                         </div>
                         <div class="bracket-column">
-                            <div class="match-box ${cur === 2 ? 'active' : ''}" style="border-width: 2px;">
+                            <div class="match-box ${cur === 2 ? 'active' : ''}" style="border-width:2px;">
                                 <span class="p-name">${m[2].p1 || '???'}</span>
                                 <span class="vs-badge">GRANDE FINALE</span>
                                 <span class="p-name">${m[2].p2 || '???'}</span>
                             </div>
                         </div>
                     </div>
-                    <div style="margin-top: 40px;">
+                    <div style="margin-top:40px;">
                         <button id="btn-play-match" class="cyber-button">LANCER LE MATCH EN COURS</button>
-                        <button id="btn-cancel-t" style="background:none; border:none; color:#8b949e; cursor:pointer;">Annuler le tournoi</button>
+                        <button id="btn-cancel-t" style="background:none;border:none;color:#8b949e;cursor:pointer;">Annuler le tournoi</button>
                     </div>
                 </div>`;
         },
         init: initTournamentLogic
     },
 
-    // ── Profil ────────────────────────────────────────────────────────────────
     '/profile': {
         title: 'Profil Utilisateur',
         render: () => {
@@ -337,64 +323,45 @@ const routes = {
             const wins   = parseInt(userStore.get('pong_wins', 0));
             const losses = parseInt(userStore.get('pong_losses', 0));
             const color  = userStore.get('user_color', '#00babc');
-
             const totalXP      = (wins * 100) + (losses * 20);
             const level        = Math.floor(totalXP / 1000) + 1;
             const currentXP    = totalXP % 1000;
             const xpPercentage = (currentXP / 1000) * 100;
-
             return `
                 <div class="profile-container">
                     <div class="profile-header">
-                        <div class="profile-avatar" style="border-color: ${color}">
+                        <div class="profile-avatar" style="border-color:${color}">
                             <img src="${avatar}" alt="Avatar" class="avatar-img">
                         </div>
                         <h2>${name}</h2>
                         <div class="level-badge">Niveau ${level}</div>
                     </div>
-
                     <div class="xp-section">
                         <div class="xp-info">
                             <span>${currentXP} / 1000 XP</span>
                             <span>Progression vers niveau ${level + 1}</span>
                         </div>
                         <div class="xp-bar-container">
-                            <div class="xp-bar-fill" style="width: ${xpPercentage}%; background-color: ${color}"></div>
+                            <div class="xp-bar-fill" style="width:${xpPercentage}%;background-color:${color}"></div>
                         </div>
                     </div>
-
                     <div class="stats-grid">
-                        <div class="stat-card">
-                            <span class="stat-value">${wins}</span>
-                            <span class="stat-label">Victoires</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-value">${losses}</span>
-                            <span class="stat-label">Défaites</span>
-                        </div>
+                        <div class="stat-card"><span class="stat-value">${wins}</span><span class="stat-label">Victoires</span></div>
+                        <div class="stat-card"><span class="stat-value">${losses}</span><span class="stat-label">Défaites</span></div>
                     </div>
-
                     <h3>Historique des Matchs</h3>
                     <div id="match-history" class="match-history"></div>
-
-                    <!-- SECTION AMIS -->
                     <div class="friends-section">
                         <h3>Amis</h3>
-
-                        <!-- Recherche -->
                         <div class="friend-search">
-                            <input type="text" id="friend-search-input" placeholder="Rechercher un joueur..." class="cyber-input" style="width:70%; margin-right:10px;">
+                            <input type="text" id="friend-search-input" placeholder="Rechercher un joueur..." class="cyber-input" style="width:70%;margin-right:10px;">
                             <button id="friend-search-btn" class="cyber-button" style="width:25%;">Rechercher</button>
                         </div>
                         <div id="search-results" style="margin-top:10px;"></div>
-
-                        <!-- Demandes reçues -->
-                        <div id="friend-requests-section" style="margin-top:20px; display:none;">
+                        <div id="friend-requests-section" style="margin-top:20px;display:none;">
                             <h4 style="color:#ffb921;">Demandes reçues</h4>
                             <div id="friend-requests-list"></div>
                         </div>
-
-                        <!-- Liste d'amis -->
                         <div style="margin-top:20px;">
                             <h4>Mes amis</h4>
                             <div id="friends-list"><p style="color:#8b949e">Chargement...</p></div>
@@ -405,24 +372,17 @@ const routes = {
         init: initProfile
     },
 
-    // ── Accès refusé ─────────────────────────────────────────────────────────
     '/jouer-denied': {
         title: 'Accès Refusé',
         render: () => `
-            <div class="access-denied-container">
-                <h1>🚫 Accès Interdit 🚫</h1>
-                <div class="denied-actions"></div>
-            </div>
-            <p>Connecte-toi pour jouer 🎾 .</p>
+            <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
+            <p>Connecte-toi pour jouer 🎾.</p>
             <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
     },
     '/chat-denied': {
         title: 'Accès Refusé',
         render: () => `
-            <div class="access-denied-container">
-                <h1>🚫 Accès Interdit 🚫</h1>
-                <div class="denied-actions"></div>
-            </div>
+            <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
             <p>Connecte-toi pour envoyer des messages 📨.</p>
             <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
     }
@@ -431,65 +391,26 @@ const routes = {
 // ─── Tournoi ─────────────────────────────────────────────────────────────────
 function initTournamentLogic() {
     const btnStart = document.getElementById('btn-start-t');
-    if (btnStart) {
-        btnStart.onclick = () => {
-            const p1 = document.getElementById('tp1').value || "A";
-            const p2 = document.getElementById('tp2').value || "B";
-            const p3 = document.getElementById('tp3').value || "C";
-            const p4 = document.getElementById('tp4').value || "D";
-
-            tournamentState = {
-                isActive:          true,
-                isMatchRunning:    false,
-                players:           [p1, p2, p3, p4],
-                matches: [
-                    { p1: p1, p2: p2, winner: null },
-                    { p1: p3, p2: p4, winner: null },
-                    { p1: null, p2: null, winner: null }
-                ],
-                currentMatchIndex: 0
-            };
-            router();
+    if (btnStart) btnStart.onclick = () => {
+        const p1 = document.getElementById('tp1').value || "A";
+        const p2 = document.getElementById('tp2').value || "B";
+        const p3 = document.getElementById('tp3').value || "C";
+        const p4 = document.getElementById('tp4').value || "D";
+        tournamentState = {
+            isActive: true, isMatchRunning: false, players: [p1,p2,p3,p4],
+            matches: [{p1,p2,winner:null},{p1:p3,p2:p4,winner:null},{p1:null,p2:null,winner:null}],
+            currentMatchIndex: 0
         };
-    }
-
+        router();
+    };
     const btnPlay = document.getElementById('btn-play-match');
-    if (btnPlay) {
-        btnPlay.onclick = () => {
-            tournamentState.isMatchRunning = true;
-            navigateTo('/game');
-        };
-    }
-
+    if (btnPlay) btnPlay.onclick = () => { tournamentState.isMatchRunning = true; navigateTo('/game'); };
     const btnCancel = document.getElementById('btn-cancel-t');
-    if (btnCancel) {
-        btnCancel.onclick = () => {
-            if (confirm("Annuler le tournoi ?")) {
-                tournamentState.isActive       = false;
-                tournamentState.isMatchRunning = false;
-                router();
-            }
-        };
-    }
-}
-
-function renderBracket() {
-    const setup   = document.getElementById('tournament-setup');
-    const bracket = document.getElementById('tournament-bracket');
-    setup.style.display   = 'none';
-    bracket.style.display = 'block';
-
-    const match = tournamentState.matches[tournamentState.currentMatchIndex];
-    bracket.innerHTML = `
-        <div class="bracket-view">
-            <h3>Match en cours : ${tournamentState.currentMatchIndex < 2 ? 'Demi-finale' : 'FINALE'}</h3>
-            <div class="vs-display">
-                <span class="player-tag">${match.p1}</span>
-                <span class="vs">VS</span>
-                <span class="player-tag">${match.p2}</span>
-            </div>
-            <button onclick="launchTournamentGame()" class="btn-play-hero">LANCER LE MATCH</button>
-        </div>`;
+    if (btnCancel) btnCancel.onclick = () => {
+        if (confirm("Annuler le tournoi ?")) {
+            tournamentState.isActive = false; tournamentState.isMatchRunning = false; router();
+        }
+    };
 }
 
 // ─── Routeur ─────────────────────────────────────────────────────────────────
@@ -497,16 +418,12 @@ const router = async () => {
     console.log("Routeur appelé pour :", window.location.pathname);
     const path  = window.location.pathname;
     const route = routes[path] || routes['/404'];
-
     const isLoggedIn = await checkAuth();
-
     if (path === '/game' && !isLoggedIn) { navigateTo('/jouer-denied'); return; }
     if (path === '/chat' && !isLoggedIn) { navigateTo('/chat-denied');  return; }
-
     document.title = `Transcendence - ${route.title}`;
     const appContainer = document.getElementById('app');
     if (appContainer) appContainer.innerHTML = route.render();
-
     renderAuthUI(isLoggedIn);
     if (route.init && typeof route.init === 'function') route.init();
 };
@@ -516,53 +433,36 @@ async function checkAuth() {
     const urlParams = new URLSearchParams(window.location.search);
     const login     = urlParams.get('login');
     const avatar    = urlParams.get('avatar');
-
     if (login && avatar) {
-        // Appeler Django pour créer la session ET récupérer les stats
         try {
             const res = await fetch('/api/users/oauth-login/', {
-                method:      'POST',
-                credentials: 'include',
-                headers:     { 'Content-Type': 'application/json' },
-                body:        JSON.stringify({ username: login, avatar: avatar }),
+                method:'POST', credentials:'include',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ username: login, avatar }),
             });
             if (res.ok) {
                 const data = await res.json();
-                currentUser = {
-                    username: data.username,
-                    avatar:   data.avatar,
-                    wins:     data.wins,
-                    losses:   data.losses,
-                };
-                await userStore.init(); // session active maintenant
+                currentUser = { username: data.username, avatar: data.avatar, wins: data.wins, losses: data.losses };
+                await userStore.init();
                 localStorage.setItem('user_data', JSON.stringify(currentUser));
             }
         } catch (err) {
             console.warn('[checkAuth] oauth-login échoué', err);
-            currentUser = { username: login, avatar: avatar };
+            currentUser = { username: login, avatar };
             localStorage.setItem('user_data', JSON.stringify(currentUser));
         }
         window.history.replaceState({}, document.title, window.location.pathname);
         return true;
     }
-
     const savedUser = localStorage.getItem('user_data');
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        return true;
-    }
-
+    if (savedUser) { currentUser = JSON.parse(savedUser); return true; }
     try {
         const response    = await fetch('/api/users/me/', { credentials: 'include' });
         const contentType = response.headers.get("content-type");
         if (response.ok && contentType && contentType.includes("application/json")) {
-            currentUser = await response.json();
-            return true;
+            currentUser = await response.json(); return true;
         }
-    } catch (err) {
-        console.warn('[checkAuth] API injoignable, mode offline');
-    }
-
+    } catch (err) { console.warn('[checkAuth] API injoignable, mode offline'); }
     currentUser = null;
     return false;
 }
@@ -571,10 +471,8 @@ async function checkAuth() {
 function renderAuthUI(isLoggedIn) {
     const container = document.getElementById('auth-status');
     if (!container) return;
-
     const name   = currentUser?.username || userStore.get('user_name');
     const avatar = currentUser?.avatar   || userStore.get('user_avatar');
-
     if (isLoggedIn && name && avatar) {
         container.innerHTML = `
             <div class="pilot-profile">
@@ -592,10 +490,7 @@ function renderAuthUI(isLoggedIn) {
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 function navigateTo(url) {
-    if (currentPongInstance) {
-        cancelAnimationFrame(currentPongInstance);
-        currentPongInstance = null;
-    }
+    if (currentPongInstance) { cancelAnimationFrame(currentPongInstance); currentPongInstance = null; }
     history.pushState(null, null, url);
     router();
 }
@@ -612,72 +507,59 @@ document.addEventListener('click', e => {
         navigateTo(href);
     }
 });
-
 window.addEventListener('popstate', router);
-// Le module ES est déjà chargé après le DOM, appel direct :
 router();
 
 // ─── Profil ───────────────────────────────────────────────────────────────────
 async function initProfile() {
-    // Historique des matchs
     const historyContainer = document.getElementById('match-history');
     const history          = JSON.parse(localStorage.getItem('match_history') || '[]');
-
     if (history.length === 0) {
-        historyContainer.innerHTML = '<p style="color: #8b949e">Aucun match joué pour le moment.</p>';
+        historyContainer.innerHTML = '<p style="color:#8b949e">Aucun match joué pour le moment.</p>';
     } else {
         historyContainer.innerHTML = history.map(match => `
             <div class="match-item ${match.result === 'Victoire' ? 'match-win' : 'match-loss'}">
-                <span>${match.date}</span>
-                <strong>${match.result}</strong>
-                <span>Score: ${match.score}</span>
-            </div>
-        `).join('');
+                <span>${match.date}</span><strong>${match.result}</strong><span>Score: ${match.score}</span>
+            </div>`).join('');
     }
-
-    // Charger amis + demandes en parallèle
     await loadFriends();
     await loadFriendRequests();
-
-    // Recherche d'utilisateurs
     const searchBtn   = document.getElementById('friend-search-btn');
     const searchInput = document.getElementById('friend-search-input');
-
     if (searchBtn) {
         searchBtn.onclick = () => searchUsers(searchInput.value.trim());
-        searchInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') searchUsers(searchInput.value.trim());
-        });
+        searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchUsers(searchInput.value.trim()); });
     }
 }
 
 async function loadFriends() {
     const container = document.getElementById('friends-list');
     if (!container) return;
-
     try {
-        const res   = await fetch('/api/users/friends/', { credentials: 'include' });
-        const data  = await res.json();
-
+        const res  = await fetch('/api/users/friends/', { credentials: 'include' });
+        const data = await res.json();
         if (data.friends.length === 0) {
-            container.innerHTML = '<p style="color:#8b949e">Aucun ami pour le moment.</p>';
-            return;
+            container.innerHTML = '<p style="color:#8b949e">Aucun ami pour le moment.</p>'; return;
         }
-
         container.innerHTML = data.friends.map(f => `
-            <div class="friend-item" style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid #1e2330;">
+            <div class="friend-item" style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid #1e2330;">
                 <img src="${f.avatar || `https://ui-avatars.com/api/?name=${f.username}&background=0D1117&color=00babc`}"
-                     style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-                <span style="flex:1; font-weight:700;">${f.username}</span>
-                <span style="font-size:0.75rem; color:${f.is_online ? '#2ea043' : '#8b949e'}">
+                     style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                <span style="flex:1;font-weight:700;">${f.username}</span>
+                <span style="font-size:0.75rem;color:${f.is_online ? '#2ea043' : '#8b949e'}">
                     ${f.is_online ? '● En ligne' : '○ Hors ligne'}
                 </span>
-                <button onclick="removeFriend('${f.username}')"
-                    style="background:none; border:1px solid #ff4d6d; color:#ff4d6d; padding:3px 10px; border-radius:4px; cursor:pointer; font-size:0.75rem;">
-                    Retirer
-                </button>
-            </div>
-        `).join('');
+                <div style="display:flex;gap:6px;">
+                    <button onclick="inviteFriendToGame('${f.username}')"
+                        style="background:#ff0055;border:none;color:white;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.75rem;">
+                        🎮 Inviter
+                    </button>
+                    <button onclick="removeFriend('${f.username}')"
+                        style="background:none;border:1px solid #ff4d6d;color:#ff4d6d;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:0.75rem;">
+                        Retirer
+                    </button>
+                </div>
+            </div>`).join('');
     } catch (err) {
         container.innerHTML = '<p style="color:#8b949e">Impossible de charger les amis.</p>';
     }
@@ -687,181 +569,130 @@ async function loadFriendRequests() {
     const section   = document.getElementById('friend-requests-section');
     const container = document.getElementById('friend-requests-list');
     if (!section || !container) return;
-
     try {
         const res  = await fetch('/api/users/friends/requests/', { credentials: 'include' });
         const data = await res.json();
-
-        if (data.requests.length === 0) {
-            section.style.display = 'none';
-            return;
-        }
-
+        if (data.requests.length === 0) { section.style.display = 'none'; return; }
         section.style.display = 'block';
-        container.innerHTML   = data.requests.map(r => `
-            <div style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid #1e2330;">
+        container.innerHTML = data.requests.map(r => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid #1e2330;">
                 <img src="${r.avatar || `https://ui-avatars.com/api/?name=${r.username}&background=0D1117&color=00babc`}"
-                     style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-                <span style="flex:1; font-weight:700;">${r.username}</span>
+                     style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                <span style="flex:1;font-weight:700;">${r.username}</span>
                 <button onclick="respondFriendRequest(${r.id}, 'accept')"
-                    style="background:#2ea043; border:none; color:white; padding:4px 12px; border-radius:4px; cursor:pointer; margin-right:6px;">
-                    ✓ Accepter
-                </button>
+                    style="background:#2ea043;border:none;color:white;padding:4px 12px;border-radius:4px;cursor:pointer;margin-right:6px;">✓ Accepter</button>
                 <button onclick="respondFriendRequest(${r.id}, 'reject')"
-                    style="background:none; border:1px solid #8b949e; color:#8b949e; padding:4px 12px; border-radius:4px; cursor:pointer;">
-                    ✕ Refuser
-                </button>
-            </div>
-        `).join('');
-    } catch (err) {
-        section.style.display = 'none';
-    }
+                    style="background:none;border:1px solid #8b949e;color:#8b949e;padding:4px 12px;border-radius:4px;cursor:pointer;">✕ Refuser</button>
+            </div>`).join('');
+    } catch (err) { section.style.display = 'none'; }
 }
 
 async function searchUsers(query) {
     const container = document.getElementById('search-results');
     if (!container || query.length < 2) return;
-
     try {
         const res  = await fetch(`/api/users/search/?q=${encodeURIComponent(query)}`, { credentials: 'include' });
         const data = await res.json();
-
-        if (data.users.length === 0) {
-            container.innerHTML = '<p style="color:#8b949e; font-size:0.85rem;">Aucun résultat.</p>';
-            return;
-        }
-
+        if (data.users.length === 0) { container.innerHTML = '<p style="color:#8b949e;font-size:0.85rem;">Aucun résultat.</p>'; return; }
         container.innerHTML = data.users.map(u => `
-            <div style="display:flex; align-items:center; gap:12px; padding:10px; border-bottom:1px solid #1e2330;">
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid #1e2330;">
                 <img src="${u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=0D1117&color=00babc`}"
-                     style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-                <span style="flex:1; font-weight:700;">${u.username}</span>
-                <span style="font-size:0.75rem; color:${u.is_online ? '#2ea043' : '#8b949e'}; margin-right:10px;">
+                     style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                <span style="flex:1;font-weight:700;">${u.username}</span>
+                <span style="font-size:0.75rem;color:${u.is_online ? '#2ea043' : '#8b949e'};margin-right:10px;">
                     ${u.is_online ? '● En ligne' : '○ Hors ligne'}
                 </span>
                 <button onclick="sendFriendRequest('${u.username}')"
-                    style="background:var(--cyan,#00babc); border:none; color:#000; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:0.8rem; font-weight:700;">
+                    style="background:var(--cyan,#00babc);border:none;color:#000;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:0.8rem;font-weight:700;">
                     + Ajouter
                 </button>
-            </div>
-        `).join('');
-    } catch (err) {
-        container.innerHTML = '<p style="color:#8b949e">Erreur de recherche.</p>';
-    }
+            </div>`).join('');
+    } catch (err) { container.innerHTML = '<p style="color:#8b949e">Erreur de recherche.</p>'; }
 }
 
-async function sendFriendRequest(username) {
-    try {
-        const res  = await fetch('/api/users/friends/send/', {
-            method:      'POST',
-            credentials: 'include',
-            headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-            body:        JSON.stringify({ username }),
-        });
-        console.log('[Friend] Status:', res.status);  // ← ajoute ça
-        const data = await res.json();
-        console.log('[Friend] Response:', data);       // ← et ça
-        alert(data.message || data.error);
-    } catch (err) {
-        console.error('[Friend] Erreur:', err);        // ← et ça
-        alert('Erreur lors de l\'envoi de la demande.');
-    }
-}
-
+// ─── CSRF ─────────────────────────────────────────────────────────────────────
 function getCsrfToken() {
-    const cookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='));
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
     return cookie ? cookie.split('=')[1] : '';
 }
 
-// async function sendFriendRequest(username) {
-//     try {
-//         const res  = await fetch('/api/users/friends/send/', {
-//             method:      'POST',
-//             credentials: 'include',
-//             headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-//             body:        JSON.stringify({ username }),
-//         });
-//         const data = await res.json();
-//         alert(data.message || data.error);
-//     } catch (err) {
-//         alert('Erreur lors de l\'envoi de la demande.');
-//     }
-// }
+// ─── Amis ─────────────────────────────────────────────────────────────────────
+async function sendFriendRequest(username) {
+    try {
+        const res  = await fetch('/api/users/friends/send/', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
+            body: JSON.stringify({ username }),
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+    } catch (err) { alert('Erreur lors de l\'envoi de la demande.'); }
+}
 
 async function respondFriendRequest(requestId, action) {
     try {
         await fetch(`/api/users/friends/respond/${requestId}/`, {
-            method:      'POST',
-            credentials: 'include',
-            headers:     { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-            body:        JSON.stringify({ action }),
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()},
+            body: JSON.stringify({ action }),
         });
-        // Recharger les deux sections
         await loadFriends();
         await loadFriendRequests();
-    } catch (err) {
-        alert('Erreur.');
-    }
+    } catch (err) { alert('Erreur.'); }
 }
 
 async function removeFriend(username) {
     if (!confirm(`Retirer ${username} de tes amis ?`)) return;
     try {
         await fetch(`/api/users/friends/remove/${username}/`, {
-            method:      'DELETE',
-            credentials: 'include',
-            headers:     { 'X-CSRFToken': getCsrfToken() },
+            method:'DELETE', credentials:'include', headers:{'X-CSRFToken':getCsrfToken()},
         });
         await loadFriends();
-    } catch (err) {
-        alert('Erreur.');
-    }
+    } catch (err) { alert('Erreur.'); }
 }
 
-async function fetchUserSettings() {
-    const settingsContainer = document.getElementById('profile-settings');
-    if (!settingsContainer || !currentUser) return;
-    settingsContainer.innerHTML = `
-        <p>Email : ${currentUser.email || 'Non renseigné'}</p>
-        <p>Stats : ${currentUser.wins || 0}W / ${currentUser.losses || 0}L</p>
-    `;
+async function inviteFriendToGame(username) {
+    try {
+        const res    = await fetch('/api/game/create/', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCsrfToken()}
+        });
+        const data   = await res.json();
+        const roomId = data.room_id;
+        alert(`Partage ce code à ${username} :\n\n${roomId}\n\nTu vas être redirigé vers le jeu.`);
+        navigateTo('/game');
+        setTimeout(() => {
+            const gw = document.getElementById('pong-game-wrapper');
+            const sc = document.getElementById('setup-container');
+            if (gw && sc) { sc.style.display = 'none'; gw.style.display = 'block'; }
+            initOnlinePong(roomId);
+        }, 300);
+    } catch (err) { alert('Erreur lors de la création de la room.'); }
 }
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 function initChat() {
-    // Fermer l'ancienne connexion si elle existe
-    if (globalChatWS && globalChatWS.readyState === WebSocket.OPEN) {
-        globalChatWS.close();
-    }
-
-    const form              = document.getElementById('chat-form');
-    const input             = document.getElementById('chat-input');
+    if (globalChatWS && globalChatWS.readyState === WebSocket.OPEN) globalChatWS.close();
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
     const messagesContainer = document.getElementById('chat-messages');
     if (!messagesContainer) return;
     messagesContainer.innerHTML = '';
-
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    globalChatWS   = new WebSocket(`${protocol}//${window.location.host}/ws/chat/`);
-    const ws       = globalChatWS;
+    globalChatWS = new WebSocket(`${protocol}//${window.location.host}/ws/chat/`);
+    const ws = globalChatWS;
 
     ws.onopen = () => console.log('[Chat] WebSocket connecté, readyState:', ws.readyState);
-
     ws.onmessage = (event) => {
-        console.log('[Chat] Message reçu:', event.data);
         const container = document.getElementById('chat-messages');
-        console.log('[Chat] Container:', container);
-        if (!container) return;
+        if (!container) { ws.close(); return; }
         const data = JSON.parse(event.data);
         appendMessage(data.message, data.type === 'history');
     };
-
-    ws.onerror  = () => appendSystemMessage('Connexion au chat perdue.');
-    ws.onclose  = () => console.warn('[Chat] WebSocket fermé');
-
+    ws.onerror = () => appendSystemMessage('Connexion au chat perdue.');
+    ws.onclose = () => console.warn('[Chat] WebSocket fermé');
+    window.addEventListener('popstate', () => { if (!document.getElementById('chat-messages')) ws.close(); });
     if (!form) return;
-
     form.onsubmit = (e) => {
         e.preventDefault();
         const content = input.value.trim();
@@ -873,17 +704,16 @@ function initChat() {
     function appendMessage(msg, isHistory = false) {
         const container = document.getElementById('chat-messages');
         if (!container) return;
-        const myName  = userStore.get('user_name', '');
-        const isMe    = msg.sender === myName;
-        const msgDiv  = document.createElement('div');
+        const myName = userStore.get('user_name', '');
+        const isMe   = msg.sender === myName;
+        const msgDiv = document.createElement('div');
         msgDiv.className = `message ${isMe ? 'sent' : 'received'}`;
         if (isMe) msgDiv.style.background = '#00babc33';
-        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
         msgDiv.innerHTML = `
             <span class="sender">${msg.sender}</span>
             <span class="msg-text">${escapeHtml(msg.content)}</span>
-            <span class="msg-time">${time}</span>
-        `;
+            <span class="msg-time">${time}</span>`;
         container.appendChild(msgDiv);
         if (!isHistory) container.scrollTop = container.scrollHeight;
     }
@@ -891,18 +721,14 @@ function initChat() {
     function appendSystemMessage(text) {
         const container = document.getElementById('chat-messages');
         if (!container) return;
-        const div       = document.createElement('div');
-        div.className   = 'message system';
+        const div = document.createElement('div');
+        div.className = 'message system';
         div.textContent = text;
         container.appendChild(div);
     }
 
     function escapeHtml(text) {
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;");
+        return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
 
     setTimeout(() => {
@@ -915,44 +741,35 @@ function initChat() {
 function initSettings() {
     const form = document.getElementById('settings-form');
     const msg  = document.getElementById('settings-msg');
-
-    document.getElementById('username-input').value  = userStore.get('user_name', 'Player');
-    document.getElementById('paddle-color').value    = userStore.get('user_color', '#00babc');
-    document.getElementById('ai-difficulty').value   = userStore.get('ai_level', '5');
-
+    document.getElementById('username-input').value = userStore.get('user_name', 'Player');
+    document.getElementById('paddle-color').value   = userStore.get('user_color', '#00babc');
+    document.getElementById('ai-difficulty').value  = userStore.get('ai_level', '5');
     if (!form) return;
-
     form.onsubmit = async (e) => {
         e.preventDefault();
-        const newColor      = document.getElementById('paddle-color').value;
-        const newDifficulty = document.getElementById('ai-difficulty').value;
-
-        await userStore.set('user_color', newColor);
-        await userStore.set('ai_level',   newDifficulty);
-
-        msg.innerHTML = '<p style="color: #2ea043; margin-top: 15px;">Préférences mises à jour (Pseudo conservé) !</p>';
+        await userStore.set('user_color', document.getElementById('paddle-color').value);
+        await userStore.set('ai_level',   document.getElementById('ai-difficulty').value);
+        msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Préférences mises à jour (Pseudo conservé) !</p>';
     };
 }
 
-// ─── Pong ─────────────────────────────────────────────────────────────────────
+// ─── Pong Local ───────────────────────────────────────────────────────────────
 function initPongGame(p1Name = "Player", p2Name = "IA") {
     const savedName = userStore.get('user_name');
     if (savedName && p1Name === "Player") p1Name = savedName;
-
-    const btnStart  = document.getElementById('btn-start-game');
-    const canvas    = document.getElementById('pongCanvas');
+    const btnStart   = document.getElementById('btn-start-game');
+    const canvas     = document.getElementById('pongCanvas');
     const statusText = document.getElementById('game-status');
     if (!canvas || !btnStart) return;
-
     const ctx = canvas.getContext('2d');
-    statusText.innerText       = `${p1Name} VS ${p2Name}`;
-    btnStart.style.display     = 'inline-block';
-    canvas.style.display       = 'none';
+    statusText.innerText   = `${p1Name} VS ${p2Name}`;
+    btnStart.style.display = 'inline-block';
+    canvas.style.display   = 'none';
 
     btnStart.onclick = () => {
-        btnStart.style.display  = 'none';
+        btnStart.style.display   = 'none';
         statusText.style.display = 'none';
-        canvas.style.display    = 'block';
+        canvas.style.display     = 'block';
         startGameLogic(p1Name, p2Name);
     };
 
@@ -960,49 +777,42 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         let startTime  = Date.now();
         let isGameOver = false;
         let animationId;
-
         const userColor    = userStore.get('user_color', '#00babc');
         const aiBaseSpeed  = parseFloat(userStore.get('ai_level', '5.3')) || 5.3;
         const paddleWidth  = 10;
         const paddleHeight = 80;
-        let leftPaddleY    = (canvas.height - paddleHeight) / 2;
-        let rightPaddleY   = (canvas.height - paddleHeight) / 2;
+        let leftPaddleY  = (canvas.height - paddleHeight) / 2;
+        let rightPaddleY = (canvas.height - paddleHeight) / 2;
         let ballX = canvas.width / 2, ballY = canvas.height / 2;
         let ballSpeedX = 5, ballSpeedY = 5;
         let score1 = 0, score2 = 0;
-        const keys          = {};
+        const keys = {};
         const handleKeyDown = e => keys[e.key] = true;
         const handleKeyUp   = e => keys[e.key] = false;
-
         window.addEventListener('keydown', handleKeyDown);
         window.addEventListener('keyup',   handleKeyUp);
 
         function gameLoop() {
             if (isGameOver) return;
-            update();
-            draw();
-            animationId         = requestAnimationFrame(gameLoop);
+            update(); draw();
+            animationId = requestAnimationFrame(gameLoop);
             currentPongInstance = animationId;
         }
 
         function update() {
-            if (keys['w'] && leftPaddleY > 0)                              leftPaddleY -= 7;
-            if (keys['s'] && leftPaddleY < canvas.height - paddleHeight)   leftPaddleY += 7;
-
+            if (keys['w'] && leftPaddleY > 0)                            leftPaddleY -= 7;
+            if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
             if (name2 === "IA") {
-                let targetY     = ballX > canvas.width / 2 && ballSpeedX > 0 ? ballY : canvas.height / 2;
+                let targetY      = ballX > canvas.width / 2 && ballSpeedX > 0 ? ballY : canvas.height / 2;
                 let centerPaddle = rightPaddleY + paddleHeight / 2;
-                if (centerPaddle < targetY - 10)     rightPaddleY += aiBaseSpeed;
+                if (centerPaddle < targetY - 10)      rightPaddleY += aiBaseSpeed;
                 else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
             } else {
                 if (keys['ArrowUp']   && rightPaddleY > 0)                            rightPaddleY -= 7;
                 if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) rightPaddleY += 7;
             }
-
-            ballX += ballSpeedX;
-            ballY += ballSpeedY;
+            ballX += ballSpeedX; ballY += ballSpeedY;
             if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-
             const maxSpeed = 20;
             if (ballSpeedX < 0 && ballX <= paddleWidth) {
                 if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
@@ -1016,62 +826,42 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
                     ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
                 }
             }
-
-            if (ballX < 0)              { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
+            if (ballX < 0)               { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
             else if (ballX > canvas.width) { score1++; if (score1 >= 5) endGame(name1); else resetBall(); }
         }
 
         async function endGame(winnerName) {
             if (isGameOver) return;
             isGameOver = true;
-
             const sessionSeconds = Math.floor((Date.now() - startTime) / 1000);
             cancelAnimationFrame(animationId);
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup',   handleKeyUp);
-
             const myName    = userStore.get('user_name', 'Player');
             const isVictory = (winnerName === myName);
-
             if (!tournamentState.isActive) {
-                // ← Un seul appel remplace les 8 localStorage.setItem
-                await userStore.recordMatch({
-                    isVictory,
-                    score1,
-                    score2,
-                    opponentName:    name2,
-                    durationSeconds: sessionSeconds,
-                });
+                await userStore.recordMatch({ isVictory, score1, score2, opponentName: name2, durationSeconds: sessionSeconds });
                 alert(`Match terminé ! Vainqueur : ${winnerName}`);
                 navigateTo('/profile');
             } else {
-                // Tournoi : mise à jour du temps de jeu uniquement
                 const totalTime = parseInt(userStore.get('pong_total_seconds', 0));
                 await userStore.set('pong_total_seconds', totalTime + sessionSeconds);
-
                 tournamentState.matches[tournamentState.currentMatchIndex].winner = winnerName;
-
                 if (tournamentState.currentMatchIndex === 0) {
-                    tournamentState.matches[2].p1 = winnerName;
-                    tournamentState.currentMatchIndex = 1;
-                    alert(`Fin du match ! ${winnerName} passe en finale.`);
-                    navigateTo('/tournament');
+                    tournamentState.matches[2].p1 = winnerName; tournamentState.currentMatchIndex = 1;
+                    alert(`Fin du match ! ${winnerName} passe en finale.`); navigateTo('/tournament');
                 } else if (tournamentState.currentMatchIndex === 1) {
-                    tournamentState.matches[2].p2 = winnerName;
-                    tournamentState.currentMatchIndex = 2;
-                    alert(`Fin du match ! ${winnerName} rejoint la finale.`);
-                    navigateTo('/tournament');
+                    tournamentState.matches[2].p2 = winnerName; tournamentState.currentMatchIndex = 2;
+                    alert(`Fin du match ! ${winnerName} rejoint la finale.`); navigateTo('/tournament');
                 } else if (tournamentState.currentMatchIndex === 2) {
                     alert(`🏆 INCROYABLE ! ${winnerName} REMPORTE LE TOURNOI ! 🏆`);
-                    tournamentState.isActive = false;
-                    navigateTo('/tournament');
+                    tournamentState.isActive = false; navigateTo('/tournament');
                 }
             }
         }
 
         function resetBall() {
-            ballX      = canvas.width  / 2;
-            ballY      = canvas.height / 2;
+            ballX = canvas.width / 2; ballY = canvas.height / 2;
             ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
             ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
         }
@@ -1079,18 +869,147 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         function draw() {
             ctx.fillStyle = "black";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
-            ctx.font      = "20px Arial";
+            ctx.fillStyle = "white"; ctx.font = "20px Arial";
             ctx.fillText(`${name1}: ${score1}`, canvas.width / 4,       30);
             ctx.fillText(`${name2}: ${score2}`, (canvas.width / 4) * 3, 30);
             ctx.fillStyle = userColor;
             ctx.fillRect(0,                         leftPaddleY,  paddleWidth, paddleHeight);
             ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(ballX, ballY, 8, 0, Math.PI * 2); ctx.fill();
         }
 
         gameLoop();
     }
 }
+
+// ─── Pong Online ──────────────────────────────────────────────────────────────
+function initOnlinePong(roomId) {
+    const canvas     = document.getElementById('pongCanvas');
+    const statusText = document.getElementById('game-status');
+    const btnStart   = document.getElementById('btn-start-game');
+    if (!canvas) return;
+    if (btnStart) btnStart.style.display = 'none';
+    canvas.style.display = 'block';
+    if (statusText) statusText.innerText = 'Connexion en cours...';
+
+    const ctx      = canvas.getContext('2d');
+    const color    = userStore.get('user_color', '#00babc');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws       = new WebSocket(`${protocol}//${window.location.host}/ws/game/${roomId}/`);
+
+    let mySide = null, state = null, animId = null, gameOver = false;
+    const keys = {};
+
+    const onDown = (e) => {
+        if (gameOver || !mySide) return;
+        if ((e.key === 'ArrowUp' || e.key === 'w') && !keys[e.key]) {
+            keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'up' }));
+        }
+        if ((e.key === 'ArrowDown' || e.key === 's') && !keys[e.key]) {
+            keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'down' }));
+        }
+    };
+    const onUp = (e) => { delete keys[e.key]; };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup',   onUp);
+
+    const inputLoop = setInterval(() => {
+        if (gameOver || !mySide || ws.readyState !== WebSocket.OPEN) return;
+        if (keys['ArrowUp']   || keys['w']) ws.send(JSON.stringify({ type:'input', key:'up' }));
+        if (keys['ArrowDown'] || keys['s']) ws.send(JSON.stringify({ type:'input', key:'down' }));
+    }, 16);
+
+    ws.onopen = () => { if (statusText) statusText.innerText = 'Connecté ! En attente du 2ème joueur...'; };
+
+    ws.onmessage = async (event) => { 
+        const data = JSON.parse(event.data);
+        switch (data.type) {
+            case 'joined':
+                mySide = data.side;
+                if (statusText) statusText.innerText = `Tu joues côté ${mySide === 'left' ? 'gauche (W/S)' : 'droit (↑/↓)'}. En attente...`;
+                break;
+            case 'game_start':
+                state = data.state;
+                if (statusText) statusText.style.display = 'none';
+                if (!animId) animId = requestAnimationFrame(renderLoop);
+                break;
+            case 'game_tick':
+                state = data.state;
+                break;
+            case 'game_over':
+                gameOver = true; state = data.state;
+                clearInterval(inputLoop);
+                window.removeEventListener('keydown', onDown);
+                window.removeEventListener('keyup',   onUp);
+                if (animId) cancelAnimationFrame(animId);
+                drawFinal(data.winner);
+                const myName    = userStore.get('user_name', '');
+                const isVictory = data.winner === myName;
+                const opponentName = mySide === 'left' ? state.right.name : state.left.name;
+                // Ajoute à l'historique local SANS toucher aux wins/losses (déjà fait par le backend)
+                const matchHistory = JSON.parse(localStorage.getItem('match_history') || '[]');
+                matchHistory.unshift({
+                    date:   new Date().toLocaleDateString(),
+                    result: isVictory ? 'Victoire' : 'Défaite',
+                    score:  `${state.left.score} - ${state.right.score}`,
+                    opponent: opponentName,
+                });
+                localStorage.setItem('match_history', JSON.stringify(matchHistory.slice(0, 20)));
+                await userStore.init();
+                setTimeout(() => navigateTo('/profile'), 3000);
+                break;
+            case 'player_left':
+                gameOver = true;
+                clearInterval(inputLoop);
+                if (animId) cancelAnimationFrame(animId);
+                alert('Ton adversaire a quitté la partie.');
+                navigateTo('/game');
+                break;
+            case 'error':
+                alert(data.message); navigateTo('/game'); break;
+        }
+    };
+
+    ws.onerror = () => { alert('Erreur de connexion au jeu.'); navigateTo('/game'); };
+    ws.onclose = () => { if (!gameOver) { clearInterval(inputLoop); if (animId) cancelAnimationFrame(animId); } };
+    window.addEventListener('popstate', () => { ws.close(); clearInterval(inputLoop); }, { once: true });
+
+    function renderLoop() {
+        if (!state || gameOver) return;
+        draw(state); animId = requestAnimationFrame(renderLoop);
+    }
+
+    function draw(s) {
+        const PW = 10, PH = 80;
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.setLineDash([10, 10]); ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#fff'; ctx.font = '28px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(s.left.score,  canvas.width / 4,       50);
+        ctx.fillText(s.right.score, (canvas.width / 4) * 3, 50);
+        ctx.font = '12px monospace';
+        ctx.fillStyle = mySide === 'left'  ? color : '#fff'; ctx.fillText(s.left.name,  canvas.width/4,       20);
+        ctx.fillStyle = mySide === 'right' ? color : '#fff'; ctx.fillText(s.right.name, (canvas.width/4)*3,   20);
+        ctx.fillStyle = mySide === 'left'  ? color : '#fff'; ctx.fillRect(0,                   s.left.y,  PW, PH);
+        ctx.fillStyle = mySide === 'right' ? color : '#fff'; ctx.fillRect(canvas.width - PW,   s.right.y, PW, PH);
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
+        ctx.beginPath(); ctx.arc(s.ball.x, s.ball.y, 8, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawFinal(winner) {
+        draw(state);
+        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = color; ctx.font = '36px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(`🏆 ${winner} gagne !`, canvas.width/2, canvas.height/2);
+        ctx.fillStyle = '#8b949e'; ctx.font = '14px monospace';
+        ctx.fillText('Redirection dans 3s...', canvas.width/2, canvas.height/2 + 40);
+    }
+}
+
+// ─── Exposer les fonctions globales ───────────────────────────────────────────
+window.sendFriendRequest    = sendFriendRequest;
+window.respondFriendRequest = respondFriendRequest;
+window.removeFriend         = removeFriend;
+window.inviteFriendToGame   = inviteFriendToGame;
+window.initOnlinePong       = initOnlinePong;
