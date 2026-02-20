@@ -168,6 +168,7 @@ const routes = {
         render: () => {
             const myName = userStore.get('user_name', 'Player');
             return `
+                <canvas id="pong-canvas-bg"></canvas>
                 <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;">
                     <h2 style="text-transform:uppercase;letter-spacing:2px;">Pong Match</h2>
                     <div id="amical-options" style="display:flex;flex-direction:column;gap:25px;width:320px;">
@@ -213,6 +214,7 @@ const routes = {
                 </div>`;
         },
         init: () => {
+            initBouncingBalls();
             const setupContainer = document.getElementById('setup-container');
             const gameWrapper    = document.getElementById('pong-game-wrapper');
             const btnIA          = document.getElementById('btn-play-ia');
@@ -275,6 +277,7 @@ const routes = {
     '/chat': {
         title: 'Chat',
         render: () => `
+        <canvas id="pong-canvas-bg"></canvas>
             <div class="chat-container solo">
                 <section class="chat-window">
                     <div id="chat-messages" class="chat-messages">
@@ -286,12 +289,16 @@ const routes = {
                     </form>
                 </section>
             </div>`,
-        init: initChat
+            init: () => {
+                initBouncingBalls();
+                initChat();
+            }
     },
 
     '/settings': {
         title: 'Paramètres',
         render: () => `
+        <canvas id="pong-canvas-bg"></canvas>
             <div class="settings-container">
                 <h2>Configuration du Joueur</h2>
                 <form id="settings-form">
@@ -315,13 +322,17 @@ const routes = {
                 </form>
                 <div id="settings-msg"></div>
             </div>`,
-        init: initSettings
+            init: () => {
+                initBouncingBalls();
+                initSettings();
+            }
     },
     '/tournament': {
         title: 'Tournoi Local',
         render: () => {
             if (!tournamentState.isActive) {
                 return `
+                <canvas id="pong-canvas-bg"></canvas>
                     <div class="tournament-container">
                         <h1>Tournoi Local</h1>
                         <div class="setup-box">
@@ -336,6 +347,7 @@ const routes = {
             const m   = tournamentState.matches;
             const cur = tournamentState.currentMatchIndex;
             return `
+            <canvas id="pong-canvas-bg"></canvas>
                 <div class="tournament-container">
                     <h1>Tableau du Tournoi</h1>
                     <div class="bracket-display">
@@ -367,7 +379,10 @@ const routes = {
                     </div>
                 </div>`;
         },
-        init: initTournamentLogic
+        init: () => {
+            initBouncingBalls();
+            initTournamentLogic();
+        }
     },
     '/profile': {
             title: 'Profil Utilisateur',
@@ -391,6 +406,7 @@ const routes = {
                 const xpPercentage = (currentXP / 1000) * 100;
 
                 return `
+                <canvas id="pong-canvas-bg"></canvas>
                     <div class="profile-container">
                         <div class="profile-header">
                             <div class="profile-avatar" style="border-color:${color}">
@@ -402,7 +418,7 @@ const routes = {
                         <div class="xp-section">
                             <div class="xp-info">
                                 <span>${currentXP} / 1000 XP</span>
-                                <span>Progression vers niveau ${level}</span>
+                                <span>Progression vers le niveau ${level}</span>
                             </div>
                             <div class="xp-bar-container">
                                 <div class="xp-bar-fill" style="width:${xpPercentage}%;background-color:${color}"></div>
@@ -496,6 +512,7 @@ const routes = {
     '/leaderboard': {
         title: 'Classement',
         render: () => `
+        <canvas id="pong-canvas-bg"></canvas>
             <div style="max-width:700px; margin:0 auto;">
                 <h2 style="text-transform:uppercase; letter-spacing:2px; text-align:center; margin-bottom:30px;">
                     🏆 Classement Global
@@ -504,7 +521,7 @@ const routes = {
                     <p style="color:#8b949e; text-align:center;">Chargement...</p>
                 </div>
             </div>`,
-        init: loadLeaderboard
+        init: () => {initBouncingBalls(); loadLeaderboard();}
     },
     '/tournament-game': {
         title: 'Match Tournoi',
@@ -516,7 +533,7 @@ const routes = {
             const m = tournamentState.matches[tournamentState.currentMatchIndex];
             return `
                 <h2 style="text-align:center; margin-bottom:20px; text-transform:uppercase; letter-spacing:2px;">
-                    ⚔️ ${m.p1} VS ${m.p2}
+                    ⚔️ ${m.p1} VS ${m.p2} ⚔️
                 </h2>
                 ${playPageHTML}`;
         },
@@ -580,7 +597,7 @@ function initBouncingBalls() {
 
     // On passe à 40 balles pour un effet de "pluie de néons"
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
-    const balls = Array.from({ length: 400}, () => ({
+    const balls = Array.from({ length: 200}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         // On varie un peu plus les vitesses pour plus de dynamisme
