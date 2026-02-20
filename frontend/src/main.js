@@ -26,7 +26,7 @@ const playPageHTML = `
             <button id="btn-start-game" class="cyber-button">Lancer la partie</button>
             <p id="game-status">En attente du joueur...</p>
         </div>
-        <canvas id="pongCanvas" width="800" height="400" style="display:none;"></canvas>
+        <canvas id="pongCanvas" width="1200" height="650" style="display:none;"></canvas>
     </div>
 `;
 
@@ -45,6 +45,18 @@ const routes = {
             const name = userStore.get('user_name');
             const avatar = userStore.get('user_avatar');
             const color  = userStore.get('user_color', '#00babc');
+            // pour l'xp 
+            const totalXP      = (wins * 100) + (losses * 20);
+            const level        = Math.floor(totalXP / 1000) + 1;
+            // pour le grade
+            const tab_grade = ["Novice", "Novice confirme" ,"Novice expert" ,"Novice next plus ultra"];
+            let grade = tab_grade[0];
+            if (level - 1 == 1)
+                grade = tab_grade[1];
+            if (level - 1 == 2)
+                grade = tab_grade[2];
+            if (level - 1 >= 3)
+                grade = tab_grade[3];
             if (name == null)
             {
                                 return `
@@ -99,8 +111,10 @@ const routes = {
 
                             <div class="hero-container" style="position:relative; z-index:1;">
                                 <div class="home-profile-header">
+                                <h4>${name}</h4>
                                     ${avatar ? `<img src="${avatar}" class="home-avatar-img" style="border-color:${color}">` : ''}
-                                    <h5>👑 Content de te voir ${name} 👑</h5>
+                                    <div class="level-badge">Niveau ${level - 1}</div>
+                                    <h5>👑 Grade : ${grade} 👑</h5>
                                     <h1>Pong Game 🎾</h1>
                                 </div>
                                 <div class="pong-showcase">
@@ -355,7 +369,6 @@ const routes = {
         },
         init: initTournamentLogic
     },
-
     '/profile': {
             title: 'Profil Utilisateur',
             render: () => {
@@ -384,12 +397,12 @@ const routes = {
                                 <img src="${avatar}" alt="Avatar" class="avatar-img">
                             </div>
                             <h2>${name}</h2>
-                            <div class="level-badge">Niveau ${level}</div>
+                            <div class="level-badge">Niveau ${level - 1}</div>
                         </div>
                         <div class="xp-section">
                             <div class="xp-info">
                                 <span>${currentXP} / 1000 XP</span>
-                                <span>Progression vers niveau ${level + 1}</span>
+                                <span>Progression vers niveau ${level}</span>
                             </div>
                             <div class="xp-bar-container">
                                 <div class="xp-bar-fill" style="width:${xpPercentage}%;background-color:${color}"></div>
@@ -1100,15 +1113,69 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         }
 
         function draw() {
-            ctx.fillStyle = "black";
+            // Fond avec dégradé subtil
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, '#050810');
+            gradient.addColorStop(0.5, '#0a0f1a');
+            gradient.addColorStop(1, '#050810');
+            ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white"; ctx.font = "20px Arial";
-            ctx.fillText(`${name1}: ${score1}`, canvas.width / 4,       30);
-            ctx.fillText(`${name2}: ${score2}`, (canvas.width / 4) * 3, 30);
+
+            // Ligne centrale pointillée
+            ctx.setLineDash([8, 8]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Scores
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 48px monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fillText(score1, canvas.width / 4,       70);
+            ctx.fillText(score2, (canvas.width / 4) * 3, 70);
+
+            // Noms des joueurs
+            ctx.font = '13px monospace';
+            ctx.letterSpacing = '2px';
             ctx.fillStyle = userColor;
-            ctx.fillRect(0,                         leftPaddleY,  paddleWidth, paddleHeight);
-            ctx.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
-            ctx.beginPath(); ctx.arc(ballX, ballY, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowColor = userColor;
+            ctx.shadowBlur = 8;
+            ctx.fillText(name1.toUpperCase(), canvas.width / 4,       20);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffffff';
+            ctx.fillText(name2.toUpperCase(), (canvas.width / 4) * 3, 20);
+            ctx.shadowBlur = 0;
+
+            // Raquette gauche avec glow
+            ctx.shadowColor = userColor;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = userColor;
+            // Coins arrondis simulés
+            const r = 4;
+            ctx.beginPath();
+            ctx.roundRect(0, leftPaddleY, paddleWidth, paddleHeight, [0, r, r, 0]);
+            ctx.fill();
+
+            // Raquette droite
+            ctx.shadowColor = '#ffffff';
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.roundRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight, [r, 0, 0, r]);
+            ctx.fill();
+
+            // Balle avec glow
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, 7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.textAlign = 'left';
         }
 
         gameLoop();
@@ -1214,29 +1281,86 @@ function initOnlinePong(roomId) {
 
     function draw(s) {
         const PW = 10, PH = 80;
-        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.setLineDash([10, 10]); ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+
+        // Fond
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, '#050810');
+        gradient.addColorStop(0.5, '#0a0f1a');
+        gradient.addColorStop(1, '#050810');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Ligne centrale
+        ctx.setLineDash([8, 8]);
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = '#fff'; ctx.font = '28px monospace'; ctx.textAlign = 'center';
-        ctx.fillText(s.left.score,  canvas.width / 4,       50);
-        ctx.fillText(s.right.score, (canvas.width / 4) * 3, 50);
-        ctx.font = '12px monospace';
-        ctx.fillStyle = mySide === 'left'  ? color : '#fff'; ctx.fillText(s.left.name,  canvas.width/4,       20);
-        ctx.fillStyle = mySide === 'right' ? color : '#fff'; ctx.fillText(s.right.name, (canvas.width/4)*3,   20);
-        ctx.fillStyle = mySide === 'left'  ? color : '#fff'; ctx.fillRect(0,                   s.left.y,  PW, PH);
-        ctx.fillStyle = mySide === 'right' ? color : '#fff'; ctx.fillRect(canvas.width - PW,   s.right.y, PW, PH);
-        ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
-        ctx.beginPath(); ctx.arc(s.ball.x, s.ball.y, 8, 0, Math.PI * 2); ctx.fill();
+
+        // Scores
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 48px monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillText(s.left.score,  canvas.width / 4,       70);
+        ctx.fillText(s.right.score, (canvas.width / 4) * 3, 70);
+
+        // Noms
+        ctx.font = '13px monospace';
+        const leftColor  = mySide === 'left'  ? color : '#ffffff';
+        const rightColor = mySide === 'right' ? color : '#ffffff';
+        ctx.fillStyle = leftColor;
+        ctx.shadowColor = leftColor; ctx.shadowBlur = 8;
+        ctx.fillText(s.left.name.toUpperCase(),  canvas.width/4,     20);
+        ctx.fillStyle = rightColor;
+        ctx.shadowColor = rightColor;
+        ctx.fillText(s.right.name.toUpperCase(), (canvas.width/4)*3, 20);
+        ctx.shadowBlur = 0;
+
+        // Raquette gauche
+        ctx.shadowColor = leftColor; ctx.shadowBlur = 15;
+        ctx.fillStyle = leftColor;
+        ctx.beginPath();
+        ctx.roundRect(0, s.left.y, PW, PH, [0, 4, 4, 0]);
+        ctx.fill();
+
+        // Raquette droite
+        ctx.shadowColor = rightColor; ctx.shadowBlur = 15;
+        ctx.fillStyle = rightColor;
+        ctx.beginPath();
+        ctx.roundRect(canvas.width - PW, s.right.y, PW, PH, [4, 0, 0, 4]);
+        ctx.fill();
+
+        // Balle
+        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 20;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(s.ball.x, s.ball.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.textAlign = 'left';
     }
 
     function drawFinal(winner) {
         draw(state);
-        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = color; ctx.font = '36px monospace'; ctx.textAlign = 'center';
-        ctx.fillText(`🏆 ${winner} gagne !`, canvas.width/2, canvas.height/2);
-        ctx.fillStyle = '#8b949e'; ctx.font = '14px monospace';
-        ctx.fillText('Redirection dans 3s...', canvas.width/2, canvas.height/2 + 40);
+        // Overlay flouté
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Titre
+        ctx.textAlign = 'center';
+        ctx.shadowColor = color; ctx.shadowBlur = 30;
+        ctx.fillStyle = color;
+        ctx.font = 'bold 42px monospace';
+        ctx.fillText(`🏆 ${winner}`, canvas.width/2, canvas.height/2 - 10);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#8b949e';
+        ctx.font = '16px monospace';
+        ctx.fillText('VICTOIRE', canvas.width/2, canvas.height/2 + 30);
+        ctx.font = '13px monospace';
+        ctx.fillText('Redirection dans 3s...', canvas.width/2, canvas.height/2 + 60);
+        ctx.textAlign = 'left';
     }
 }
 

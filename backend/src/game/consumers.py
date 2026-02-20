@@ -7,8 +7,8 @@ from channels.db import database_sync_to_async
 # { room_id: { players: [...], state: {...}, task: asyncio.Task } }
 GAME_ROOMS = {}
 
-CANVAS_W  = 800
-CANVAS_H  = 400
+CANVAS_W  = 1200
+CANVAS_H  = 650
 PADDLE_W  = 10
 PADDLE_H  = 80
 BALL_SIZE = 8
