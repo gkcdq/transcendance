@@ -379,14 +379,93 @@ const routes = {
             <p>Connecte-toi pour jouer 🎾.</p>
             <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
     },
+    '/tournament-denied': {
+        title: 'Accès Refusé',
+        render: () => `
+            <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
+            <p>Connecte-toi pour lancer des tournois ⚔️.</p>
+            <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
+    },
     '/chat-denied': {
         title: 'Accès Refusé',
         render: () => `
             <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
             <p>Connecte-toi pour envoyer des messages 📨.</p>
             <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
-    }
+    },
+    '/profil-denied': {
+        title: 'Accès Refusé',
+        render: () => `
+            <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
+            <p>Connecte-toi pour voir ton profile 📜.</p>
+            <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
+    },
+    '/leaderboard-denied': {
+        title: 'Accès Refusé',
+        render: () => `
+            <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
+            <p>Connecte-toi pour voir le classement 📊.</p>
+            <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
+    },
+    '/settings-denied': {
+        title: 'Accès Refusé',
+        render: () => `
+            <div class="access-denied-container"><h1>🚫 Accès Interdit 🚫</h1><div class="denied-actions"></div></div>
+            <p>Connecte-toi pour modifier les parametres 🛠️.</p>
+            <a href="/" class="cyber-button secondary">Retour à l'accueil</a>`
+    },
+    
+    '/leaderboard': {
+        title: 'Classement',
+        render: () => `
+            <div style="max-width:700px; margin:0 auto;">
+                <h2 style="text-transform:uppercase; letter-spacing:2px; text-align:center; margin-bottom:30px;">
+                    🏆 Classement Global
+                </h2>
+                <div id="leaderboard-container">
+                    <p style="color:#8b949e; text-align:center;">Chargement...</p>
+                </div>
+            </div>`,
+        init: loadLeaderboard
+    },
 };
+
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+async function loadLeaderboard() {
+    const container = document.getElementById('leaderboard-container');
+    if (!container) return;
+    try {
+        const res  = await fetch('/api/users/leaderboard/', { credentials: 'include' });
+        const data = await res.json();
+        const myName = userStore.get('user_name', '');
+
+        container.innerHTML = data.leaderboard.map(p => `
+            <div style="display:flex; align-items:center; gap:15px; padding:14px 16px;
+                margin-bottom:8px; border-radius:8px;
+                background:${p.username === myName ? 'rgba(0,186,188,0.1)' : 'rgba(255,255,255,0.03)'};
+                border:1px solid ${p.username === myName ? '#00babc' : '#1e2330'};">
+                <span style="font-size:1.2rem; font-weight:900; color:${p.rank <= 3 ? ['#ffd700','#c0c0c0','#cd7f32'][p.rank-1] : '#8b949e'}; width:30px;">
+                    ${p.rank <= 3 ? ['🥇','🥈','🥉'][p.rank-1] : `#${p.rank}`}
+                </span>
+                <img src="${p.avatar}" style="width:38px; height:38px; border-radius:50%; object-fit:cover;">
+                <span style="flex:1; font-weight:700; color:${p.username === myName ? '#00babc' : '#fff'};">
+                    ${p.username} ${p.username === myName ? '← toi' : ''}
+                </span>
+                <span style="font-size:0.8rem; color:#2ea043; min-width:60px; text-align:center;">
+                    ${p.wins}W / ${p.losses}L
+                </span>
+                <span style="font-size:0.8rem; color:#8b949e; min-width:50px; text-align:center;">
+                    ${p.winrate}%
+                </span>
+                <span style="font-size:0.75rem; color:#ffb921; min-width:60px; text-align:right;">
+                    ${p.xp} XP
+                </span>
+            </div>
+        `).join('') || '<p style="color:#8b949e; text-align:center;">Aucun joueur pour le moment.</p>';
+    } catch (err) {
+        container.innerHTML = '<p style="color:#8b949e; text-align:center;">Erreur de chargement.</p>';
+    }
+}
 
 // ─── Tournoi ─────────────────────────────────────────────────────────────────
 function initTournamentLogic() {
@@ -421,6 +500,10 @@ const router = async () => {
     const isLoggedIn = await checkAuth();
     if (path === '/game' && !isLoggedIn) { navigateTo('/jouer-denied'); return; }
     if (path === '/chat' && !isLoggedIn) { navigateTo('/chat-denied');  return; }
+    if (path === '/profile' && !isLoggedIn) { navigateTo('/profil-denied');  return; }
+    if (path === '/tournament' && !isLoggedIn) { navigateTo('/tournament-denied');  return; }
+    if (path === '/settings' && !isLoggedIn) { navigateTo('/settings-denied');  return; }
+    if (path === '/leaderboard' && !isLoggedIn) { navigateTo('/leaderboard-denied');  return; }
     document.title = `Transcendence - ${route.title}`;
     const appContainer = document.getElementById('app');
     if (appContainer) appContainer.innerHTML = route.render();
@@ -477,7 +560,7 @@ function renderAuthUI(isLoggedIn) {
         container.innerHTML = `
             <div class="pilot-profile">
                 <div class="pilot-info">
-                    <span class="pilot-label">PLAYER SYSTEM</span>
+                    <span class="pilot-label">PLAYER</span>
                     <span class="pilot-name">${name}</span>
                 </div>
                 <img src="${avatar}" class="pilot-avatar">

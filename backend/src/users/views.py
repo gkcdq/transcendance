@@ -8,6 +8,26 @@ from .models import UserProfile, FriendRequest
 import json
 
 
+def get_leaderboard(request):
+    profiles = User.objects.select_related('profile').order_by(
+        '-profile__wins', '-profile__xp'
+    )[:10]
+    
+    data = []
+    for i, user in enumerate(profiles, 1):
+        p = user.profile
+        data.append({
+            'rank':     i,
+            'username': user.username,
+            'avatar':   p.avatar or f'https://ui-avatars.com/api/?name={user.username}&background=0D1117&color=00babc',
+            'wins':     p.wins,
+            'losses':   p.losses,
+            'xp':       p.xp,
+            'winrate':  round(p.wins / (p.wins + p.losses) * 100) if (p.wins + p.losses) > 0 else 0,
+        })
+    
+    return JsonResponse({'leaderboard': data})
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def oauth_login(request):

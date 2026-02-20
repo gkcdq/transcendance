@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import (
     get_user_profile, update_user_profile, record_match,
     logout_view, oauth_login,
@@ -18,4 +19,5 @@ urlpatterns = [
     path('friends/respond/<int:request_id>/', respond_friend_request, name='friend-respond'),
     path('friends/remove/<str:username>/',    remove_friend,          name='friend-remove'),
     path('search/',                           search_users,           name='user-search'),
+    path('leaderboard/', views.get_leaderboard, name='user-leaderboard'),
 ]
