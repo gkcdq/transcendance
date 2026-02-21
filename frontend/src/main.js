@@ -313,9 +313,9 @@ const routes = {
                     <div class="setting-group">
                         <label>Difficulté IA par défaut</label>
                         <select id="ai-difficulty">
-                            <option value="0.3">Facile</option>
+                            <option value="3">Facile</option>
                             <option value="5">Normal</option>
-                            <option value="8">Expert</option>
+                            <option value="9">Expert</option>
                         </select>
                     </div>
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
@@ -1033,62 +1033,112 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
         startGameLogic(p1Name, p2Name);
     };
 
-    function startGameLogic(name1, name2) {
-        let startTime  = Date.now();
-        let isGameOver = false;
-        let animationId;
-        const userColor    = userStore.get('user_color', '#00babc');
-        const aiBaseSpeed  = parseFloat(userStore.get('ai_level', '5.3')) || 5.3;
-        const paddleWidth  = 10;
-        const paddleHeight = 80;
-        let leftPaddleY  = (canvas.height - paddleHeight) / 2;
-        let rightPaddleY = (canvas.height - paddleHeight) / 2;
-        let ballX = canvas.width / 2, ballY = canvas.height / 2;
-        let ballSpeedX = 5, ballSpeedY = 5;
-        let score1 = 0, score2 = 0;
-        const keys = {};
-        const handleKeyDown = e => keys[e.key] = true;
-        const handleKeyUp   = e => keys[e.key] = false;
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup',   handleKeyUp);
+function startGameLogic(name1, name2) {
+    let startTime  = Date.now();
+    let isGameOver = false;
+    let animationId;
+    const userColor    = userStore.get('user_color', '#00babc');
+    const aiBaseSpeed  = parseFloat(userStore.get('ai_level', '5.3')) || 5.3;
+    const paddleWidth  = 10;
+    const paddleHeight = 80;
+    const PADDLE_MAX_X = canvas.width / 2 - paddleWidth; // limite milieu
 
-        function gameLoop() {
-            if (isGameOver) return;
-            update(); draw();
-            animationId = requestAnimationFrame(gameLoop);
-            currentPongInstance = animationId;
+    // Position X ET Y des raquettes
+    let leftPaddleX  = 0;
+    let leftPaddleY  = (canvas.height - paddleHeight) / 2;
+    let rightPaddleX = canvas.width - paddleWidth;
+    let rightPaddleY = (canvas.height - paddleHeight) / 2;
+
+    let ballX = canvas.width / 2, ballY = canvas.height / 2;
+    let ballSpeedX = 5, ballSpeedY = 5;
+    let score1 = 0, score2 = 0;
+    const keys = {};
+    const handleKeyDown = e => {
+        // Ne bloque que les touches de jeu, pas quand on tape dans un input
+        if (['w','s','a','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+            if (document.activeElement.tagName !== 'INPUT') e.preventDefault();
+        }
+        keys[e.key] = true;
+    };
+    const handleKeyUp = e => keys[e.key] = false;
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup',   handleKeyUp);
+    // Système de particules
+    const particles = Array.from({ length: 60 }, () => ({
+        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        size: Math.random() * 1.5 + 0.5, speedX: (Math.random() - 0.5) * 0.4,
+        speedY: (Math.random() - 0.5) * 0.4, opacity: Math.random() * 0.4 + 0.1,
+    }));
+    const ballTrail = [];
+
+    function gameLoop() {
+        if (isGameOver) return;
+        update(); draw();
+        animationId = requestAnimationFrame(gameLoop);
+        currentPongInstance = animationId;
+    }
+
+    function update() {
+        const speed = 7, hSpeed = 4;
+
+        // Raquette gauche : W/S vertical, A/D horizontal (max jusqu'au milieu)
+        if (keys['w'] && leftPaddleY > 0)                             leftPaddleY -= speed;
+        if (keys['s'] && leftPaddleY < canvas.height - paddleHeight)  leftPaddleY += speed;
+        if (keys['d'] && leftPaddleX < PADDLE_MAX_X)                  leftPaddleX += hSpeed;
+        if (keys['a'] && leftPaddleX > 0)                             leftPaddleX -= hSpeed;
+
+        if (name2 === "IA") {
+            // IA : suit la balle en Y ET avance en X si la balle est proche
+            const centerPaddle = rightPaddleY + paddleHeight / 2;
+            const targetY = ballSpeedX > 0 ? ballY : canvas.height / 2;
+            if (centerPaddle < targetY - 10) rightPaddleY += aiBaseSpeed;
+            else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
+            // IA avance vers la balle en X (mais ne dépasse pas le milieu)
+            const targetX = ballSpeedX > 0
+                ? Math.max(canvas.width - paddleWidth - PADDLE_MAX_X, ballX - 60)
+                : canvas.width - paddleWidth;
+            if (rightPaddleX > targetX + 3) rightPaddleX -= hSpeed * 0.6;
+            else if (rightPaddleX < targetX - 3) rightPaddleX += hSpeed * 0.6;
+            rightPaddleX = Math.max(canvas.width / 2, Math.min(canvas.width - paddleWidth, rightPaddleX));
+        } else {
+            // Joueur 2 : flèches haut/bas + gauche/droite
+            if (keys['ArrowUp']    && rightPaddleY > 0)                            rightPaddleY -= speed;
+            if (keys['ArrowDown']  && rightPaddleY < canvas.height - paddleHeight) rightPaddleY += speed;
+            if (keys['ArrowLeft']  && rightPaddleX > canvas.width / 2)             rightPaddleX -= hSpeed;
+            if (keys['ArrowRight'] && rightPaddleX < canvas.width - paddleWidth)   rightPaddleX += hSpeed;
         }
 
-        function update() {
-            if (keys['w'] && leftPaddleY > 0)                            leftPaddleY -= 7;
-            if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += 7;
-            if (name2 === "IA") {
-                let targetY      = ballX > canvas.width / 2 && ballSpeedX > 0 ? ballY : canvas.height / 2;
-                let centerPaddle = rightPaddleY + paddleHeight / 2;
-                if (centerPaddle < targetY - 10)      rightPaddleY += aiBaseSpeed;
-                else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
-            } else {
-                if (keys['ArrowUp']   && rightPaddleY > 0)                            rightPaddleY -= 7;
-                if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) rightPaddleY += 7;
-            }
-            ballX += ballSpeedX; ballY += ballSpeedY;
-            if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-            const maxSpeed = 20;
-            if (ballSpeedX < 0 && ballX <= paddleWidth) {
-                if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
-                    ballX = paddleWidth;
-                    ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
-                }
-            }
-            if (ballSpeedX > 0 && ballX >= canvas.width - paddleWidth) {
-                if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
-                    ballX = canvas.width - paddleWidth;
+        ballX += ballSpeedX; ballY += ballSpeedY;
+        if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
+
+        const maxSpeed = 20;
+
+        // Collision raquette gauche (position X dynamique)
+        // Collision raquette droite — détection par segment
+        if (ballSpeedX > 0) {
+            const prevBallX = ballX - ballSpeedX;
+            if (prevBallX < rightPaddleX + paddleWidth && ballX >= rightPaddleX) {
+                if (ballY + 6 > rightPaddleY && ballY - 6 < rightPaddleY + paddleHeight) {
+                    ballX = rightPaddleX - 1;
                     ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
                 }
             }
-            if (ballX < 0)               { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
-            else if (ballX > canvas.width) { score1++; if (score1 >= 5) endGame(name1); else resetBall(); }
         }
+
+        // Collision raquette gauche — détection par segment
+        if (ballSpeedX < 0) {
+            const prevBallX = ballX - ballSpeedX;
+            if (prevBallX > leftPaddleX && ballX <= leftPaddleX + paddleWidth) {
+                if (ballY + 6 > leftPaddleY && ballY - 6 < leftPaddleY + paddleHeight) {
+                    ballX = leftPaddleX + paddleWidth + 1;
+                    ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                }
+            }
+        }
+
+        if (ballX < 0)                { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
+        else if (ballX > canvas.width) { score1++; if (score1 >= 5) endGame(name1); else resetBall(); }
+    }
 
         async function endGame(winnerName) {
             if (isGameOver) return;
@@ -1127,6 +1177,10 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
             ballX = canvas.width / 2; ballY = canvas.height / 2;
             ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
             ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
+            leftPaddleX = 0;
+            leftPaddleY  = (canvas.height - paddleHeight) / 2;
+            rightPaddleX = canvas.width;
+            rightPaddleY = (canvas.height - paddleHeight) / 2.5;
         }
 
         function draw() {
@@ -1168,21 +1222,18 @@ function initPongGame(p1Name = "Player", p2Name = "IA") {
             ctx.shadowBlur = 0;
 
             // Raquette gauche avec glow
-            ctx.shadowColor = userColor;
-            ctx.shadowBlur = 15;
-            ctx.fillStyle = userColor;
-            // Coins arrondis simulés
-            const r = 4;
-            ctx.beginPath();
-            ctx.roundRect(0, leftPaddleY, paddleWidth, paddleHeight, [0, r, r, 0]);
-            ctx.fill();
+// Raquette gauche
+        ctx.shadowColor = userColor; ctx.shadowBlur = 18;
+        ctx.fillStyle = userColor;
+        ctx.beginPath();
+        ctx.roundRect(leftPaddleX, leftPaddleY, paddleWidth, paddleHeight, [4,4,4,4]);
+        ctx.fill();
 
-            // Raquette droite
-            ctx.shadowColor = '#ffffff';
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.roundRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight, [r, 0, 0, r]);
-            ctx.fill();
+        // Raquette droite
+        ctx.shadowColor = '#fff'; ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.roundRect(rightPaddleX, rightPaddleY, paddleWidth, paddleHeight, [4,4,4,4]);
+        ctx.fill();
 
             // Balle avec glow
             ctx.shadowColor = '#ffffff';
