@@ -1,16 +1,17 @@
 import json
 import asyncio
+import random
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-GAME_ROOMS = {}
+GAME_ROOMS        = {}
 MATCHMAKING_QUEUE = []
 
 CANVAS_W  = 1200
 CANVAS_H  = 650
 PADDLE_W  = 10
 PADDLE_H  = 80
-BALL_SIZE = 8
+BALL_R    = 8
 WIN_SCORE = 5
 TICK_RATE = 1 / 60
 
@@ -50,7 +51,7 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         room = GAME_ROOMS[self.room_id]
 
-        # Reconnexion : le joueur reprend sa place
+        # Reconnexion
         if self.username in room["usernames"].values():
             self.side = [s for s, u in room["usernames"].items() if u == self.username][0]
             room["players"].append(self.channel_name)
@@ -62,8 +63,8 @@ class GameConsumer(AsyncWebsocketConsumer):
         # Première connexion
         if len(room["players"]) == 0:
             self.side = "left"
-            room["state"]["left"]["name"] = self.username
-            room["usernames"]["left"]     = self.username
+            room["state"]["left"]["name"]  = self.username
+            room["usernames"]["left"]      = self.username
         elif len(room["players"]) == 1:
             self.side = "right"
             room["state"]["right"]["name"] = self.username
@@ -92,7 +93,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             if self.channel_name in room["players"]:
                 room["players"].remove(self.channel_name)
 
-            # Nettoie seulement si plus personne du tout
             if len(room["players"]) == 0:
                 if room["task"] and not room["task"].done():
                     room["task"].cancel()
@@ -163,35 +163,52 @@ class GameConsumer(AsyncWebsocketConsumer):
         ball = state["ball"]
         ball["x"] += ball["vx"]
         ball["y"] += ball["vy"]
-
-        if ball["y"] <= 0 or ball["y"] >= CANVAS_H:
-            ball["vy"] = -ball["vy"]
-            ball["y"]  = max(0, min(CANVAS_H, ball["y"]))
-
         max_speed = 15
+
+        # Rebond haut/bas
+        if ball["y"] - BALL_R <= 0:
+            ball["vy"] = abs(ball["vy"])
+            ball["y"]  = BALL_R
+        elif ball["y"] + BALL_R >= CANVAS_H:
+            ball["vy"] = -abs(ball["vy"])
+            ball["y"]  = CANVAS_H - BALL_R
 
         lx = state["left"]["x"]
         ly = state["left"]["y"]
-        if ball["vx"] < 0 and ball["x"] <= lx + PADDLE_W + BALL_SIZE:
-            if ly <= ball["y"] <= ly + PADDLE_H:
-                ball["x"]  = lx + PADDLE_W + BALL_SIZE
-                ball["vx"] = min(abs(ball["vx"]) * 1.05, max_speed)
-            elif ball["x"] < 0:
-                state["right"]["score"] += 1
-                self.reset_ball(state)
-
         rx = state["right"]["x"]
         ry = state["right"]["y"]
-        if ball["vx"] > 0 and ball["x"] >= rx - BALL_SIZE:
-            if ry <= ball["y"] <= ry + PADDLE_H:
-                ball["x"]  = rx - BALL_SIZE
+
+        # ── Raquette gauche ───────────────────────────────────────────────────
+        # Collision uniquement si la balle va vers la gauche
+        if ball["vx"] < 0:
+            if (ball["x"] - BALL_R <= lx + PADDLE_W and
+                ball["x"] + BALL_R >= lx and
+                ball["y"] + BALL_R >= ly and
+                ball["y"] - BALL_R <= ly + PADDLE_H):
+                ball["x"]  = lx + PADDLE_W + BALL_R
+                ball["vx"] = min(abs(ball["vx"]) * 1.05, max_speed)
+            elif ball["x"] + BALL_R < 0:
+                # Point pour la droite — reset immédiat
+                state["right"]["score"] += 1
+                self.reset_ball(state)
+                return  # ← stop pour éviter double collision
+
+        # ── Raquette droite ───────────────────────────────────────────────────
+        # Collision uniquement si la balle va vers la droite
+        elif ball["vx"] > 0:
+            if (ball["x"] + BALL_R >= rx and
+                ball["x"] - BALL_R <= rx + PADDLE_W and
+                ball["y"] + BALL_R >= ry and
+                ball["y"] - BALL_R <= ry + PADDLE_H):
+                ball["x"]  = rx - BALL_R
                 ball["vx"] = -min(abs(ball["vx"]) * 1.05, max_speed)
-            elif ball["x"] > CANVAS_W:
+            elif ball["x"] - BALL_R > CANVAS_W:
+                # Point pour la gauche — reset immédiat
                 state["left"]["score"] += 1
                 self.reset_ball(state)
+                return  # ← stop pour éviter double collision
 
     def reset_ball(self, state):
-        import random
         state["ball"] = {
             "x":  CANVAS_W / 2,
             "y":  CANVAS_H / 2,

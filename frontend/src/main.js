@@ -406,9 +406,15 @@ const routes = {
 
                         if (data.status === 'matched') {
                             clearInterval(interval);
-                            mmStatus.innerHTML = `✅ Adversaire trouvé ! Lancement...`;
-                            setupContainer.style.display = 'none';
-                            gameWrapper.style.display    = 'block';
+                            lockNav();
+                            // Remplace tout le contenu par juste le canvas
+                            const app = document.getElementById('app');
+                            app.innerHTML = `
+                                <canvas id="pong-canvas-bg"></canvas>
+                                <div class="game-container" style="position:relative;z-index:1;">
+                                    <canvas id="pongCanvas" width="1200" height="650"></canvas>
+                                </div>`;
+                            initBouncingBalls();
                             initOnlinePong(data.room_id);
                         } else {
                             // Toujours en attente — anime les points
@@ -1043,6 +1049,27 @@ function renderAuthUI(isLoggedIn) {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
+function lockNav() {
+    document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.pointerEvents = 'none';
+        a.style.opacity = '0.3';
+    });
+    if (!document.getElementById('nav-match-badge')) {
+        document.querySelector('.nav-links')?.insertAdjacentHTML('beforeend',
+            `<li id="nav-match-badge" style="color:#ff0055;font-weight:bold;font-size:0.8rem;letter-spacing:1px;">🔴 MATCH EN COURS</li>`
+        );
+    }
+}
+
+function unlockNav() {
+    sessionStorage.removeItem('active_room');
+    document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.pointerEvents = '';
+        a.style.opacity = '';
+    });
+    document.getElementById('nav-match-badge')?.remove();
+}
+
 function navigateTo(url) {
     if (currentPongInstance) { cancelAnimationFrame(currentPongInstance); currentPongInstance = null; }
     history.pushState(null, null, url);
@@ -1057,6 +1084,11 @@ document.addEventListener('click', e => {
     if (href.startsWith('/')) {
         if (href.includes('/accounts/')) return;
         e.preventDefault();
+        if (sessionStorage.getItem('active_room') && href !== '/game') {
+            const leave = confirm('⚠️ Tu as un match en cours ! Quitter = forfait. Continuer ?');
+            if (!leave) return;
+            unlockNav();
+        }
         if (typeof tournamentState !== 'undefined') tournamentState.isMatchRunning = false;
         navigateTo(href);
     }
@@ -1601,7 +1633,7 @@ function initOnlinePong(roomId) {
                 state = data.state;
                 break;
             case 'game_over':
-                sessionStorage.removeItem('active_room');
+                unlockNav();
                 isOnline = 0;
                 gameOver = true; state = data.state;
                 clearInterval(inputLoop);
@@ -1612,7 +1644,6 @@ function initOnlinePong(roomId) {
                 const myName    = userStore.get('user_name', '');
                 const isVictory = data.winner === myName;
                 const opponentName = mySide === 'left' ? state.right.name : state.left.name;
-                // Ajoute à l'historique local SANS toucher aux wins/losses (déjà fait par le backend)
                 const matchHistory = JSON.parse(localStorage.getItem('match_history') || '[]');
                 matchHistory.unshift({
                     date:   new Date().toLocaleDateString(),
@@ -1625,6 +1656,7 @@ function initOnlinePong(roomId) {
                 setTimeout(() => navigateTo('/profile'), 3000);
                 break;
             case 'player_left':
+                unlockNav();
                 gameOver = true;
                 clearInterval(inputLoop);
                 if (animId) cancelAnimationFrame(animId);
