@@ -196,12 +196,12 @@ const routes = {
                                             <div>
                                                 <p>Local Game : Raquette Gauche ⤵</p>
                                             </div>
-                                                <div class="keys"><span class="key">W</span> <span class="key">S</span></div>
+                                                <div class="keys"><span class="key">W</span> <span class="key">A</span> <span class="key">S</span><span class="key">D</span></div>
                                             </div>
                                             <div class="divider"></div>
                                             <div class="player-keys">
                                                 <p>Local Game : Raquette Droite ⤵</p>
-                                                <div class="keys"><span class="key">↑</span> <span class="key">↓</span></div>
+                                                <div class="keys"><span class="key">↑</span> <span class="key">↓</span> <span class="key">→</span> <span class="key">←</span></div>
                                             </div>
                                         </div>
                                     </div>
@@ -506,7 +506,7 @@ const routes = {
                         <select id="ai-difficulty">
                             <option value="3">Facile</option>
                             <option value="5">Normal</option>
-                            <option value="9">Expert</option>
+                            <option value="12">Expert</option>
                         </select>
                     </div>
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
