@@ -13,7 +13,20 @@ const loginFromUrl  = urlParams.get('login');
 if (avatarFromUrl) await userStore.set('user_avatar', avatarFromUrl);
 if (loginFromUrl)  await userStore.set('user_name',   loginFromUrl);
 
-window.logout = () => userStore.logout();
+let isOnline = 0;
+
+window.logout = async () => {
+    try {
+        await fetch('/api/users/logout/', {
+            method: 'POST', credentials: 'include',
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+    } catch(e) {}
+    currentUser = null;
+    localStorage.removeItem('user_data');
+    await userStore.logout();
+    navigateTo('/');
+};
 
 console.log("Script main.js chargé !");
 let currentPongInstance = null;
@@ -57,37 +70,86 @@ const routes = {
                 grade = tab_grade[2];
             if (level - 1 >= 3)
                 grade = tab_grade[3];
-            if (name == null)
-            {
-                                return `
-                            <canvas id="pong-canvas-bg"></canvas>
+            if (name == null) {
+                return `
+                    <canvas id="pong-canvas-bg"></canvas>
+                    <div class="hero-container" style="position:relative; z-index:1;">
+                        <div class="home-profile-header">
+                        <h1>Pong Game 🎾</h1>
+                        <h5>📌 Connecte-toi pour jouer 📌</h5>
+                        </div>
+                        <div class="pong-showcase">
+                            <div class="pong-gif-mockup">
+                                <div class="pong-animation-lite">
+                                    <div class="paddle left"></div>
+                                    <div class="ball-mid"></div>
+                                    <div class="paddle right"></div>
+                                </div>
+                                <span class="badge-live">LIVE PREVIEW</span>
+                            </div>
+                            <div class="pong-controls-guide">
+                                <h3>Des règles simples :</h3>
+                                <p class="subtitle">Une balle, deux raquettes, un seul vainqueur.</p>
+                            </div>
+                        </div>
 
-                            <div class="hero-container" style="position:relative; z-index:1;">
-                                <div class="home-profile-header">
-                                    ${avatar ? `<img src="${avatar}" class="home-avatar-img" style="border-color:${color}">` : ''}
-                                    <h5>📌 connecte toi pour jouer 📌</h5>
-                                    <h1>Pong Game 🎾</h1>
+                        <div style="display:flex; gap:16px; margin-top:30px; justify-content:center; flex-wrap:wrap;">
+                            <a href="${authUrl}" class="cyber-button" style="display:flex; align-items:center; gap:10px; padding:12px 24px; font-size:0.95rem;">
+                                <span style="font-size:1.2rem;">🎓</span> Connexion avec 42
+                            </a>
+                            <button id="btn-show-login" class="cyber-button" style="background:none; border:1px solid #00babc; color:#00babc; padding:12px 24px; font-size:0.95rem; display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:1.2rem;">🔑</span> Connexion / Inscription
+                            </button>
+                        </div>
+
+                        <!-- Formulaire login/register caché par défaut -->
+                        <div id="auth-form-container" style="display:none; margin-top:30px; max-width:360px; width:100%; margin-left:auto; margin-right:auto;">
+                            <div style="border:1px solid #30363d; border-radius:8px; padding:30px; background:rgba(13,17,23,0.95); backdrop-filter:blur(10px);">
+                                
+                                <!-- Onglets -->
+                                <div style="display:flex; gap:0; margin-bottom:24px; border-bottom:1px solid #30363d;">
+                                    <button id="tab-login" style="flex:1; background:none; border:none; border-bottom:2px solid #00babc; color:#00babc; padding:10px; cursor:pointer; font-size:0.9rem; font-weight:700;">Connexion</button>
+                                    <button id="tab-register" style="flex:1; background:none; border:none; border-bottom:2px solid transparent; color:#8b949e; padding:10px; cursor:pointer; font-size:0.9rem;">Inscription</button>
                                 </div>
-                                <div class="pong-showcase">
-                                    <div class="pong-gif-mockup">
-                                        <div class="pong-animation-lite">
-                                            <div class="paddle left"></div>
-                                            <div class="ball-mid"></div>
-                                            <div class="paddle right"></div>
-                                        </div>
-                                        <span class="badge-live">LIVE PREVIEW</span>
+
+                                <!-- Login -->
+                                <div id="form-login">
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Email ou Pseudo</label>
+                                        <input type="text" id="login-username" class="cyber-input" style="width:100%;" placeholder="ton@email.com">
                                     </div>
-                                    
-                                    <div class="pong-controls-guide">
-                                        <h3>Des regles simples :</h3>
-                                        <p class="subtitle">Une balle, deux raquettes, un seul vainqueur.</p>
-                                            </div>
-                                        </div>
+                                    <div style="margin-bottom:20px;">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Mot de passe</label>
+                                        <input type="password" id="login-password" class="cyber-input" style="width:100%;" placeholder="••••••••">
                                     </div>
+                                    <button id="btn-login" class="cyber-button" style="width:100%;">Se connecter</button>
+                                    <div id="login-msg" style="margin-top:12px; font-size:0.82rem; text-align:center;"></div>
                                 </div>
-                                <h1>Contenu :</h1>
+
+                                <!-- Register (caché par défaut) -->
+                                <div id="form-register" style="display:none;">
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Pseudo</label>
+                                        <input type="text" id="reg-username" class="cyber-input" style="width:100%;" placeholder="TonPseudo">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Email</label>
+                                        <input type="email" id="reg-email" class="cyber-input" style="width:100%;" placeholder="ton@email.com">
+                                    </div>
+                                    <div style="margin-bottom:14px;">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Mot de passe</label>
+                                        <input type="password" id="reg-password" class="cyber-input" style="width:100%;" placeholder="••••••••">
+                                    </div>
+                                    <div style="margin-bottom:20px;">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Confirmer</label>
+                                        <input type="password" id="reg-confirm" class="cyber-input" style="width:100%;" placeholder="••••••••">
+                                    </div>
+                                    <button id="btn-register" class="cyber-button" style="width:100%;">Créer le compte</button>
+                                    <div id="reg-msg" style="margin-top:12px; font-size:0.82rem; text-align:center;"></div>
                                 </div>
-                            </div>`;
+                            </div>
+                        </div>
+                    </div>`;
             }
             else
             {
@@ -161,6 +223,86 @@ const routes = {
                 init: () => {
                     initBouncingBalls();
                     if (document.getElementById('chat-form')) initChat();
+
+                    // Bouton afficher formulaire
+                    const btnShow = document.getElementById('btn-show-login');
+                    if (!btnShow) return;
+                    btnShow.onclick = () => {
+                        const container = document.getElementById('auth-form-container');
+                        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+                    };
+
+                    // Onglets
+                    const tabLogin    = document.getElementById('tab-login');
+                    const tabRegister = document.getElementById('tab-register');
+                    const formLogin   = document.getElementById('form-login');
+                    const formReg     = document.getElementById('form-register');
+
+                    tabLogin.onclick = () => {
+                        formLogin.style.display = 'block'; formReg.style.display = 'none';
+                        tabLogin.style.borderBottomColor = '#00babc'; tabLogin.style.color = '#00babc';
+                        tabRegister.style.borderBottomColor = 'transparent'; tabRegister.style.color = '#8b949e';
+                    };
+                    tabRegister.onclick = () => {
+                        formReg.style.display = 'block'; formLogin.style.display = 'none';
+                        tabRegister.style.borderBottomColor = '#00babc'; tabRegister.style.color = '#00babc';
+                        tabLogin.style.borderBottomColor = 'transparent'; tabLogin.style.color = '#8b949e';
+                    };
+
+                    // Login
+                    const doLogin = async () => {
+                        const username = document.getElementById('login-username').value.trim();
+                        const password = document.getElementById('login-password').value;
+                        const msg      = document.getElementById('login-msg');
+                        if (!username || !password) { msg.innerHTML = '<span style="color:#ff4d6d;">Remplis tous les champs.</span>'; return; }
+                        try {
+                            const res  = await fetch('/api/users/login/', {
+                                method: 'POST', credentials: 'include',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                                body: JSON.stringify({ username, password }),
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                                await userStore.set('user_name',   data.username);
+                                await userStore.set('user_avatar', data.avatar);
+                                localStorage.setItem('user_data', JSON.stringify({ username: data.username, avatar: data.avatar }));
+                                navigateTo('/');
+                            } else {
+                                msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
+                            }
+                        } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
+                    };
+                    document.getElementById('btn-login').onclick = doLogin;
+                    document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+                    // Register
+                    document.getElementById('btn-register').onclick = async () => {
+                        const username = document.getElementById('reg-username').value.trim();
+                        const email    = document.getElementById('reg-email').value.trim();
+                        const password = document.getElementById('reg-password').value;
+                        const confirm  = document.getElementById('reg-confirm').value;
+                        const msg      = document.getElementById('reg-msg');
+                        if (!username || !password || !email) { msg.innerHTML = '<span style="color:#ff4d6d;">Remplis tous les champs.</span>'; return; }
+                        if (password !== confirm) { msg.innerHTML = '<span style="color:#ff4d6d;">Mots de passe différents.</span>'; return; }
+                        if (password.length < 6)  { msg.innerHTML = '<span style="color:#ff4d6d;">6 caractères minimum.</span>'; return; }
+                        try {
+                            const res  = await fetch('/api/users/register/', {
+                                method: 'POST', credentials: 'include',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                                body: JSON.stringify({ username, email, password }),
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                                msg.innerHTML = '<span style="color:#2ea043;">✅ Compte créé ! Connexion...</span>';
+                                await userStore.set('user_name',   data.username);
+                                await userStore.set('user_avatar', data.avatar);
+                                localStorage.setItem('user_data', JSON.stringify({ username: data.username, avatar: data.avatar }));
+                                setTimeout(() => navigateTo('/'), 1200);
+                            } else {
+                                msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
+                            }
+                        } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
+                    };
                 }
             },
     '/game': {
@@ -197,7 +339,7 @@ const routes = {
                             <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ff0055;padding-left:10px;letter-spacing:1px;">Online</h3>
                             <div class="setup-group" style="border:1px solid #ff0055;padding:15px;border-radius:8px;background:rgba(255,0,85,0.05);">
                                 <p style="color:#ff0055;font-size:0.7rem;margin-bottom:10px;">Joue contre un adversaire en ligne.</p>
-                                <button id="btn-matchmaking" class="cyber-button" style="width:100%;background:#ff0055;border-color:#ff0055;color:#050505;margin-bottom:10px;">🔍 Créer une room</button>
+                                <button id="btn-matchmaking" class="cyber-button" style="width:100%;background:#ff0055;border-color:#ff0055;color:#050505;margin-bottom:10px;">🔍 Matchmaking</button>
                                 <div id="mm-status" style="margin-top:8px;font-size:0.8rem;color:#ff0055;display:none;"></div>
                                 <div style="border-top:1px solid rgba(255,0,85,0.2);padding-top:10px;margin-top:10px;">
                                     <label style="color:#ff0055;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Rejoindre une room</label>
@@ -217,6 +359,18 @@ const routes = {
             initBouncingBalls();
             const setupContainer = document.getElementById('setup-container');
             const gameWrapper    = document.getElementById('pong-game-wrapper');
+            const activeRoom = sessionStorage.getItem('active_room');
+            if (activeRoom) {
+                const resume = confirm('Tu as un match en cours. Reprendre ?');
+                if (resume) {
+                    setupContainer.style.display = 'none';
+                    gameWrapper.style.display    = 'block';
+                    initOnlinePong(activeRoom);
+                    return;
+                } else {
+                    sessionStorage.removeItem('active_room');
+                }
+            }
             const btnIA          = document.getElementById('btn-play-ia');
             const btnFriend      = document.getElementById('btn-play-friend');
             const btnMatchmaking = document.getElementById('btn-matchmaking');
@@ -236,17 +390,48 @@ const routes = {
             };
 
             if (btnMatchmaking) btnMatchmaking.onclick = async () => {
-                try {
-                    const res    = await fetch('/api/game/create/', { method:'POST', credentials:'include', headers:{'X-CSRFToken':getCsrfToken()} });
-                    const data   = await res.json();
-                    const roomId = data.room_id;
-                    const mmStatus = document.getElementById('mm-status');
-                    mmStatus.style.display = 'block';
-                    mmStatus.innerHTML = `Code : <strong style="font-size:1.2rem;letter-spacing:3px;">${roomId}</strong><br><small style="color:#8b949e;">Partage ce code. En attente...</small>`;
-                    setupContainer.style.display = 'none';
-                    gameWrapper.style.display    = 'block';
-                    initOnlinePong(roomId);
-                } catch (e) { alert('Erreur création room.'); }
+                const mmStatus = document.getElementById('mm-status');
+                mmStatus.style.display = 'block';
+                mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
+                btnMatchmaking.disabled = true;
+
+                // Poll toutes les 2 secondes
+                const interval = setInterval(async () => {
+                    try {
+                        const res  = await fetch('/api/game/matchmaking/', {
+                            method: 'POST', credentials: 'include',
+                            headers: {'X-CSRFToken': getCsrfToken()}
+                        });
+                        const data = await res.json();
+
+                        if (data.status === 'matched') {
+                            clearInterval(interval);
+                            mmStatus.innerHTML = `✅ Adversaire trouvé ! Lancement...`;
+                            setupContainer.style.display = 'none';
+                            gameWrapper.style.display    = 'block';
+                            initOnlinePong(data.room_id);
+                        } else {
+                            // Toujours en attente — anime les points
+                            const dots = '.'.repeat((Date.now() / 500 % 3 | 0) + 1);
+                            mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
+                        }
+                    } catch (e) {
+                        clearInterval(interval);
+                        btnMatchmaking.disabled = false;
+                        mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
+                    }
+                }, 2000);
+
+                // Bouton annuler
+                mmStatus.innerHTML += `<br><button id="btn-cancel-mm" style="background:none;border:none;color:#8b949e;cursor:pointer;margin-top:8px;font-size:0.8rem;">Annuler</button>`;
+                setTimeout(() => {
+                    const btnCancel = document.getElementById('btn-cancel-mm');
+                    if (btnCancel) btnCancel.onclick = () => {
+                        clearInterval(interval);
+                        btnMatchmaking.disabled = false;
+                        mmStatus.style.display = 'none';
+                    };
+                }, 100);
             };
 
             if (btnJoin) btnJoin.onclick = () => {
@@ -541,6 +726,115 @@ const routes = {
             if (!tournamentState.isActive || !tournamentState.isMatchRunning) return;
             const m = tournamentState.matches[tournamentState.currentMatchIndex];
             initPongGame(m.p1, m.p2);
+        }
+    },
+    '/register': {
+    title: 'Inscription',
+    render: () => `
+        <canvas id="pong-canvas-bg"></canvas>
+        <div style="max-width:360px; margin:0 auto; position:relative; z-index:1;">
+            <h2 style="text-align:center; text-transform:uppercase; letter-spacing:2px; margin-bottom:30px;">Créer un compte</h2>
+            <div style="border:1px solid #30363d; border-radius:8px; padding:30px; background:rgba(22,27,34,0.9);">
+                <div class="setting-group" style="margin-bottom:15px;">
+                    <label style="color:#8b949e; font-size:0.75rem; text-transform:uppercase;">Pseudo</label>
+                    <input type="text" id="reg-username" class="cyber-input" style="width:100%; margin-top:6px;" placeholder="Ton pseudo">
+                </div>
+                <div class="setting-group" style="margin-bottom:15px;">
+                    <label style="color:#8b949e; font-size:0.75rem; text-transform:uppercase;">Mot de passe</label>
+                    <input type="password" id="reg-password" class="cyber-input" style="width:100%; margin-top:6px;" placeholder="••••••••">
+                </div>
+                <div class="setting-group" style="margin-bottom:20px;">
+                    <label style="color:#8b949e; font-size:0.75rem; text-transform:uppercase;">Confirmer</label>
+                    <input type="password" id="reg-confirm" class="cyber-input" style="width:100%; margin-top:6px;" placeholder="••••••••">
+                </div>
+                <button id="btn-register" class="cyber-button" style="width:100%;">Créer le compte</button>
+                <div id="reg-msg" style="margin-top:15px; font-size:0.85rem;"></div>
+                <p style="text-align:center; margin-top:20px; color:#8b949e; font-size:0.8rem;">
+                    Déjà un compte ? <a href="/login" style="color:#00babc;">Se connecter</a>
+                </p>
+            </div>
+        </div>`,
+    init: () => {
+        initBouncingBalls();
+        document.getElementById('btn-register').onclick = async () => {
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirm  = document.getElementById('reg-confirm').value;
+            const msg      = document.getElementById('reg-msg');
+            if (!username || !password) { msg.innerHTML = '<span style="color:#ff4d6d;">Remplis tous les champs.</span>'; return; }
+            if (password !== confirm)   { msg.innerHTML = '<span style="color:#ff4d6d;">Les mots de passe ne correspondent pas.</span>'; return; }
+            if (password.length < 6)   { msg.innerHTML = '<span style="color:#ff4d6d;">Mot de passe trop court (6 min).</span>'; return; }
+            try {
+                const res  = await fetch('/api/users/register/', {
+                    method: 'POST', credentials: 'include',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                    body: JSON.stringify({ username, password }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.innerHTML = '<span style="color:#2ea043;">Compte créé ! Redirection...</span>';
+                    await userStore.set('user_name', data.username);
+                    await userStore.set('user_avatar', data.avatar);
+                    setTimeout(() => navigateTo('/'), 1500);
+                } else {
+                    msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
+                }
+            } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
+        };
+    }
+    },
+
+    '/login': {
+        title: 'Connexion',
+        render: () => `
+            <canvas id="pong-canvas-bg"></canvas>
+            <div style="max-width:360px; margin:0 auto; position:relative; z-index:1;">
+                <h2 style="text-align:center; text-transform:uppercase; letter-spacing:2px; margin-bottom:30px;">Connexion</h2>
+                <div style="border:1px solid #30363d; border-radius:8px; padding:30px; background:rgba(22,27,34,0.9);">
+                    <div class="setting-group" style="margin-bottom:15px;">
+                        <label style="color:#8b949e; font-size:0.75rem; text-transform:uppercase;">Pseudo</label>
+                        <input type="text" id="login-username" class="cyber-input" style="width:100%; margin-top:6px;" placeholder="Ton pseudo">
+                    </div>
+                    <div class="setting-group" style="margin-bottom:20px;">
+                        <label style="color:#8b949e; font-size:0.75rem; text-transform:uppercase;">Mot de passe</label>
+                        <input type="password" id="login-password" class="cyber-input" style="width:100%; margin-top:6px;" placeholder="••••••••">
+                    </div>
+                    <button id="btn-login" class="cyber-button" style="width:100%;">Se connecter</button>
+                    <div id="login-msg" style="margin-top:15px; font-size:0.85rem;"></div>
+                    <div style="text-align:center; margin-top:20px;">
+                        <a href="${authUrl}" class="cyber-button" style="display:inline-block; font-size:0.85rem;">Connexion avec 42</a>
+                    </div>
+                    <p style="text-align:center; margin-top:15px; color:#8b949e; font-size:0.8rem;">
+                        Pas de compte ? <a href="/register" style="color:#00babc;">S'inscrire</a>
+                    </p>
+                </div>
+            </div>`,
+        init: () => {
+            initBouncingBalls();
+            const doLogin = async () => {
+                const username = document.getElementById('login-username').value.trim();
+                const password = document.getElementById('login-password').value;
+                const msg      = document.getElementById('login-msg');
+                if (!username || !password) { msg.innerHTML = '<span style="color:#ff4d6d;">Remplis tous les champs.</span>'; return; }
+                try {
+                    const res  = await fetch('/api/users/login/', {
+                        method: 'POST', credentials: 'include',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                        body: JSON.stringify({ username, password }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        await userStore.set('user_name',   data.username);
+                        await userStore.set('user_avatar', data.avatar);
+                        localStorage.setItem('user_data', JSON.stringify({ username: data.username, avatar: data.avatar }));
+                        navigateTo('/');
+                    } else {
+                        msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
+                    }
+                } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
+            };
+            document.getElementById('btn-login').onclick = doLogin;
+            document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
         }
     },
 };
@@ -1252,6 +1546,8 @@ function startGameLogic(name1, name2) {
 
 // ─── Pong Online ──────────────────────────────────────────────────────────────
 function initOnlinePong(roomId) {
+    sessionStorage.setItem('active_room', roomId);
+    isOnline = 1;
     const canvas     = document.getElementById('pongCanvas');
     const statusText = document.getElementById('game-status');
     const btnStart   = document.getElementById('btn-start-game');
@@ -1270,12 +1566,10 @@ function initOnlinePong(roomId) {
 
     const onDown = (e) => {
         if (gameOver || !mySide) return;
-        if ((e.key === 'ArrowUp' || e.key === 'w') && !keys[e.key]) {
-            keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'up' }));
-        }
-        if ((e.key === 'ArrowDown' || e.key === 's') && !keys[e.key]) {
-            keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'down' }));
-        }
+        if ((e.key === 'ArrowUp'    || e.key === 'w') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'up' })); }
+        if ((e.key === 'ArrowDown'  || e.key === 's') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'down' })); }
+        if ((e.key === 'ArrowLeft'  || e.key === 'a') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'left' })); }   // ← AJOUTE
+        if ((e.key === 'ArrowRight' || e.key === 'd') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'right' })); }  // ← AJOUTE
     };
     const onUp = (e) => { delete keys[e.key]; };
     window.addEventListener('keydown', onDown);
@@ -1283,8 +1577,10 @@ function initOnlinePong(roomId) {
 
     const inputLoop = setInterval(() => {
         if (gameOver || !mySide || ws.readyState !== WebSocket.OPEN) return;
-        if (keys['ArrowUp']   || keys['w']) ws.send(JSON.stringify({ type:'input', key:'up' }));
-        if (keys['ArrowDown'] || keys['s']) ws.send(JSON.stringify({ type:'input', key:'down' }));
+        if (keys['ArrowUp']    || keys['w']) ws.send(JSON.stringify({ type:'input', key:'up' }));
+        if (keys['ArrowDown']  || keys['s']) ws.send(JSON.stringify({ type:'input', key:'down' }));
+        if (keys['ArrowLeft']  || keys['a']) ws.send(JSON.stringify({ type:'input', key:'left' }));   // ← AJOUTE
+        if (keys['ArrowRight'] || keys['d']) ws.send(JSON.stringify({ type:'input', key:'right' }));  // ← AJOUTE
     }, 16);
 
     ws.onopen = () => { if (statusText) statusText.innerText = 'Connecté ! En attente du 2ème joueur...'; };
@@ -1305,6 +1601,8 @@ function initOnlinePong(roomId) {
                 state = data.state;
                 break;
             case 'game_over':
+                sessionStorage.removeItem('active_room');
+                isOnline = 0;
                 gameOver = true; state = data.state;
                 clearInterval(inputLoop);
                 window.removeEventListener('keydown', onDown);
@@ -1391,14 +1689,14 @@ function initOnlinePong(roomId) {
         ctx.shadowColor = leftColor; ctx.shadowBlur = 15;
         ctx.fillStyle = leftColor;
         ctx.beginPath();
-        ctx.roundRect(0, s.left.y, PW, PH, [0, 4, 4, 0]);
+        ctx.roundRect(s.left.x,  s.left.y,  PW, PH, [4,4,4,4]); ctx.fill();
         ctx.fill();
 
         // Raquette droite
         ctx.shadowColor = rightColor; ctx.shadowBlur = 15;
         ctx.fillStyle = rightColor;
         ctx.beginPath();
-        ctx.roundRect(canvas.width - PW, s.right.y, PW, PH, [4, 0, 0, 4]);
+        ctx.roundRect(s.right.x, s.right.y, PW, PH, [4,4,4,4]); ctx.fill();
         ctx.fill();
 
         // Balle

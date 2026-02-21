@@ -51,4 +51,4 @@ init-django:
 
 
 
-# quand on lance un tournois et qu'on part rejouer ailleur ca compte dans le tournois ?
+# faire en sorte de ne plus pouvoir utiliser les route quand on a lancer un match online sauf pour exit.

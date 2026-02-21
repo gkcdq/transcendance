@@ -19,5 +19,7 @@ urlpatterns = [
     path('friends/respond/<int:request_id>/', respond_friend_request, name='friend-respond'),
     path('friends/remove/<str:username>/',    remove_friend,          name='friend-remove'),
     path('search/',                           search_users,           name='user-search'),
-    path('leaderboard/', views.get_leaderboard, name='user-leaderboard'),
+    path('leaderboard/',                      views.get_leaderboard,  name='user-leaderboard'),
+    path('register/',                         views.register,         name='register'),
+    path('login/',                            views.login_view,       name='login'),
 ]
