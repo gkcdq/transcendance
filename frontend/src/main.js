@@ -1368,8 +1368,6 @@ function startGameLogic(name1, name2) {
     const paddleWidth  = 10;
     const paddleHeight = 80;
     const PADDLE_MAX_X = canvas.width / 2 - paddleWidth; // limite milieu
-
-    // Position X ET Y des raquettes
     let leftPaddleX  = 0;
     let leftPaddleY  = (canvas.height - paddleHeight) / 2;
     let rightPaddleX = canvas.width - paddleWidth;
@@ -1380,7 +1378,6 @@ function startGameLogic(name1, name2) {
     let score1 = 0, score2 = 0;
     const keys = {};
     const handleKeyDown = e => {
-        // Ne bloque que les touches de jeu, pas quand on tape dans un input
         if (['w','s','a','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
             if (document.activeElement.tagName !== 'INPUT') e.preventDefault();
         }
@@ -1389,7 +1386,6 @@ function startGameLogic(name1, name2) {
     const handleKeyUp = e => keys[e.key] = false;
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup',   handleKeyUp);
-    // Système de particules
     const particles = Array.from({ length: 60 }, () => ({
         x: Math.random() * canvas.width, y: Math.random() * canvas.height,
         size: Math.random() * 1.5 + 0.5, speedX: (Math.random() - 0.5) * 0.4,
@@ -1406,20 +1402,16 @@ function startGameLogic(name1, name2) {
 
     function update() {
         const speed = 7, hSpeed = 4;
-
-        // Raquette gauche : W/S vertical, A/D horizontal (max jusqu'au milieu)
         if (keys['w'] && leftPaddleY > 0)                             leftPaddleY -= speed;
         if (keys['s'] && leftPaddleY < canvas.height - paddleHeight)  leftPaddleY += speed;
         if (keys['d'] && leftPaddleX < PADDLE_MAX_X)                  leftPaddleX += hSpeed;
         if (keys['a'] && leftPaddleX > 0)                             leftPaddleX -= hSpeed;
 
         if (name2 === "IA") {
-            // IA : suit la balle en Y ET avance en X si la balle est proche
             const centerPaddle = rightPaddleY + paddleHeight / 2;
             const targetY = ballSpeedX > 0 ? ballY : canvas.height / 2;
             if (centerPaddle < targetY - 10) rightPaddleY += aiBaseSpeed;
             else if (centerPaddle > targetY + 10) rightPaddleY -= aiBaseSpeed;
-            // IA avance vers la balle en X (mais ne dépasse pas le milieu)
             const targetX = ballSpeedX > 0
                 ? Math.max(canvas.width - paddleWidth - PADDLE_MAX_X, ballX - 60)
                 : canvas.width - paddleWidth;
@@ -1427,20 +1419,14 @@ function startGameLogic(name1, name2) {
             else if (rightPaddleX < targetX - 3) rightPaddleX += hSpeed * 0.6;
             rightPaddleX = Math.max(canvas.width / 2, Math.min(canvas.width - paddleWidth, rightPaddleX));
         } else {
-            // Joueur 2 : flèches haut/bas + gauche/droite
             if (keys['ArrowUp']    && rightPaddleY > 0)                            rightPaddleY -= speed;
             if (keys['ArrowDown']  && rightPaddleY < canvas.height - paddleHeight) rightPaddleY += speed;
             if (keys['ArrowLeft']  && rightPaddleX > canvas.width / 2)             rightPaddleX -= hSpeed;
             if (keys['ArrowRight'] && rightPaddleX < canvas.width - paddleWidth)   rightPaddleX += hSpeed;
         }
-
         ballX += ballSpeedX; ballY += ballSpeedY;
         if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
-
         const maxSpeed = 20;
-
-        // Collision raquette gauche (position X dynamique)
-        // Collision raquette droite — détection par segment
         if (ballSpeedX > 0) {
             const prevBallX = ballX - ballSpeedX;
             if (prevBallX < rightPaddleX + paddleWidth && ballX >= rightPaddleX) {
@@ -1450,8 +1436,6 @@ function startGameLogic(name1, name2) {
                 }
             }
         }
-
-        // Collision raquette gauche — détection par segment
         if (ballSpeedX < 0) {
             const prevBallX = ballX - ballSpeedX;
             if (prevBallX > leftPaddleX && ballX <= leftPaddleX + paddleWidth) {
@@ -1478,7 +1462,7 @@ function startGameLogic(name1, name2) {
             const myName    = userStore.get('user_name', 'Player');
             const isVictory = (winnerName === myName);
 
-            if (!isTournamentMatch) {  // ← CHANGE ICI
+            if (!isTournamentMatch) {
                 await userStore.recordMatch({ isVictory, score1, score2, opponentName: name2, durationSeconds: sessionSeconds });
                 alert(`Match terminé ! Vainqueur : ${winnerName}`);
                 navigateTo('/profile');
@@ -1505,8 +1489,8 @@ function startGameLogic(name1, name2) {
             ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
             leftPaddleX = 0;
             leftPaddleY  = (canvas.height - paddleHeight) / 2;
-            rightPaddleX = canvas.width;
-            rightPaddleY = (canvas.height - paddleHeight) / 2.5;
+            rightPaddleX = canvas.width - paddleWidth;
+            rightPaddleY = (canvas.height - paddleHeight) / 2;
         }
 
         function draw() {

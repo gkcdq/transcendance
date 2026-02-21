@@ -51,4 +51,4 @@ init-django:
 
 
 
-# faire en sorte de ne plus pouvoir utiliser les route quand on a lancer un match online sauf pour exit.
+# pourquoi quand je relance ma page apres avoir make clean + make + ctrl->shit->r j'ai ce message qui s'applique si jai quitter ma derniere partie (celle d'avant make clean)
