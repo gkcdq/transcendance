@@ -2,45 +2,73 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import Message
+from django.contrib.auth.models import User
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.room_name  = "global"
-        self.room_group  = "chat_global"
 
-        # Rejoindre le groupe
-        await self.channel_layer.group_add(
-            self.room_group,
-            self.channel_name
-        )
+    async def connect(self):
+        self.username = self.scope["user"].username if self.scope["user"].is_authenticated else None
+        if not self.username:
+            await self.close()
+            return
+
+        self.room_group = "chat_global"
+
+        await self.channel_layer.group_add(self.room_group, self.channel_name)
+        await self.channel_layer.group_add(f"chat_{self.username}", self.channel_name)
         await self.accept()
+        await self.set_online(True)
 
         # Envoyer les 50 derniers messages à la connexion
         messages = await self.get_last_messages()
         for msg in messages:
             await self.send(text_data=json.dumps({
-                "type":      "history",
-                "message":   msg,
+                "type":    "history",
+                "message": msg,
             }))
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group,
-            self.channel_name
-        )
+        if not self.username:
+            return
+        await self.set_online(False)
+        await self.channel_layer.group_discard(self.room_group, self.channel_name)
+        await self.channel_layer.group_discard(f"chat_{self.username}", self.channel_name)
+
+    @database_sync_to_async
+    def set_online(self, status):
+        try:
+            profile = User.objects.get(username=self.username).profile
+            profile.is_online = status
+            profile.save(update_fields=['is_online'])
+        except Exception:
+            pass
 
     async def receive(self, text_data):
-        data    = json.loads(text_data)
-        content = data.get("content", "").strip()
+        data = json.loads(text_data)
 
+        # Invitation à jouer
+        if data.get('type') == 'game_invite':
+            to      = data.get('to')
+            room_id = data.get('room_id')
+            await self.channel_layer.group_send(
+                f"chat_{to}",
+                {
+                    'type':    'game_invite',
+                    'from':    self.username,
+                    'room_id': room_id,
+                }
+            )
+            return
+
+        content = data.get("content", "").strip()
         if not content or not self.scope["user"].is_authenticated:
             return
 
         # Sauvegarder en DB
         message = await self.save_message(content)
 
-        # Broadcaster à tous les clients connectés
+        # Broadcaster à tous
         await self.channel_layer.group_send(
             self.room_group,
             {
@@ -54,6 +82,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "type":    "message",
             "message": event["message"],
         }))
+
+    async def game_invite(self, event):
+        try:
+            await self.send(text_data=json.dumps({
+                "type":    "game_invite",
+                "from":    event["from"],
+                "room_id": event["room_id"],
+            }))
+        except Exception:
+            pass
 
     @database_sync_to_async
     def get_last_messages(self):

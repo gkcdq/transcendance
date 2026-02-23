@@ -360,17 +360,7 @@ const routes = {
             const setupContainer = document.getElementById('setup-container');
             const gameWrapper    = document.getElementById('pong-game-wrapper');
             const activeRoom = sessionStorage.getItem('active_room');
-            if (activeRoom) {
-                const resume = confirm('Tu as un match en cours. Reprendre ?');
-                if (resume) {
-                    setupContainer.style.display = 'none';
-                    gameWrapper.style.display    = 'block';
-                    initOnlinePong(activeRoom);
-                    return;
-                } else {
-                    sessionStorage.removeItem('active_room');
-                }
-            }
+            if (activeRoom) {sessionStorage.removeItem('active_room');}
             const btnIA          = document.getElementById('btn-play-ia');
             const btnFriend      = document.getElementById('btn-play-friend');
             const btnMatchmaking = document.getElementById('btn-matchmaking');
@@ -1126,8 +1116,6 @@ document.addEventListener('click', e => {
             cancelMatchmaking();
         }
         if (sessionStorage.getItem('active_room') && href !== '/game') {
-            const leave = confirm('⚠️ Tu as un match en cours ! Quitter = forfait. Continuer ?');
-            if (!leave) return;
             unlockNav();
         }
         if (typeof tournamentState !== 'undefined') tournamentState.isMatchRunning = false;
