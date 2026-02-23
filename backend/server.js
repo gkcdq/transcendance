@@ -7,8 +7,8 @@ app.use(cors());
 app.use(express.json());
 
 // Configuration OAuth 42
-const UID          = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
-const SECRET       = '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';
+const UID          = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
+const SECRET       = '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';
 const REDIRECT_URI = 'https://localhost:8443/accounts/fortytwo/login/callback/';
 
 // URL interne Django (dans le même réseau Docker)

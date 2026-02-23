@@ -215,6 +215,10 @@ class GameConsumer(AsyncWebsocketConsumer):
             "vx": 6 * (1 if random.random() > 0.5 else -1),
             "vy": 6 * (1 if random.random() > 0.5 else -1),
         }
+        state["left"]["x"] = 0;
+        state["left"]["y"] = (CANVAS_H - PADDLE_H) / 2;
+        state["right"]["x"] = CANVAS_W - PADDLE_W;
+        state["right"]["y"] = (CANVAS_H - PADDLE_H) / 2;
 
     @database_sync_to_async
     def save_match_results(self, room_id, state):

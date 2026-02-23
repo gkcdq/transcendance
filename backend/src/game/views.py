@@ -34,7 +34,7 @@ def matchmaking(request):
     from django.utils import timezone
     from datetime import timedelta
     MatchmakingQueue.objects.filter(
-        created_at__lt=timezone.now() - timedelta(seconds=30)
+        created_at__lt=timezone.now() - timedelta(seconds=10)
     ).delete()
 
     # Déjà dans la queue avec une room ?
@@ -61,3 +61,9 @@ def matchmaking(request):
         if not me:
             MatchmakingQueue.objects.create(username=username, room_id='')
         return JsonResponse({'status': 'waiting', 'room_id': None})
+
+@login_required
+@require_POST
+def cancel_matchmaking(request):
+    MatchmakingQueue.objects.filter(username=request.user.username).delete()
+    return JsonResponse({'status': 'cancelled'})

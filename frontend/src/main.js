@@ -3,7 +3,7 @@ import { userStore } from './utils/userStore.js';
 await userStore.init();
 
 // ─── OAuth 42 ────────────────────────────────────────────────────────────────
-const UID      = 'u-s4t2ud-32403f139f0bc0256990e7a5cc583e40d672918477978b43a7a03e3d93804de7';
+const UID      = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
 
@@ -394,18 +394,39 @@ const routes = {
                 mmStatus.style.display = 'block';
                 mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
                 btnMatchmaking.disabled = true;
+                sessionStorage.setItem('matchmaking_active', '1');  // ← démarre
 
-                // Poll toutes les 2 secondes
+                let isSearching = true;
                 const interval = setInterval(async () => {
+                   // lockNav();
+                    if (!isSearching || document.getElementById('mm-status') != mmStatus)
+                        {
+                            clearInterval(interval);
+                            mmStatus.style.display = 'none';
+                            btnMatchmaking.disabled = false;
+                            sessionStorage.removeItem('matchmaking_active');  // ← stop
+                            console.log("annulation du matchmaking.\n");
+                            return;
+                        }
                     try {
                         const res  = await fetch('/api/game/matchmaking/', {
                             method: 'POST', credentials: 'include',
                             headers: {'X-CSRFToken': getCsrfToken()}
                         });
+                        if (res.status === 401 || res.redirected) 
+                            {
+                                clearInterval(interval);
+                                mmStatus.style.display = 'none';
+                                isSearching = false;
+                                sessionStorage.removeItem('matchmaking_active');  // ← stop
+                                window.location.href = '/';
+                                return;
+                            }
                         const data = await res.json();
 
                         if (data.status === 'matched') {
                             clearInterval(interval);
+                            sessionStorage.removeItem('matchmaking_active');  // ← stop
                             lockNav();
                             // Remplace tout le contenu par juste le canvas
                             const app = document.getElementById('app');
@@ -422,8 +443,10 @@ const routes = {
                             mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
                         }
                     } catch (e) {
+                        isSearching = false;
                         clearInterval(interval);
                         btnMatchmaking.disabled = false;
+                        sessionStorage.removeItem('matchmaking_active');  // ← stop
                         mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
                     }
                 }, 2000);
@@ -433,8 +456,11 @@ const routes = {
                 setTimeout(() => {
                     const btnCancel = document.getElementById('btn-cancel-mm');
                     if (btnCancel) btnCancel.onclick = () => {
+                        isSearching = false;
                         clearInterval(interval);
                         btnMatchmaking.disabled = false;
+                        sessionStorage.removeItem('matchmaking_active');  // ← stop
+                        cancelMatchmaking();
                         mmStatus.style.display = 'none';
                     };
                 }, 100);
@@ -506,7 +532,7 @@ const routes = {
                         <select id="ai-difficulty">
                             <option value="3">Facile</option>
                             <option value="5">Normal</option>
-                            <option value="12">Expert</option>
+                            <option value="9">Expert</option>
                         </select>
                     </div>
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
@@ -897,7 +923,7 @@ function initBouncingBalls() {
 
     // On passe à 40 balles pour un effet de "pluie de néons"
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
-    const balls = Array.from({ length: 200}, () => ({
+    const balls = Array.from({ length: 20}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         // On varie un peu plus les vitesses pour plus de dynamisme
@@ -1070,6 +1096,17 @@ function unlockNav() {
     document.getElementById('nav-match-badge')?.remove();
 }
 
+async function cancelMatchmaking() {
+    if (!sessionStorage.getItem('matchmaking_active')) return;
+    sessionStorage.removeItem('matchmaking_active');
+    try {
+        await fetch('/api/game/matchmaking/cancel/', {
+            method: 'POST', credentials: 'include',
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+    } catch(e) {}
+}
+
 function navigateTo(url) {
     if (currentPongInstance) { cancelAnimationFrame(currentPongInstance); currentPongInstance = null; }
     history.pushState(null, null, url);
@@ -1084,6 +1121,10 @@ document.addEventListener('click', e => {
     if (href.startsWith('/')) {
         if (href.includes('/accounts/')) return;
         e.preventDefault();
+        // Annule le matchmaking si on quitte /game pendant la recherche
+        if (sessionStorage.getItem('matchmaking_active') && href !== '/game') {
+            cancelMatchmaking();
+        }
         if (sessionStorage.getItem('active_room') && href !== '/game') {
             const leave = confirm('⚠️ Tu as un match en cours ! Quitter = forfait. Continuer ?');
             if (!leave) return;
@@ -1584,8 +1625,8 @@ function initOnlinePong(roomId) {
         if (gameOver || !mySide) return;
         if ((e.key === 'ArrowUp'    || e.key === 'w') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'up' })); }
         if ((e.key === 'ArrowDown'  || e.key === 's') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'down' })); }
-        if ((e.key === 'ArrowLeft'  || e.key === 'a') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'left' })); }   // ← AJOUTE
-        if ((e.key === 'ArrowRight' || e.key === 'd') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'right' })); }  // ← AJOUTE
+        if ((e.key === 'ArrowLeft'  || e.key === 'a') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'left' })); }   
+        if ((e.key === 'ArrowRight' || e.key === 'd') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'right' })); } 
     };
     const onUp = (e) => { delete keys[e.key]; };
     window.addEventListener('keydown', onDown);
@@ -1595,8 +1636,8 @@ function initOnlinePong(roomId) {
         if (gameOver || !mySide || ws.readyState !== WebSocket.OPEN) return;
         if (keys['ArrowUp']    || keys['w']) ws.send(JSON.stringify({ type:'input', key:'up' }));
         if (keys['ArrowDown']  || keys['s']) ws.send(JSON.stringify({ type:'input', key:'down' }));
-        if (keys['ArrowLeft']  || keys['a']) ws.send(JSON.stringify({ type:'input', key:'left' }));   // ← AJOUTE
-        if (keys['ArrowRight'] || keys['d']) ws.send(JSON.stringify({ type:'input', key:'right' }));  // ← AJOUTE
+        if (keys['ArrowLeft']  || keys['a']) ws.send(JSON.stringify({ type:'input', key:'left' }));   
+        if (keys['ArrowRight'] || keys['d']) ws.send(JSON.stringify({ type:'input', key:'right' }));  
     }, 16);
 
     ws.onopen = () => { if (statusText) statusText.innerText = 'Connecté ! En attente du 2ème joueur...'; };
@@ -1609,6 +1650,7 @@ function initOnlinePong(roomId) {
                 if (statusText) statusText.innerText = `Tu joues côté ${mySide === 'left' ? 'gauche (W/S)' : 'droit (↑/↓)'}. En attente...`;
                 break;
             case 'game_start':
+                lockNav();
                 state = data.state;
                 if (statusText) statusText.style.display = 'none';
                 if (!animId) animId = requestAnimationFrame(renderLoop);
