@@ -559,6 +559,16 @@ const routes = {
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
                 </form>
                 <div id="settings-msg"></div>
+
+                <div style="margin-top:40px;border-top:1px solid rgba(255,0,85,0.2);padding-top:20px;">
+                    <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">⚖️ Données personnelles (RGPD)</h3>
+                    <button id="btn-export-data" class="cyber-button" style="width:100%;margin-bottom:10px;border-color:#8b949e;color:#8b949e;">
+                        📥 Télécharger mes données
+                    </button>
+                    <button id="btn-delete-account" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">
+                        🗑️ Supprimer mon compte
+                    </button>
+                </div>
             </div>`,
             init: () => {
                 initBouncingBalls();
@@ -995,7 +1005,6 @@ function initSpectatorMode(roomId) {
     }
 
     function drawSpectator(s) {
-        // Même fonction draw que initOnlinePong mais sans les couleurs joueur
         const PW = 10, PH = 80;
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
         gradient.addColorStop(0, '#050810');
@@ -1513,7 +1522,53 @@ function initSettings() {
         await userStore.set('ai_level',   document.getElementById('ai-difficulty').value);
         msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Préférences mises à jour (Pseudo conservé) !</p>';
     };
+
+    // RGPD — Export
+    const btnExport = document.getElementById('btn-export-data');
+    if (btnExport) btnExport.onclick = async () => {
+        const res  = await fetch('/api/users/export/', { credentials: 'include' });
+        const blob = await res.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = 'mes_donnees.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // RGPD — Suppression
+    const btnDelete = document.getElementById('btn-delete-account');
+    if (btnDelete) btnDelete.onclick = async () => {
+        const confirm1 = confirm('⚠️ Supprimer ton compte ? Cette action est irréversible.');
+        if (!confirm1) return;
+        const confirm2 = confirm('Dernière confirmation — toutes tes données seront effacées.');
+        if (!confirm2) return;
+        const res = await fetch('/api/users/delete/', {
+            method: 'POST', credentials: 'include',
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        if (res.ok) {
+            localStorage.clear();
+            sessionStorage.clear();
+            await userStore.logout();
+            navigateTo('/');
+        }
+    };
 }
+// function initSettings() {
+//     const form = document.getElementById('settings-form');
+//     const msg  = document.getElementById('settings-msg');
+//     document.getElementById('username-input').value = userStore.get('user_name', 'Player');
+//     document.getElementById('paddle-color').value   = userStore.get('user_color', '#00babc');
+//     document.getElementById('ai-difficulty').value  = userStore.get('ai_level', '5');
+//     if (!form) return;
+//     form.onsubmit = async (e) => {
+//         e.preventDefault();
+//         await userStore.set('user_color', document.getElementById('paddle-color').value);
+//         await userStore.set('ai_level',   document.getElementById('ai-difficulty').value);
+//         msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Préférences mises à jour (Pseudo conservé) !</p>';
+//     };
+// }
 
 // ─── Pong Local ───────────────────────────────────────────────────────────────
 function initPongGame(p1Name = "Player", p2Name = "IA") {
