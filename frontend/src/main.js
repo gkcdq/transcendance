@@ -305,7 +305,7 @@ const routes = {
                     };
                 }
             },
-    '/game': {
+'/game': {
         title: 'Jeu',
         render: () => {
             const myName = userStore.get('user_name', 'Player');
@@ -346,6 +346,13 @@ const routes = {
                                     <input type="text" id="room-id-input" placeholder="Code de la room..." class="cyber-input" style="width:100%;margin-bottom:8px;">
                                     <button id="btn-join-room" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">Rejoindre</button>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="category-block">
+                            <h3 style="color:#8b949e;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #8b949e;padding-left:10px;letter-spacing:1px;">👁️ Spectateur</h3>
+                            <div class="setup-group" style="border:1px solid #8b949e;padding:15px;border-radius:8px;background:rgba(139,148,158,0.05);">
+                                <div id="active-rooms-list"><p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p></div>
                             </div>
                         </div>
 
@@ -463,6 +470,30 @@ const routes = {
                 gameWrapper.style.display    = 'block';
                 initOnlinePong(code);
             };
+            function refreshRooms() {
+                fetch('/api/game/rooms/', { credentials: 'include' })
+                    .then(r => r.json())
+                    .then(data => {
+                        const list = document.getElementById('active-rooms-list');
+                        if (!list) { clearInterval(roomsInterval); return; }
+                        if (!data.rooms || data.rooms.length === 0) {
+                            list.innerHTML = '<p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p>';
+                            return;
+                        }
+                        list.innerHTML = data.rooms.map(r => `
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <span style="color:#ccc;font-size:0.75rem;">⚔️ ${r.players.join(' vs ')}</span>
+                                <a href="/spectate?room=${r.room_id}" data-link
+                                   style="color:#8b949e;font-size:0.7rem;border:1px solid #8b949e;padding:3px 8px;border-radius:4px;text-decoration:none;">
+                                   👁️ Regarder
+                                </a>
+                            </div>`).join('');
+                    })
+                    .catch(() => {});
+            }
+            refreshRooms();
+            const roomsInterval = setInterval(refreshRooms, 3000);
+            window.addEventListener('popstate', () => clearInterval(roomsInterval), { once: true });
         }
     },
 
@@ -859,6 +890,21 @@ const routes = {
             document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
         }
     },
+    '/spectate': {
+        title: 'Spectateur',
+        render: () => `
+            <canvas id="pong-canvas-bg"></canvas>
+            <div class="game-container" style="position:relative;z-index:1;">
+                <p id="spec-status" style="color:#00babc;text-align:center;margin-bottom:10px;">👁️ Mode spectateur</p>
+                <canvas id="pongCanvas" width="1200" height="650"></canvas>
+            </div>`,
+        init: () => {
+            initBouncingBalls();
+            const roomId = new URLSearchParams(window.location.search).get('room');
+            if (!roomId) { navigateTo('/game'); return; }
+            initSpectatorMode(roomId);
+        }
+    },
 };
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
@@ -896,6 +942,107 @@ async function loadLeaderboard() {
         }).join('') || '<p class="empty-msg">Aucun joueur pour le moment.</p>';
     } catch (err) {
         container.innerHTML = '<p class="empty-msg">Erreur de chargement du classement.</p>';
+    }
+}
+
+// spectateur mode
+
+function initSpectatorMode(roomId) {
+    const canvas = document.getElementById('pongCanvas');
+    if (!canvas) return;
+    const ctx      = canvas.getContext('2d');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws       = new WebSocket(`${protocol}//${window.location.host}/ws/game/${roomId}/`);
+
+    let state = null, animId = null;
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        switch (data.type) {
+            case 'spectator_joined':
+                document.getElementById('spec-status').innerText = '👁️ Spectateur connecté — en attente du début...';
+                break;
+            case 'game_start':
+                state = data.state;
+                document.getElementById('spec-status').style.display = 'none';
+                canvas.style.display = 'block';
+                if (!animId) animId = requestAnimationFrame(renderLoop);
+                break;
+            case 'game_tick':
+                state = data.state;
+                break;
+            case 'game_over':
+                if (animId) cancelAnimationFrame(animId);
+                navigateTo('/game');
+                break;
+            case 'player_left':
+                if (animId) cancelAnimationFrame(animId);
+                alert('Un joueur a quitté la partie.');
+                navigateTo('/game');
+                break;
+            case 'error':
+                alert(data.message); navigateTo('/game'); break;
+        }
+    };
+
+    ws.onerror = () => { alert('Erreur de connexion.'); navigateTo('/game'); };
+    window.addEventListener('popstate', () => { ws.close(); if (animId) cancelAnimationFrame(animId); }, { once: true });
+
+    function renderLoop() {
+        if (!state) return;
+        drawSpectator(state);
+        animId = requestAnimationFrame(renderLoop);
+    }
+
+    function drawSpectator(s) {
+        // Même fonction draw que initOnlinePong mais sans les couleurs joueur
+        const PW = 10, PH = 80;
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        gradient.addColorStop(0, '#050810');
+        gradient.addColorStop(0.5, '#0a0f1a');
+        gradient.addColorStop(1, '#050810');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.setLineDash([8, 8]);
+        ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, 0);
+        ctx.lineTo(canvas.width/2, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Scores
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 48px monospace';
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillText(s.left.score,  canvas.width/4,       70);
+        ctx.fillText(s.right.score, (canvas.width/4) * 3, 70);
+
+        // Noms
+        ctx.font = '13px monospace';
+        ctx.fillStyle = '#00babc';
+        ctx.fillText(s.left.name,  canvas.width/4,       95);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(s.right.name, (canvas.width/4) * 3, 95);
+
+        // Raquettes
+        ctx.shadowBlur = 15; ctx.shadowColor = '#00babc'; ctx.fillStyle = '#00babc';
+        ctx.beginPath();
+        ctx.roundRect(s.left.x, s.left.y, PW, PH, [4,4,4,4]);
+        ctx.fill();
+        ctx.shadowColor = '#fff'; ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.roundRect(s.right.x, s.right.y, PW, PH, [4,4,4,4]);
+        ctx.fill();
+
+        // Balle
+        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 20; ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(s.ball.x, s.ball.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////
@@ -1487,7 +1634,7 @@ function startGameLogic(name1, name2) {
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup',   handleKeyUp);
 
-            const isTournamentMatch = tournamentState.isActive && window.location.pathname === '/tournament-game'; // ← CHANGE ICI
+            const isTournamentMatch = tournamentState.isActive && window.location.pathname === '/tournament-game';
             const myName    = userStore.get('user_name', 'Player');
             const isVictory = (winnerName === myName);
 
@@ -1554,7 +1701,7 @@ function startGameLogic(name1, name2) {
             ctx.fillStyle = userColor;
             ctx.shadowColor = userColor;
             ctx.shadowBlur = 8;
-            ctx.fillText(name1.toUpperCase(), canvas.width / 4,       20);
+            ctx.fillText(name1.toUpperCase(), canvas.width / 4,20);
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = '#ffffff';
             ctx.fillText(name2.toUpperCase(), (canvas.width / 4) * 3, 20);
