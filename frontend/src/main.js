@@ -372,6 +372,7 @@ const routes = {
             const btnFriend      = document.getElementById('btn-play-friend');
             const btnMatchmaking = document.getElementById('btn-matchmaking');
             const btnJoin        = document.getElementById('btn-join-room');
+            const btnModeIA      = document.getElementById('btn-ModeIA');
 
             if (btnIA) btnIA.onclick = () => {
                 setupContainer.style.display = 'none';
@@ -391,7 +392,7 @@ const routes = {
                 mmStatus.style.display = 'block';
                 mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
                 btnMatchmaking.disabled = true;
-                sessionStorage.setItem('matchmaking_active', '1');  // ← démarre
+                sessionStorage.setItem('matchmaking_active', '1');
 
                 let isSearching = true;
                 const interval = setInterval(async () => {
@@ -401,7 +402,7 @@ const routes = {
                             clearInterval(interval);
                             mmStatus.style.display = 'none';
                             btnMatchmaking.disabled = false;
-                            sessionStorage.removeItem('matchmaking_active');  // ← stop
+                            sessionStorage.removeItem('matchmaking_active'); 
                             console.log("annulation du matchmaking.\n");
                             return;
                         }
@@ -415,7 +416,7 @@ const routes = {
                                 clearInterval(interval);
                                 mmStatus.style.display = 'none';
                                 isSearching = false;
-                                sessionStorage.removeItem('matchmaking_active');  // ← stop
+                                sessionStorage.removeItem('matchmaking_active'); 
                                 window.location.href = '/';
                                 return;
                             }
@@ -423,7 +424,7 @@ const routes = {
 
                         if (data.status === 'matched') {
                             clearInterval(interval);
-                            sessionStorage.removeItem('matchmaking_active');  // ← stop
+                            sessionStorage.removeItem('matchmaking_active');
                             lockNav();
                             // Remplace tout le contenu par juste le canvas
                             const app = document.getElementById('app');
@@ -435,7 +436,7 @@ const routes = {
                             initBouncingBalls();
                             initOnlinePong(data.room_id);
                         } else {
-                            // Toujours en attente — anime les points
+                            // Toujours en attente on anime les points
                             const dots = '.'.repeat((Date.now() / 500 % 3 | 0) + 1);
                             mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
                         }
@@ -456,7 +457,7 @@ const routes = {
                         isSearching = false;
                         clearInterval(interval);
                         btnMatchmaking.disabled = false;
-                        sessionStorage.removeItem('matchmaking_active');  // ← stop
+                        sessionStorage.removeItem('matchmaking_active'); 
                         cancelMatchmaking();
                         mmStatus.style.display = 'none';
                     };
@@ -557,14 +558,13 @@ const routes = {
                         </select>
                     </div>
                     <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                    <button type="button" id="btn-reset-settings" class="cyber-button" style="width:100%;margin-top:8px;border-color:#8b949e;color:#8b949e;">↺ Réinitialiser par défaut</button>
                 </form>
                 <div id="settings-msg"></div>
 
                 <div style="margin-top:40px;border-top:1px solid rgba(255,0,85,0.2);padding-top:20px;">
                     <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">⚖️ Données personnelles (RGPD)</h3>
-                    <button id="btn-export-data" class="cyber-button" style="width:100%;margin-bottom:10px;border-color:#8b949e;color:#8b949e;">
-                        📥 Télécharger mes données
-                    </button>
+
                     <button id="btn-delete-account" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">
                         🗑️ Supprimer mon compte
                     </button>
@@ -1520,29 +1520,13 @@ function initSettings() {
         e.preventDefault();
         await userStore.set('user_color', document.getElementById('paddle-color').value);
         await userStore.set('ai_level',   document.getElementById('ai-difficulty').value);
-        msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Préférences mises à jour (Pseudo conservé) !</p>';
+        msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Préférences mises à jour !</p>';
     };
-
-    // RGPD — Export
-    const btnExport = document.getElementById('btn-export-data');
-    if (btnExport) btnExport.onclick = async () => {
-        const res  = await fetch('/api/users/export/', { credentials: 'include' });
-        const blob = await res.blob();
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement('a');
-        a.href     = url;
-        a.download = 'mes_donnees.json';
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    // RGPD — Suppression
+    // suppression du compte (rgpd)
     const btnDelete = document.getElementById('btn-delete-account');
     if (btnDelete) btnDelete.onclick = async () => {
         const confirm1 = confirm('⚠️ Supprimer ton compte ? Cette action est irréversible.');
         if (!confirm1) return;
-        const confirm2 = confirm('Dernière confirmation — toutes tes données seront effacées.');
-        if (!confirm2) return;
         const res = await fetch('/api/users/delete/', {
             method: 'POST', credentials: 'include',
             headers: { 'X-CSRFToken': getCsrfToken() }
@@ -1554,21 +1538,15 @@ function initSettings() {
             navigateTo('/');
         }
     };
+    const btnReset = document.getElementById('btn-reset-settings');
+    if (btnReset) btnReset.onclick = async () => {
+        await userStore.set('user_color', '#00babc');
+        await userStore.set('ai_level',   '5');
+        document.getElementById('paddle-color').value  = '#00babc';
+        document.getElementById('ai-difficulty').value = '5';
+        msg.innerHTML = '<p style="color:#8b949e;margin-top:15px;">Paramètres réinitialisés par défaut.</p>';
+    };
 }
-// function initSettings() {
-//     const form = document.getElementById('settings-form');
-//     const msg  = document.getElementById('settings-msg');
-//     document.getElementById('username-input').value = userStore.get('user_name', 'Player');
-//     document.getElementById('paddle-color').value   = userStore.get('user_color', '#00babc');
-//     document.getElementById('ai-difficulty').value  = userStore.get('ai_level', '5');
-//     if (!form) return;
-//     form.onsubmit = async (e) => {
-//         e.preventDefault();
-//         await userStore.set('user_color', document.getElementById('paddle-color').value);
-//         await userStore.set('ai_level',   document.getElementById('ai-difficulty').value);
-//         msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Préférences mises à jour (Pseudo conservé) !</p>';
-//     };
-// }
 
 // ─── Pong Local ───────────────────────────────────────────────────────────────
 function initPongGame(p1Name = "Player", p2Name = "IA") {
@@ -1617,13 +1595,7 @@ function startGameLogic(name1, name2) {
     const handleKeyUp = e => keys[e.key] = false;
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup',   handleKeyUp);
-    const particles = Array.from({ length: 60 }, () => ({
-        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-        size: Math.random() * 1.5 + 0.5, speedX: (Math.random() - 0.5) * 0.4,
-        speedY: (Math.random() - 0.5) * 0.4, opacity: Math.random() * 0.4 + 0.1,
-    }));
-    const ballTrail = [];
-
+    
     function gameLoop() {
         if (isGameOver) return;
         update(); draw();

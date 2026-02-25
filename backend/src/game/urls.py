@@ -7,5 +7,5 @@ urlpatterns = [
     path('matchmaking/',         views.matchmaking,         name='game-matchmaking'),
     path('matchmaking/cancel/',  views.cancel_matchmaking,  name='game-matchmaking-cancel'),
     path('rooms/',               views.active_rooms,        name='active-rooms'),
-    path('<str:room_id>/',       room_info,                 name='game-info'),  # ← toujours en dernier
+    path('<str:room_id>/',       room_info,                 name='game-info'),
 ]

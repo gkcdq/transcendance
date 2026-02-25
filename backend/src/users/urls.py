@@ -22,6 +22,5 @@ urlpatterns = [
     path('leaderboard/',                      views.get_leaderboard,  name='user-leaderboard'),
     path('register/',                         views.register,         name='register'),
     path('login/',                            views.login_view,       name='login'),
-    path('export/',                           views.export_user_data, name='export-data'),
     path('delete/',                           views.delete_account,   name='delete-account'),
 ]

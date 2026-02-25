@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -240,27 +240,6 @@ def search_users(request):
         {"username": u.username, "avatar": u.profile.avatar or None, "is_online": u.profile.is_online}
         for u in users
     ]})
-
-@login_required
-def export_user_data(request):
-    user    = request.user
-    profile = user.profile
-    data = {
-        "username":      user.username,
-        "email":         user.email,
-        "date_joined":   str(user.date_joined),
-        "wins":          profile.wins,
-        "losses":        profile.losses,
-        "xp":            profile.xp,
-        "total_seconds": profile.total_seconds,
-        "avatar":        profile.avatar,
-    }
-    response = HttpResponse(
-        json.dumps(data, indent=2, ensure_ascii=False),
-        content_type='application/json'
-    )
-    response['Content-Disposition'] = 'attachment; filename="mes_donnees.json"'
-    return response
 
 @login_required
 @require_POST
