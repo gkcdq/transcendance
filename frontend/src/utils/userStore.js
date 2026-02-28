@@ -16,7 +16,7 @@ const API_BASE = '/api/users';
 // ─────────────────────────────────────────────
 // Helpers fetch avec CSRF Django
 // ─────────────────────────────────────────────
-function getCsrfToken() {
+export function getCsrfToken() {
     // Essaie d'abord le cookie csrftoken
     const cookie = document.cookie
         .split('; ')
