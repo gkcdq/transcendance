@@ -83,7 +83,6 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             if (side === 'left') { p1SpeedMult = 2; setTimeout(() => { p1SpeedMult = 1; }, 5000); }
             else                  { p2SpeedMult = 2; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
         } else if (bonus.id === 'freeze') {
-            // Ne rien faire si déjà gelée
             if (ballSpeedX === 0 && ballSpeedY === 0) return;
             const ox = ballSpeedX, oy = ballSpeedY;
             ballSpeedX = 0; ballSpeedY = 0;
@@ -99,9 +98,33 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             const b2 = BONUS_DEFS[Math.floor(Math.random() * BONUS_DEFS.length)];
             if (p1Bonuses.length < 3) p1Bonuses.push(b1);
             if (p2Bonuses.length < 3) p2Bonuses.push(b2);
-            if (name2 === 'IA' && p2Bonuses.length > 0) {
-                setTimeout(() => { if (p2Bonuses.length > 0) applyBonus(p2Bonuses.shift(), 'right'); }, 2000);
-            }
+            // if (name2 === 'IA' && p2Bonuses.length > 0)
+            // {
+            //     setTimeout(() => 
+            //     { 
+            //         if (p2Bonuses.length > 0)
+            //         {
+            //             if ((ballX > canvas.width / 2))
+            //             {
+            //                 if (p2Bonuses[0].id === 'wall')
+            //                 {
+            //                     if ((ballY > rightPaddleY) || (ballY < rightPaddleY) && (rightPaddleX - ballX) <= 100)
+            //                         applyBonus(p2Bonuses.shift(), 'right');
+            //                 }
+            //                 else if (p2Bonuses[0].id === 'freeze')
+            //                 {
+            //                     if (ballX >= canvas.width * 0.90)
+            //                          applyBonus(p2Bonuses.shift(), 'right');
+            //                 }
+            //                 else
+            //                     applyBonus(p2Bonuses.shift(), 'right');
+            //             }
+            //             else if (p2Bonuses[0].id === 'boost')
+            //                 applyBonus(p2Bonuses.shift, 'right');
+            //         }
+
+            //     }, 200);
+            // }
         }
     }
 
@@ -130,7 +153,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     };
     const handleKeyUp = e => {
         keys[e.key] = false;
-        if (e.key === 'Shift') shiftUsed = false;
+        if (e.key === 'Shift') { keys['W'] = false; keys['A'] = false; keys['S'] = false; keys['D'] = false; keys['w'] = false; keys['a'] = false; keys['s'] = false; keys['d'] = false; shiftUsed = false;}
         if (e.key === '0')     zeroUsed  = false;
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -179,9 +202,42 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         }
         return Math.max(minY, Math.min(maxY, py));
     }
-
+    let iaFreezeActive = false;
+    function onIaFreeze() {
+        iaFreezeActive = true;
+        setTimeout(() => { iaFreezeActive = false; }, 2000); // durée du freeze
+    }
     function update() {
+        console.log("y = ", rightPaddleY);
+        console.log("x = ", rightPaddleX);
+        console.log("canva = ", canvas.width * 0.90);
+        console.log("ballX = ", ballX);
         updateBonus();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // ── Joueur gauche ──
         const speed = 7 * p1SpeedMult, hSpeed = 4 * p1SpeedMult;
@@ -194,24 +250,66 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
         // IA
         if (name2 === "IA") {
-            const sp = aiBaseSpeed * p2SpeedMult;
-            const hs = 4 * p2SpeedMult * 0.6;
-            const centerPaddle = rightPaddleY + p2paddleHeight / 2;
-            const targetY = ballSpeedX > 0 ? ballY : canvas.height / 2;
-            if (centerPaddle < targetY - 10) rightPaddleY += sp;
-            else if (centerPaddle > targetY + 10) rightPaddleY -= sp;
-            const targetX = ballSpeedX > 0
-                ? Math.max(canvas.width / 2, ballX - 60)
-                : canvas.width - paddleWidth - 10;
-            if (rightPaddleX > targetX + 3) rightPaddleX -= hs;
-            else if (rightPaddleX < targetX - 3) rightPaddleX += hs;
-            rightPaddleX = Math.max(canvas.width / 2, Math.min(canvas.width - paddleWidth - 10, rightPaddleX));
-        } else {
+        
+            if (iaFreezeActive)
+            {
+                const centerPaddle = rightPaddleY + p2paddleHeight / 2;
+                if (iaFreezeActive)
+                {
+                    const targetY = ballY;
+                    const targetX = Math.max(canvas.width / 2, ballX + 10);
+                    if (centerPaddle < targetY - 5) rightPaddleY += aiBaseSpeed * 2;
+                    else if (centerPaddle > targetY + 5) rightPaddleY -= aiBaseSpeed * 2;
+                    if (rightPaddleX > targetX + 3) rightPaddleX -= hSpeed;
+                    else if (rightPaddleX < targetX - 3) rightPaddleX += hSpeed;
+                }
+            }
+            else
+            {
+                const sp = aiBaseSpeed * p2SpeedMult;
+                const hs = 4 * p2SpeedMult * 0.6;
+                const centerPaddle = rightPaddleY + p2paddleHeight / 2;
+                const targetY = ballSpeedX > 0 ? ballY : canvas.height / 2;
+                if (centerPaddle < targetY - 10) rightPaddleY += sp;
+                else if (centerPaddle > targetY + 10) rightPaddleY -= sp;
+                const targetX = ballSpeedX > 0
+                    ? Math.max(canvas.width / 2, ballX - 60)
+                    : canvas.width - paddleWidth - 10;
+                if (rightPaddleX > targetX + 3) rightPaddleX -= hs;
+                else if (rightPaddleX < targetX - 3) rightPaddleX += hs;
+                rightPaddleX = Math.max(canvas.width / 2, Math.min(canvas.width - paddleWidth - 10, rightPaddleX));
+        
+            }
+        } 
+        else
+        {
             const sp2 = 7 * p2SpeedMult, hs2 = 4 * p2SpeedMult;
             if (keys['ArrowUp'])    rightPaddleY -= sp2;
             if (keys['ArrowDown'])  rightPaddleY += sp2;
             if (keys['ArrowLeft']  && rightPaddleX > canvas.width / 2)           rightPaddleX -= hs2;
             if (keys['ArrowRight'] && rightPaddleX < canvas.width - paddleWidth) rightPaddleX += hs2;
+        }
+        if (name2 === 'IA' && p2Bonuses.length > 0) {
+            const bonus = p2Bonuses[0];
+            const ballGoingRight = ballSpeedX > 0;
+            const ballAligned    = ballY >= rightPaddleY && ballY <= rightPaddleY + p2paddleHeight;
+            const ballClose      = ballX >= canvas.width * 0.65;
+            if (bonus.id === 'wall') {
+                if (ballGoingRight && ballClose && !ballAligned)
+                    applyBonus(p2Bonuses.shift(), 'right');
+            }
+            else if (bonus.id === 'freeze') {
+                if (ballX > canvas.width * 0.90)
+                {
+                    applyBonus(p2Bonuses.shift(), 'right');
+                    onIaFreeze();
+                }
+                
+            }
+            else if (bonus.id === 'boost') {
+                if (ballGoingRight && ballClose && ballAligned)
+                    applyBonus(p2Bonuses.shift(), 'right');
+            }
         }
         // Contraint après mouvement
         rightPaddleY = constrainPaddle(rightPaddleX, rightPaddleY, p2paddleHeight);
@@ -241,7 +339,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             }
         }
 
-        if (ballX <= 0)                { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
+        if (ballX <= 0) { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
         else if (ballX >= canvas.width) { score1++; if (score1 >= 5) endGame(name1); else resetBall(); }
     }
 
