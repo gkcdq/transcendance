@@ -11,3 +11,25 @@ export function returnCurrentPongInstance(){return currentPongInstance;}
 export let globalChatWS = null;
 export function setGlobalChatWS(value){globalChatWS = value;}
 export function returnGlobalChatWS(){return globalChatWS;}
+
+// navbar lock unlock
+export function lockNav() {
+    document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.pointerEvents = 'none';
+        a.style.opacity = '0.3';
+    });
+    if (!document.getElementById('nav-match-badge')) {
+        document.querySelector('.nav-links')?.insertAdjacentHTML('beforeend',
+            `<li id="nav-match-badge" style="color:#ff0055;font-weight:bold;font-size:0.8rem;letter-spacing:1px;">🔴 MATCH EN COURS</li>`
+        );
+    }
+}
+
+export function unlockNav() {
+    sessionStorage.removeItem('active_room');
+    document.querySelectorAll('.nav-links a').forEach(a => {
+        a.style.pointerEvents = '';
+        a.style.opacity = '';
+    });
+    document.getElementById('nav-match-badge')?.remove();
+}

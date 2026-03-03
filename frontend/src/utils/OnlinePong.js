@@ -1,7 +1,15 @@
 import { userStore } from './userStore.js';
-await userStore.init();
-import { navigateTo, lockNav, unlockNav } from '../main.js';
+import { lockNav, unlockNav} from './State.js';
 import { setOnlineStatus } from './State.js';
+import { returnCurrentPongInstance, letCurrentPongInstance } from './State.js';
+
+function navigateTo(url) {
+    const instance = returnCurrentPongInstance();
+    if (instance) { cancelAnimationFrame(instance); letCurrentPongInstance(null); }
+    window.dispatchEvent(new CustomEvent('navigate-away'));
+    history.pushState(null, null, url);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+}
 
 // ─── Pong Online ──────────────────────────────────────────────────────────────
 export function initOnlinePong(roomId) {

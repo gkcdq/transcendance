@@ -1,5 +1,4 @@
 import { userStore } from './userStore.js';
-await userStore.init();
 import { letCurrentPongInstance } from './State.js';
 import { tournamentState } from '../main.js';
 import { navigateTo } from '../main.js';

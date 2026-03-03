@@ -1,8 +1,7 @@
 // import
 import { userStore, getCsrfToken } from './utils/userStore.js';
-await userStore.init();
 import { initOnlinePong } from './utils/OnlinePong.js';
-import { letCurrentPongInstance, returnCurrentPongInstance } from './utils/State.js';
+import { letCurrentPongInstance, returnCurrentPongInstance, lockNav, unlockNav } from './utils/State.js';
 import { routes } from './utils/Routes.js';
 
 // ─── OAuth 42 ────────────────────────────────────────────────────────────────
@@ -342,26 +341,26 @@ function renderAuthUI(isLoggedIn) {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
-export function lockNav() {
-    document.querySelectorAll('.nav-links a').forEach(a => {
-        a.style.pointerEvents = 'none';
-        a.style.opacity = '0.3';
-    });
-    if (!document.getElementById('nav-match-badge')) {
-        document.querySelector('.nav-links')?.insertAdjacentHTML('beforeend',
-            `<li id="nav-match-badge" style="color:#ff0055;font-weight:bold;font-size:0.8rem;letter-spacing:1px;">🔴 MATCH EN COURS</li>`
-        );
-    }
-}
+// export function lockNav() {
+//     document.querySelectorAll('.nav-links a').forEach(a => {
+//         a.style.pointerEvents = 'none';
+//         a.style.opacity = '0.3';
+//     });
+//     if (!document.getElementById('nav-match-badge')) {
+//         document.querySelector('.nav-links')?.insertAdjacentHTML('beforeend',
+//             `<li id="nav-match-badge" style="color:#ff0055;font-weight:bold;font-size:0.8rem;letter-spacing:1px;">🔴 MATCH EN COURS</li>`
+//         );
+//     }
+// }
 
-export function unlockNav() {
-    sessionStorage.removeItem('active_room');
-    document.querySelectorAll('.nav-links a').forEach(a => {
-        a.style.pointerEvents = '';
-        a.style.opacity = '';
-    });
-    document.getElementById('nav-match-badge')?.remove();
-}
+// export function unlockNav() {
+//     sessionStorage.removeItem('active_room');
+//     document.querySelectorAll('.nav-links a').forEach(a => {
+//         a.style.pointerEvents = '';
+//         a.style.opacity = '';
+//     });
+//     document.getElementById('nav-match-badge')?.remove();
+// }
 
 async function cancelMatchmaking() {
     if (!sessionStorage.getItem('matchmaking_active')) return;

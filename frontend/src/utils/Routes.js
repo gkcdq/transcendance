@@ -1,10 +1,19 @@
-import { userStore } from './userStore.js';
+import { getCsrfToken, userStore } from './userStore.js';
 await userStore.init();
 import { initPongGame } from './Pong.js';
 import { initOnlinePong } from './OnlinePong.js';
 import { initSettings } from './settings.js';
 import { initModeGame } from './ModeGame.js';
+import { lockNav } from './State.js';
 import { tournamentState ,initTournamentLogic, loadLeaderboard, initSpectatorMode, initBouncingBalls, initProfile, initChat} from '../main.js';
+import { returnCurrentPongInstance, letCurrentPongInstance } from './State.js';
+function navigateTo(url) {
+    const instance = returnCurrentPongInstance();
+    if (instance) { cancelAnimationFrame(instance); letCurrentPongInstance(null); }
+    window.dispatchEvent(new CustomEvent('navigate-away'));
+    history.pushState(null, null, url);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+}
 const UID      = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
@@ -253,7 +262,7 @@ export const routes = {
                             } else {
                                 msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
                             }
-                        } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
+                        } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Errtteur réseau.</span>'; }
                     };
                     document.getElementById('btn-login').onclick = doLogin;
                     document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -453,7 +462,8 @@ export const routes = {
                         clearInterval(interval);
                         btnMatchmaking.disabled = false;
                         sessionStorage.removeItem('matchmaking_active');  // ← stop
-                        mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
+                        console.error('MATCHMAKING ERROR: ', e);
+                        mmStatus.innerHTML = `<span style="color:#ff4d6d;">Errrrrreur réseau.</span>`;
                     }
                 }, 2000);
 
@@ -850,7 +860,7 @@ export const routes = {
                 } else {
                     msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
                 }
-            } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
+            } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Errteur réseau.</span>'; }
         };
     }
     },
