@@ -33,3 +33,12 @@ export function unlockNav() {
     });
     document.getElementById('nav-match-badge')?.remove();
 }
+
+// pour naviguer dans la page gg
+export function navigateTo(url) {
+    const instance = returnCurrentPongInstance();
+    if (instance) { cancelAnimationFrame(instance); letCurrentPongInstance(null); }
+    window.dispatchEvent(new CustomEvent('navigate-away'));
+    history.pushState(null, null, url);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+}

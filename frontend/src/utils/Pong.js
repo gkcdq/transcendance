@@ -60,10 +60,10 @@ function startGameLogic(name1, name2) {
 
     function update() {
         const speed = 7, hSpeed = 4;
-        if (keys['w'] && leftPaddleY > 0)                             leftPaddleY -= speed;
-        if (keys['s'] && leftPaddleY < canvas.height - paddleHeight)  leftPaddleY += speed;
-        if (keys['d'] && leftPaddleX < PADDLE_MAX_X)                  leftPaddleX += hSpeed;
-        if (keys['a'] && leftPaddleX > 0)                             leftPaddleX -= hSpeed;
+        if ((keys['w'] || keys['W']) && leftPaddleY > 0) leftPaddleY -= speed;
+        if ((keys['s'] || keys['S']) && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += speed;
+        if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
+        if ((keys['a'] || keys['A']) && leftPaddleX > 0) leftPaddleX -= hSpeed;
 
         if (name2 === "IA") {
             const centerPaddle = rightPaddleY + paddleHeight / 2;

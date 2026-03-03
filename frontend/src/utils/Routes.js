@@ -6,14 +6,7 @@ import { initSettings } from './settings.js';
 import { initModeGame } from './ModeGame.js';
 import { lockNav } from './State.js';
 import { tournamentState ,initTournamentLogic, loadLeaderboard, initSpectatorMode, initBouncingBalls, initProfile, initChat} from '../main.js';
-import { returnCurrentPongInstance, letCurrentPongInstance } from './State.js';
-function navigateTo(url) {
-    const instance = returnCurrentPongInstance();
-    if (instance) { cancelAnimationFrame(instance); letCurrentPongInstance(null); }
-    window.dispatchEvent(new CustomEvent('navigate-away'));
-    history.pushState(null, null, url);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-}
+import { navigateTo } from './State.js';
 const UID      = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
@@ -23,7 +16,7 @@ const playModePageHTML = `
             <button id="btn-start-game" class="cyber-button">Lancer la partie</button>
             <p id="game-status">Mode Octogone Prêt</p>
         </div>
-        <canvas id="pongCanvas" width="800" height="800" 
+        <canvas id="pongCanvas" width="750" height="750" 
             style="display:none; 
                    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
                    background: rgba(0,0,0,0.8);">

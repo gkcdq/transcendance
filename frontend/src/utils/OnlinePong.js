@@ -1,15 +1,5 @@
 import { userStore } from './userStore.js';
-import { lockNav, unlockNav} from './State.js';
-import { setOnlineStatus } from './State.js';
-import { returnCurrentPongInstance, letCurrentPongInstance } from './State.js';
-
-function navigateTo(url) {
-    const instance = returnCurrentPongInstance();
-    if (instance) { cancelAnimationFrame(instance); letCurrentPongInstance(null); }
-    window.dispatchEvent(new CustomEvent('navigate-away'));
-    history.pushState(null, null, url);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-}
+import { lockNav, unlockNav, setOnlineStatus, navigateTo} from './State.js';
 
 // ─── Pong Online ──────────────────────────────────────────────────────────────
 export function initOnlinePong(roomId) {
@@ -33,10 +23,10 @@ export function initOnlinePong(roomId) {
 
     const onDown = (e) => {
         if (gameOver || !mySide) return;
-        if ((e.key === 'ArrowUp'    || e.key === 'w') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'up' })); }
-        if ((e.key === 'ArrowDown'  || e.key === 's') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'down' })); }
-        if ((e.key === 'ArrowLeft'  || e.key === 'a') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'left' })); }   
-        if ((e.key === 'ArrowRight' || e.key === 'd') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'right' })); } 
+        if ((e.key === 'ArrowUp'    || e.key === 'w' || e.key === 'W') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'up' })); }
+        if ((e.key === 'ArrowDown'  || e.key === 's' || e.key === 'S') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'down' })); }
+        if ((e.key === 'ArrowLeft'  || e.key === 'a' || e.key === 'A') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'left' })); }   
+        if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && !keys[e.key]) { keys[e.key] = true; ws.send(JSON.stringify({ type:'input', key:'right' })); } 
     };
     const onUp = (e) => { delete keys[e.key]; };
     window.addEventListener('keydown', onDown);
@@ -44,10 +34,10 @@ export function initOnlinePong(roomId) {
 
     const inputLoop = setInterval(() => {
         if (gameOver || !mySide || ws.readyState !== WebSocket.OPEN) return;
-        if (keys['ArrowUp']    || keys['w']) ws.send(JSON.stringify({ type:'input', key:'up' }));
-        if (keys['ArrowDown']  || keys['s']) ws.send(JSON.stringify({ type:'input', key:'down' }));
-        if (keys['ArrowLeft']  || keys['a']) ws.send(JSON.stringify({ type:'input', key:'left' }));   
-        if (keys['ArrowRight'] || keys['d']) ws.send(JSON.stringify({ type:'input', key:'right' }));  
+        if (keys['ArrowUp']    || keys['w'] || keys['W']) ws.send(JSON.stringify({ type:'input', key:'up' }));
+        if (keys['ArrowDown']  || keys['s'] || keys['S']) ws.send(JSON.stringify({ type:'input', key:'down' }));
+        if (keys['ArrowLeft']  || keys['a'] || keys['A']) ws.send(JSON.stringify({ type:'input', key:'left' }));   
+        if (keys['ArrowRight'] || keys['d'] || keys['D']) ws.send(JSON.stringify({ type:'input', key:'right' }));  
     }, 16);
 
     ws.onopen = () => { if (statusText) statusText.innerText = 'Connecté ! En attente du 2ème joueur...'; };

@@ -189,7 +189,7 @@ export function initBouncingBalls() {
 
     // On passe à 40 balles pour un effet de "pluie de néons"
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
-    const balls = Array.from({ length: 20}, () => ({
+    const balls = Array.from({ length: 40}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         // On varie un peu plus les vitesses pour plus de dynamisme
@@ -341,26 +341,6 @@ function renderAuthUI(isLoggedIn) {
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
-// export function lockNav() {
-//     document.querySelectorAll('.nav-links a').forEach(a => {
-//         a.style.pointerEvents = 'none';
-//         a.style.opacity = '0.3';
-//     });
-//     if (!document.getElementById('nav-match-badge')) {
-//         document.querySelector('.nav-links')?.insertAdjacentHTML('beforeend',
-//             `<li id="nav-match-badge" style="color:#ff0055;font-weight:bold;font-size:0.8rem;letter-spacing:1px;">🔴 MATCH EN COURS</li>`
-//         );
-//     }
-// }
-
-// export function unlockNav() {
-//     sessionStorage.removeItem('active_room');
-//     document.querySelectorAll('.nav-links a').forEach(a => {
-//         a.style.pointerEvents = '';
-//         a.style.opacity = '';
-//     });
-//     document.getElementById('nav-match-badge')?.remove();
-// }
 
 async function cancelMatchmaking() {
     if (!sessionStorage.getItem('matchmaking_active')) return;
@@ -625,9 +605,6 @@ export function initChat() {
         if (container) container.scrollTop = container.scrollHeight;
     }, 100);
 }
-
-
-
 
 // fonctions globales 
 window.sendFriendRequest    = sendFriendRequest;

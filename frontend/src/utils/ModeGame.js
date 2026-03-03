@@ -101,7 +101,6 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             if (p2Bonuses.length < 3) p2Bonuses.push(b2);
             if (name2 === 'IA' && p2Bonuses.length > 0) {
                 setTimeout(() => { if (p2Bonuses.length > 0) applyBonus(p2Bonuses.shift(), 'right'); }, 2000);
-                // utilisation intelligente
             }
         }
     }
@@ -116,7 +115,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     const keys = {};
     let shiftUsed = false, zeroUsed = false;
     const handleKeyDown = e => {
-        if (['w','s','a','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+        if (['w','s','a','d','W', 'S', 'A', 'D','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
             if (document.activeElement.tagName !== 'INPUT') e.preventDefault();
         }
         keys[e.key] = true;
@@ -186,14 +185,14 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
         // ── Joueur gauche ──
         const speed = 7 * p1SpeedMult, hSpeed = 4 * p1SpeedMult;
-        if (keys['w']) leftPaddleY -= speed;
-        if (keys['s']) leftPaddleY += speed;
-        if (keys['d'] && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
-        if (keys['a'] && leftPaddleX > paddleWidth / 2) leftPaddleX -= hSpeed;
+        if (keys['w'] || keys['W']) leftPaddleY -= speed;
+        if (keys['s'] || keys['S']) leftPaddleY += speed;
+        if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
+        if ((keys['a'] || keys['A']) && leftPaddleX > paddleWidth / 2) leftPaddleX -= hSpeed;
         // Contraint après mouvement
         leftPaddleY = constrainPaddle(leftPaddleX, leftPaddleY, p1paddleHeight);
 
-        // ── IA / Joueur droit ──
+        // IA
         if (name2 === "IA") {
             const sp = aiBaseSpeed * p2SpeedMult;
             const hs = 4 * p2SpeedMult * 0.6;
