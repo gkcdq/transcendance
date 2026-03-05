@@ -90,18 +90,16 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         dy: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedY),
     }));
     let p2BallBlink = false;
-    let p1Touch = false;
-    let p2Touch = false;
     const BONUS_DEFS = [
-        // { id: 'wall',   label: '🛡️ Mur'   },
-        // { id: 'boost',  label: '⚡ Boost'  },
+        { id: 'wall',   label: '🛡️ Mur'   },
+        { id: 'boost',  label: '⚡ Boost'  },
         { id: 'freeze', label: '❄️ Freeze' },
-        // { id: 'canon', label: '🎳 Canon'},
+        { id: 'canon', label: '🎳 Canon'},
         { id: 'multiclonage', label: '👺 MALUS'},
-        // { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
-        // { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
-        // { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
-        // { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
+        { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
+        { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
+        { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
+        { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
     ];
 
     function applyBonus(bonus, side) {
@@ -517,6 +515,10 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             else if (bonus.id === 'boost') {
                 if (ballGoingRight && ballClose && ballAligned)
                     applyBonus(p2Bonuses.shift(), 'right');
+            }
+            else
+            {
+                setTimeout(() => {applyBonus(p2Bonuses.shift(), 'right')}, 2000)
             }
         }
         // Contraint après mouvement
