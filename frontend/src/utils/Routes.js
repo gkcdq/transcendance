@@ -16,9 +16,9 @@ const playModePageHTML = `
             <button id="btn-start-game" class="cyber-button">Lancer la partie</button>
             <p id="game-status">Mode Octogone Prêt</p>
         </div>
-        <canvas id="pongCanvas" width="750" height="750" 
+        <canvas id="pongCanvas" width="1000" height="750" 
             style="display:none; 
-                   clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+                   clip-path: polygon(31.25% 0%, 68.75% 0%, 100% 25%, 100% 75%, 68.75% 100%, 31.25% 100%, 0% 75%, 0% 25%);
                    background: rgba(0,0,0,0.8);">
         </canvas>
     </div>ds

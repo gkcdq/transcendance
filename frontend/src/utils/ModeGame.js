@@ -9,6 +9,8 @@ export function initModeGame(p1Name = "Player", p2Name = "IA")
     if (name && p1Name === "Player") p1Name = name;
     const btnStart   = document.getElementById('btn-start-game');
     const canvas     = document.getElementById('pongCanvas');
+    canvas.width = 1000;
+    canvas.height = 750;
     const statusText = document.getElementById('game-status');
     if (!canvas || !btnStart) return;
     const ctx = canvas.getContext('2d');
@@ -54,16 +56,24 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let rightPaddleY = (canvas.height - p2paddleHeight) / 2;
 
     let ballX = canvas.width / 2, ballY = canvas.height / 2;
-    let ballSpeedX = 5, ballSpeedY = 5;
+    let ballSpeedX = 0, ballSpeedY = 0;
     let score1 = 0, score2 = 0;
 
     let p1Bonuses = [], p2Bonuses = [];
     let p1SpeedMult = 1, p2SpeedMult = 1;
+    let p1blockmovement = false;
+    let p2blockmovement = false;
+    let p1Inverse = false;
+    let p2Inverse = false;
 
     const BONUS_DEFS = [
-        { id: 'wall',   label: '🛡️ Mur'   },
-        { id: 'boost',  label: '⚡ Boost'  },
-        { id: 'freeze', label: '❄️ Freeze' },
+        // { id: 'wall',   label: '🛡️ Mur'   },
+        // { id: 'boost',  label: '⚡ Boost'  },
+        // { id: 'freeze', label: '❄️ Freeze' },
+        // { id: 's_malus',label: '👺 MALUS'}, // speed malus
+        { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
+        // { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
+        // { id: 'p_malus', label: '👺 MALUS'}, // raqutte mini
     ];
 
     function applyBonus(bonus, side) {
@@ -79,15 +89,70 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 p2paddleHeight = canvas.height;
                 setTimeout(() => { p2paddleHeight = orig; }, 3000);
             }
-        } else if (bonus.id === 'boost') {
+        }
+        else if (bonus.id === 'boost')
+        {
             if (side === 'left') { p1SpeedMult = 2; setTimeout(() => { p1SpeedMult = 1; }, 5000); }
-            else                  { p2SpeedMult = 2; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
-        } else if (bonus.id === 'freeze') {
+            else { p2SpeedMult = 2; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
+        }
+        else if (bonus.id === 'freeze')
+        {
             if (ballSpeedX === 0 && ballSpeedY === 0) return;
             const ox = ballSpeedX, oy = ballSpeedY;
             ballSpeedX = 0; ballSpeedY = 0;
             setTimeout(() => { ballSpeedX = ox; ballSpeedY = oy; }, 2000);
         }
+        else if (bonus.id === 's_malus')
+        {
+            if (side === 'left')
+            {
+                { p2SpeedMult = 4; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
+            }
+            else
+            {
+                { p1SpeedMult = 4; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
+            }
+        }
+        else if (bonus.id === 'i_malus')
+        {
+            if (side === 'left')
+            {
+                p2Inverse = true;
+                setTimeout(() => { p2Inverse = false }, 5000);
+            }
+            else
+            {
+               p1Inverse = true;
+               setTimeout(() => { p1Inverse = false }, 5000);
+            }
+        }
+        else if (bonus.id === 'f_malus')
+        {
+            if (side === 'left')
+            {
+                p2blockmovement = true;
+                setTimeout(() => { p2blockmovement = false; }, 2000); 
+            }
+            else
+            {
+                p1blockmovement = true;
+                setTimeout(() => { p1blockmovement = false; }, 2000);
+            }
+        }
+        else if (bonus.id === 'p_malus')
+        {
+            if (side === 'left')
+            {
+                p2paddleHeight = 40;
+                setTimeout(() => {p2paddleHeight = 80}, 3000);
+            }   
+            else
+            {
+                p1paddleHeight = 40;
+                setTimeout(() => {p1paddleHeight = 80}, 3000);
+            }
+        }
+        // continuer
     }
 
     function updateBonus() {
@@ -98,33 +163,6 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             const b2 = BONUS_DEFS[Math.floor(Math.random() * BONUS_DEFS.length)];
             if (p1Bonuses.length < 3) p1Bonuses.push(b1);
             if (p2Bonuses.length < 3) p2Bonuses.push(b2);
-            // if (name2 === 'IA' && p2Bonuses.length > 0)
-            // {
-            //     setTimeout(() => 
-            //     { 
-            //         if (p2Bonuses.length > 0)
-            //         {
-            //             if ((ballX > canvas.width / 2))
-            //             {
-            //                 if (p2Bonuses[0].id === 'wall')
-            //                 {
-            //                     if ((ballY > rightPaddleY) || (ballY < rightPaddleY) && (rightPaddleX - ballX) <= 100)
-            //                         applyBonus(p2Bonuses.shift(), 'right');
-            //                 }
-            //                 else if (p2Bonuses[0].id === 'freeze')
-            //                 {
-            //                     if (ballX >= canvas.width * 0.90)
-            //                          applyBonus(p2Bonuses.shift(), 'right');
-            //                 }
-            //                 else
-            //                     applyBonus(p2Bonuses.shift(), 'right');
-            //             }
-            //             else if (p2Bonuses[0].id === 'boost')
-            //                 applyBonus(p2Bonuses.shift, 'right');
-            //         }
-
-            //     }, 200);
-            // }
         }
     }
 
@@ -153,7 +191,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     };
     const handleKeyUp = e => {
         keys[e.key] = false;
-        if (e.key === 'Shift') { keys['W'] = false; keys['A'] = false; keys['S'] = false; keys['D'] = false; keys['w'] = false; keys['a'] = false; keys['s'] = false; keys['d'] = false; shiftUsed = false;}
+        if (e.key === 'Shift' || e.key === 'CapsLock') { keys['W'] = false; keys['A'] = false; keys['S'] = false; keys['D'] = false; keys['w'] = false; keys['a'] = false; keys['s'] = false; keys['d'] = false; shiftUsed = false;}
         if (e.key === '0')     zeroUsed  = false;
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -167,39 +205,75 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     }
 
     function octagonBounce() {
-        const offset = canvas.width * 0.3;
-        const w = canvas.width, h = canvas.height;
+        const w  = canvas.width;   // 1000
+        const h  = canvas.height;  // 750
+        const oW = w * 0.3125;     // 312.5px — offset horizontal
+        const oH = h * 0.25;       // 187.5px — offset vertical
+
+        // Bords haut/bas
         if (ballY < 0) { ballY = 0; ballSpeedY *= -1; }
         if (ballY > h) { ballY = h; ballSpeedY *= -1; }
-        if (ballX < 0) { ballX = 0; ballSpeedX *= -1; }
-        if (ballX > w) { ballX = w; ballSpeedX *= -1; }
-        if (ballX + ballY < offset) {
-            let t = ballSpeedX; ballSpeedX = Math.abs(ballSpeedY); ballSpeedY = Math.abs(t);
-            ballX = offset - ballY + 1;
+
+        // Buts gauche/droite (goals)
+        if (ballX < 0) { score2++; score2 >= 5 ? endGame(name2) : resetBall(); return; }
+        if (ballX > w) { score1++; score1 >= 5 ? endGame(name1) : resetBall(); return; }
+
+        // Coin haut-gauche : x/oW + y/oH < 1
+        if (ballX / oW + ballY / oH < 1) {
+            const t = ballSpeedX;
+            ballSpeedX =  Math.abs(ballSpeedY) * (oW / oH);
+            ballSpeedY =  Math.abs(t)          * (oH / oW);
+            // Repousse la balle hors du coin
+            ballX = (1 - ballY / oH) * oW + 1;
         }
-        if ((w - ballX) + ballY < offset) {
-            let t = ballSpeedX; ballSpeedX = -Math.abs(ballSpeedY); ballSpeedY = Math.abs(t);
-            ballX = w - (offset - ballY) - 1;
+
+        // Coin haut-droit : (w-x)/oW + y/oH < 1
+        if ((w - ballX) / oW + ballY / oH < 1) {
+            const t = ballSpeedX;
+            ballSpeedX = -Math.abs(ballSpeedY) * (oW / oH);
+            ballSpeedY =  Math.abs(t)          * (oH / oW);
+            ballX = w - (1 - ballY / oH) * oW - 1;
         }
-        if (ballX + (h - ballY) < offset) {
-            let t = ballSpeedX; ballSpeedX = Math.abs(ballSpeedY); ballSpeedY = -Math.abs(t);
-            ballX = offset - (h - ballY) + 1;
+
+        // Coin bas-gauche : x/oW + (h-y)/oH < 1
+        if (ballX / oW + (h - ballY) / oH < 1) {
+            const t = ballSpeedX;
+            ballSpeedX =  Math.abs(ballSpeedY) * (oW / oH);
+            ballSpeedY = -Math.abs(t)          * (oH / oW);
+            ballX = (1 - (h - ballY) / oH) * oW + 1;
         }
-        if ((w - ballX) + (h - ballY) < offset) {
-            let t = ballSpeedX; ballSpeedX = -Math.abs(ballSpeedY); ballSpeedY = -Math.abs(t);
-            ballX = w - (offset - (h - ballY)) - 1;
+
+        // Coin bas-droit : (w-x)/oW + (h-y)/oH < 1
+        if ((w - ballX) / oW + (h - ballY) / oH < 1) {
+            const t = ballSpeedX;
+            ballSpeedX = -Math.abs(ballSpeedY) * (oW / oH);
+            ballSpeedY = -Math.abs(t)          * (oH / oW);
+            ballX = w - (1 - (h - ballY) / oH) * oW - 1;
         }
     }
 
     function constrainPaddle(px, py, pH) {
-        const offset = canvas.width * 0.3;
-        const w = canvas.width, h = canvas.height;
+        const w   = canvas.width;    // 1000
+        const h   = canvas.height;   // 750
+        const oW  = w * 0.3125;      // 312.5px
+        const oH  = h * 0.25;        // 187.5px
+
         let minY = 0, maxY = h - pH;
-        if (px < offset) { minY = offset - px; maxY = h - pH - (offset - px); }
-        else if (px + paddleWidth > w - offset) {
-            const excess = px + paddleWidth - (w - offset);
-            minY = excess; maxY = h - pH - excess;
+
+        // Côté gauche — diagonale : y_min = oH * (1 - px/oW)
+        if (px < oW) {
+            const diagY = oH * (1 - px / oW);
+            minY = diagY;
+            maxY = h - pH - diagY;
         }
+        // Côté droit — diagonale : y_min = oH * (1 - (w - px - paddleWidth) / oW)
+        else if (px + paddleWidth > w - oW) {
+            const excess = px + paddleWidth - (w - oW);
+            const diagY  = oH * (excess / oW);
+            minY = diagY;
+            maxY = h - pH - diagY;
+        }
+
         return Math.max(minY, Math.min(maxY, py));
     }
     let iaFreezeActive = false;
@@ -241,10 +315,23 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
         // ── Joueur gauche ──
         const speed = 7 * p1SpeedMult, hSpeed = 4 * p1SpeedMult;
-        if (keys['w'] || keys['W']) leftPaddleY -= speed;
-        if (keys['s'] || keys['S']) leftPaddleY += speed;
-        if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
-        if ((keys['a'] || keys['A']) && leftPaddleX > paddleWidth / 2) leftPaddleX -= hSpeed;
+        if (p1blockmovement === false)
+        {
+            if (p1Inverse === false)
+            {
+                if (keys['w'] || keys['W']) leftPaddleY -= speed;
+                if (keys['s'] || keys['S']) leftPaddleY += speed;
+                if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
+                if ((keys['a'] || keys['A']) && leftPaddleX > paddleWidth / 2 - 3) leftPaddleX -= hSpeed;
+            }
+            else
+            {
+                if (keys['w'] || keys['W']) leftPaddleY += speed;
+                if (keys['s'] || keys['S']) leftPaddleY -= speed;
+                if ((keys['d'] || keys['D']) && leftPaddleX > 0 + paddleWidth - 2) leftPaddleX -= hSpeed;
+                if ((keys['a'] || keys['A']) && leftPaddleX < canvas.width / 2 - paddleWidth) leftPaddleX += hSpeed;
+            }
+        }
         // Contraint après mouvement
         leftPaddleY = constrainPaddle(leftPaddleX, leftPaddleY, p1paddleHeight);
 
@@ -284,10 +371,23 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         else
         {
             const sp2 = 7 * p2SpeedMult, hs2 = 4 * p2SpeedMult;
-            if (keys['ArrowUp'])    rightPaddleY -= sp2;
-            if (keys['ArrowDown'])  rightPaddleY += sp2;
-            if (keys['ArrowLeft']  && rightPaddleX > canvas.width / 2)           rightPaddleX -= hs2;
-            if (keys['ArrowRight'] && rightPaddleX < canvas.width - paddleWidth) rightPaddleX += hs2;
+            if (p2blockmovement === false)
+            {
+                if (p2Inverse === false)
+                {
+                    if (keys['ArrowUp']) rightPaddleY -= sp2;
+                    if (keys['ArrowDown'])  rightPaddleY += sp2;
+                    if (keys['ArrowLeft']  && rightPaddleX > canvas.width / 2) rightPaddleX -= hs2;
+                    if (keys['ArrowRight'] && rightPaddleX < canvas.width - paddleWidth) rightPaddleX += hs2;
+                }
+                else
+                {
+                    if (keys['ArrowUp']) rightPaddleY += sp2;
+                    if (keys['ArrowDown'])  rightPaddleY -= sp2;
+                    if (keys['ArrowLeft']  && rightPaddleX < canvas.width - paddleWidth) rightPaddleX += hs2;
+                    if (keys['ArrowRight'] && rightPaddleX > canvas.width / 2 + 2) rightPaddleX -= hs2;
+                }
+            }
         }
         if (name2 === 'IA' && p2Bonuses.length > 0) {
             const bonus = p2Bonuses[0];
@@ -339,8 +439,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             }
         }
 
-        if (ballX <= 0) { score2++; if (score2 >= 5) endGame(name2); else resetBall(); }
-        else if (ballX >= canvas.width) { score1++; if (score1 >= 5) endGame(name1); else resetBall(); }
+        if (ballX <= 0) { score2++; if (score2 === 5) endGame(name2); else resetBall(); }
+        else if (ballX >= canvas.width) { score1++; if (score1 === 5) endGame(name1); else resetBall(); }
     }
 
     async function endGame(winnerName) {
@@ -377,9 +477,9 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
     function resetBall() {
         ballX = canvas.width / 2; ballY = canvas.height / 2;
-        ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
-        ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
-        leftPaddleX  = canvas.width / 2 - (Math.min(canvas.width/2, canvas.height/2) - 10);
+        ballSpeedX = (Math.random() > 0.5 ? 15 : -15);
+        ballSpeedY = (Math.random() > 0.5 ? 15 : -15);
+        leftPaddleX  = canvas.width / 2 - (Math.min(canvas.width / 2, canvas.height / 2) - 10);
         leftPaddleY  = (canvas.height - p1paddleHeight) / 2;
         rightPaddleX = canvas.width - paddleWidth - 10;
         rightPaddleY = (canvas.height - p2paddleHeight) / 2;
@@ -387,105 +487,115 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
 
     function draw() {
-        // 1. Fond avec dégradé
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+        const w = canvas.width;   // 1000
+        const h = canvas.height;  // 750
+        const offsetW = w * 0.3125; // 312.5px — coins haut/bas (axe X)
+        const offsetH = h * 0.25;   // 187.5px — coins gauche/droite (axe Y)
+
+        // 1. Fond
+        const gradient = ctx.createLinearGradient(0, 0, w, 0);
         gradient.addColorStop(0, '#050810');
         gradient.addColorStop(0.5, '#0a0f1a');
         gradient.addColorStop(1, '#050810');
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, w, h);
 
-        const offset = canvas.width * 0.3; 
-        const w = canvas.width;
-        const h = canvas.height;
-        
-        ctx.save(); // Sauvegarde l'état initial
-        ctx.lineWidth = 5;
-        //ligne du milieu
+        ctx.save();
+
+        // Ligne du milieu
         ctx.setLineDash([8, 8]);
         ctx.strokeStyle = 'rgba(255,255,255,0.08)';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(canvas.width / 2, 0);
-        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.moveTo(w / 2, 0);
+        ctx.lineTo(w / 2, h);
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // --- PARTIE GAUCHE (Couleur User) ---
+        ctx.lineWidth = 3;
+
+        // --- GAUCHE (userColor) ---
         ctx.strokeStyle = userColor;
-        //ctx.shadowColor = userColor;
+        ctx.shadowColor = userColor;
         ctx.shadowBlur = 15;
         ctx.beginPath();
-        ctx.moveTo(offset, 0); 
-        ctx.lineTo(0, offset);            
-        ctx.lineTo(0, h - offset);       
-        ctx.lineTo(offset, h);           
+        ctx.moveTo(0, offsetH);
+        // ctx.lineTo(offsetW, 0);       // diagonale haut-gauche (vers haut)
+        ctx.moveTo(0, offsetH);
+        ctx.lineTo(0, h - offsetH);   // segment vertical gauche (le but)
+        //ctx.lineTo(offsetW, h);       // diagonale bas-gauche (vers bas)
         ctx.stroke();
 
-        // --- PARTIE DROITE (Blanc) ---
+        // --- DROITE (blanc) ---
         ctx.strokeStyle = '#ffffff';
-        //ctx.shadowColor = '#ffffff';
+        ctx.shadowColor = '#ffffff';
         ctx.shadowBlur = 15;
         ctx.beginPath();
-        ctx.moveTo(w - offset, 0);
-        ctx.lineTo(w, offset);           
-        ctx.lineTo(w, h - offset);       
-        ctx.lineTo(w - offset, h);       
+        ctx.moveTo(w, offsetH);
+       // ctx.lineTo(w - offsetW, 0);   // diagonale haut-droite
+        ctx.moveTo(w, offsetH);
+        ctx.lineTo(w, h - offsetH);   // segment vertical droit (le but)
+        // ctx.lineTo(w - offsetW, h);   // diagonale bas-droite
         ctx.stroke();
 
-        // --- BORDURES HAUT ET BAS avec diagonales (Violet) ---
-        ctx.strokeStyle = '#000000';
-        ctx.shadowColor = '#ffffff';
+        // --- HAUT + BAS (noir/invisible — séparateurs) ---
+        ctx.strokeStyle = '#a855f7';
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 10;
         ctx.beginPath();
-        // Haut : diagonale gauche + segment horizontal + diagonale droite
-        ctx.moveTo(0, offset); ctx.lineTo(offset, 0);
-        ctx.lineTo(w - offset, 0); ctx.lineTo(w, offset);
-        // Bas : diagonale gauche + segment horizontal + diagonale droite
-        ctx.moveTo(0, h - offset); ctx.lineTo(offset, h);
-        ctx.lineTo(w - offset, h); ctx.lineTo(w, h - offset);
+        // Haut
+        ctx.moveTo(offsetW, 0);
+        ctx.lineTo(w - offsetW, 0);
+        ctx.moveTo(w, offsetH);
+        ctx.lineTo(w - offsetW, 0);
+        ctx.moveTo(0, offsetH);
+        ctx.lineTo(offsetW, 0);
+        ctx.moveTo(0, offsetW + 250);
+        ctx.lineTo(offsetW, h); 
+        // Bas
+        ctx.moveTo(offsetW, h);
+        ctx.lineTo(w - offsetW, h);
+        ctx.moveTo(w, offsetW + 250);
+        ctx.lineTo(w - offsetW, h);
         ctx.stroke();
 
-        ctx.shadowBlur = 0; // On retire le glow pour le texte et les objets
+        ctx.shadowBlur = 0;
 
-        // 2. Affichage des Scores
+        // 2. Scores
+
         ctx.textAlign = 'center';
         ctx.font = 'bold 48px monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
-        // Placé au milieu de chaque moitié de terrain
-        ctx.fillText(score1, w * 0.25, h / 2); 
-        ctx.fillText(score2, w * 0.75, h / 2); 
+        ctx.fillText(Math.min(score1, 5), w * 0.25, h / 2);
+        ctx.fillText(Math.min(score2, 5), w * 0.75, h / 2);
 
-        // 3. Noms des joueurs
+        // 3. Noms
         ctx.font = '13px monospace';
-        ctx.fillStyle = userColor; 
-        ctx.shadowColor = userColor; 
-        ctx.shadowBlur = 8;
+        ctx.fillStyle = userColor; ctx.shadowColor = userColor; ctx.shadowBlur = 8;
         ctx.fillText(name1.toUpperCase(), w * 0.25, h / 2 + 50);
-        
-        ctx.fillStyle = '#fff'; 
-        ctx.shadowColor = '#fff';
+        ctx.fillStyle = '#fff'; ctx.shadowColor = '#fff';
         ctx.fillText(name2.toUpperCase(), w * 0.75, h / 2 + 50);
         ctx.shadowBlur = 0;
 
-        // 4. Raquette Gauche (Player 1)
+        // 4. Raquette gauche
         ctx.shadowColor = userColor; ctx.shadowBlur = 18; ctx.fillStyle = userColor;
-        ctx.beginPath(); 
-        ctx.roundRect(leftPaddleX, leftPaddleY, paddleWidth, p1paddleHeight, [4]); 
+        ctx.beginPath();
+        ctx.roundRect(leftPaddleX, leftPaddleY, paddleWidth, p1paddleHeight, [4]);
         ctx.fill();
 
-        // 5. Raquette Droite (Player 2 / IA)
+        // 5. Raquette droite
         ctx.shadowColor = '#fff'; ctx.shadowBlur = 18; ctx.fillStyle = '#fff';
-        ctx.beginPath(); 
-        ctx.roundRect(rightPaddleX, rightPaddleY, paddleWidth, p2paddleHeight, [4]); 
+        ctx.beginPath();
+        ctx.roundRect(rightPaddleX, rightPaddleY, paddleWidth, p2paddleHeight, [4]);
         ctx.fill();
 
-        // 6. La Balle
+        // 6. Balle
         ctx.shadowColor = '#fff'; ctx.shadowBlur = 20; ctx.fillStyle = '#fff';
-        ctx.beginPath(); 
-        ctx.arc(ballX, ballY, 7, 0, Math.PI * 2); 
+        ctx.beginPath();
+        ctx.arc(ballX, ballY, 7, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.restore(); // Un seul restore suffit pour fermer le save() du début
+        ctx.restore();
     }
 
     gameLoop();

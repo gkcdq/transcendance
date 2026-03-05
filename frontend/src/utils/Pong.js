@@ -1,7 +1,7 @@
 import { userStore } from './userStore.js';
 import { letCurrentPongInstance } from './State.js';
 import { tournamentState } from '../main.js';
-import { navigateTo } from '../main.js';
+import { navigateTo } from './State.js';
 
 // ─── Pong Local ───────────────────────────────────────────────────────────────
 export function initPongGame(p1Name = "Player", p2Name = "IA") {
@@ -41,16 +41,27 @@ function startGameLogic(name1, name2) {
     let ballSpeedX = 5, ballSpeedY = 5;
     let score1 = 0, score2 = 0;
     const keys = {};
+    let capslock = false;
     const handleKeyDown = e => {
+        if (e.key === 'CapsLock') capslock = true;
         if (['w','s','a','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
             if (document.activeElement.tagName !== 'INPUT') e.preventDefault();
         }
         keys[e.key] = true;
     };
-    const handleKeyUp = e => keys[e.key] = false;
+    const handleKeyUp = e => {
+        keys[e.key] = false;
+        if (e.key === 'CapsLock' || e.key === 'Shift')
+        {
+            capslock = false;
+            keys['w'] = false; keys['W'] = false;
+            keys['a'] = false; keys['A'] = false;
+            keys['s'] = false; keys['S'] = false;
+            keys['d'] = false; keys['D'] = false;
+        }
+    };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup',   handleKeyUp);
-    
     function gameLoop() {
         if (isGameOver) return;
         update(); draw();
@@ -60,11 +71,13 @@ function startGameLogic(name1, name2) {
 
     function update() {
         const speed = 7, hSpeed = 4;
-        if ((keys['w'] || keys['W']) && leftPaddleY > 0) leftPaddleY -= speed;
-        if ((keys['s'] || keys['S']) && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += speed;
-        if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
-        if ((keys['a'] || keys['A']) && leftPaddleX > 0) leftPaddleX -= hSpeed;
-
+        if (capslock === false)
+        {
+            if ((keys['w'] || keys['W']) && leftPaddleY > 0) leftPaddleY -= speed;
+            if ((keys['s'] || keys['S']) && leftPaddleY < canvas.height - paddleHeight) leftPaddleY += speed;
+            if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
+            if ((keys['a'] || keys['A']) && leftPaddleX > 0) leftPaddleX -= hSpeed;
+        }
         if (name2 === "IA") {
             const centerPaddle = rightPaddleY + paddleHeight / 2;
             const targetY = ballSpeedX > 0 ? ballY : canvas.height / 2;
