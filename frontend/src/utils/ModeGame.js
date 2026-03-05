@@ -58,7 +58,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let ballX = canvas.width / 2, ballY = canvas.height / 2;
     let ballSpeedX = 5, ballSpeedY = 5;
     let score1 = 0, score2 = 0;
-
+    const maxSpeed = 20;
     let p1Bonuses = [], p2Bonuses = [];
     let p1SpeedMult = 1, p2SpeedMult = 1;
     let p1blockmovement = false;
@@ -70,7 +70,11 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let p1multiballs = false;
     let p2multiballs = false;
     let color_sec = false;
-///////////////////////////////////////
+    let p1Canon = false;
+    let p2Canon = false;
+    let canonActive = false;
+    let normalSpeedX = 0;
+    let normalSpeedY = 0;
     // Initialise les fausses balles (à mettre au niveau de let score1, score2, etc.)
     let p1FakeBalls = Array.from({length: 30}, () => ({
         x: Math.random() * (canvas.width / 2 - 20) + 10,
@@ -79,10 +83,6 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         dy: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedY),
     }));
     let p1BallBlink = false;
-
-    //
-
-    // Au niveau de let score1, score2 :
     let p2FakeBalls = Array.from({length: 30}, () => ({
         x: Math.random() * (canvas.width / 2 - 20) + canvas.width / 2 + 10,
         y: Math.random() * (canvas.height - 20) + 10,
@@ -90,17 +90,18 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         dy: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedY),
     }));
     let p2BallBlink = false;
-///////////////////////////////////////
+    let p1Touch = false;
+    let p2Touch = false;
     const BONUS_DEFS = [
         // { id: 'wall',   label: '🛡️ Mur'   },
         // { id: 'boost',  label: '⚡ Boost'  },
-        // { id: 'freeze', label: '❄️ Freeze' },
-         { id: 'canon', label: '🎳 Canon'},
-        // { id: 'multiclonage', label: '👺 MALUS'},
+        { id: 'freeze', label: '❄️ Freeze' },
+        // { id: 'canon', label: '🎳 Canon'},
+        { id: 'multiclonage', label: '👺 MALUS'},
         // { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
         // { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
-        // { id: 'p_malus', label: '👺 MALUS'}, // raqutte mini
-        // { id: 'y_malus', label: '👺 MALUS'}, // raqutte invisible
+        // { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
+        // { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
     ];
 
     function applyBonus(bonus, side) {
@@ -200,19 +201,41 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 setTimeout(() => {color_sec = false}, 100);
             }
         }
-        // else if (bonus.id === 'canon')
-        // {
-        //     if (side === 'left')
-        //     {
-
-        //     }
-        //     else
-        //     {
-
-        //     }
-        // }
+        else if (bonus.id === 'canon')
+        {
+            if (side === 'left')
+            {
+                p1Canon = true;
+                if (ballSpeedX !== 30)
+                {
+                    normalSpeedX = ballSpeedX;
+                    normalSpeedY = ballSpeedY;
+                }
+            }
+            else
+            {
+                p2Canon = true;
+                if (ballSpeedX !== 30)
+                {
+                    normalSpeedX = ballSpeedX;
+                    normalSpeedY = ballSpeedY;
+                }
+            }
+        }
         // continuer
     }
+
+
+
+
+
+
+
+
+
+
+
+
 
     function updateBonus() {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -344,10 +367,13 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
         if (p1multiballs) {
             p1FakeBalls.forEach(b => {
-                const speed = Math.sqrt(ballSpeedX ** 2 + ballSpeedY ** 2);
+                const speed = Math.sqrt(ballSpeedX ** 2 + ballSpeedY ** 2) || 6; // fallback si freeze
                 const norm  = Math.sqrt(b.dx ** 2 + b.dy ** 2);
                 if (norm > 0) { b.dx = b.dx / norm * speed; b.dy = b.dy / norm * speed; }
-                
+                // Si les composantes sont nulles (freeze), garde une vitesse minimale
+                if (b.dx === 0 && b.dy === 0) { b.dx = speed * 0.7; b.dy = speed * 0.7; }
+                if (b.dx === 0) b.dx = speed * 0.7;
+                if (b.dy === 0) b.dy = speed * 0.7;
                 b.x += b.dx; b.y += b.dy;
                 if (b.y <= 7 || b.y >= canvas.height - 7) b.dy *= -1;
                 if (b.x <= 7) b.dx = Math.abs(b.dx);
@@ -356,13 +382,16 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         }
         if (p2multiballs) {
             p2FakeBalls.forEach(b => {
-                const speed = Math.sqrt(ballSpeedX ** 2 + ballSpeedY ** 2);
+                const speed = Math.sqrt(ballSpeedX ** 2 + ballSpeedY ** 2) || 6;
                 const norm  = Math.sqrt(b.dx ** 2 + b.dy ** 2);
                 if (norm > 0) { b.dx = b.dx / norm * speed; b.dy = b.dy / norm * speed; }
+                if (b.dx === 0 && b.dy === 0) { b.dx = -speed * 0.7; b.dy = speed * 0.7; }
+                if (b.dx === 0) b.dx = -speed * 0.7;
+                if (b.dy === 0) b.dy =  speed * 0.7;
                 b.x += b.dx; b.y += b.dy;
                 if (b.y <= 7 || b.y >= canvas.height - 7) b.dy *= -1;
-                if (b.x <= canvas.width / 2 + 7) b.dx =  Math.abs(b.dx); // rebond milieu → droite
-                if (b.x >= canvas.width - 7)     b.dx = -Math.abs(b.dx); // rebond bord droit → gauche
+                if (b.x <= canvas.width / 2 + 7) b.dx =  Math.abs(b.dx);
+                if (b.x >= canvas.width - 7)     b.dx = -Math.abs(b.dx);
             });
         }
         updateBonus();
@@ -496,24 +525,52 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         ballX += ballSpeedX; ballY += ballSpeedY;
         octagonBounce();
 
-        const maxSpeed = 20;
+
         // Collision raquette droite
         if (ballSpeedX > 0) {
             const prevBallX = ballX - ballSpeedX;
             if (prevBallX < rightPaddleX + paddleWidth && ballX >= rightPaddleX) {
                 if (ballY + 6 > rightPaddleY && ballY - 6 < rightPaddleY + p2paddleHeight) {
                     ballX = rightPaddleX - 1;
-                    ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                    if (p2Canon) {
+                        // normalSpeedX = Math.abs(ballSpeedX); // sauvegarde avant canon
+                        // normalSpeedY = Math.abs(ballSpeedY) || 4;
+                        ballSpeedY = 0;
+                        ballSpeedX = -30;
+                        p2Canon = false;
+                        canonActive = true;
+                    } else if (canonActive) {
+                        // Raquette adverse touchée — restore vitesse normale
+                        ballSpeedX = -normalSpeedX;
+                        ballSpeedY = normalSpeedY;
+                        canonActive = false;
+                    } else {
+                        ballSpeedX = -Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                    }
                 }
             }
         }
+
         // Collision raquette gauche
         if (ballSpeedX < 0) {
             const prevBallX = ballX - ballSpeedX;
             if (prevBallX > leftPaddleX && ballX <= leftPaddleX + paddleWidth) {
                 if (ballY + 6 > leftPaddleY && ballY - 6 < leftPaddleY + p1paddleHeight) {
                     ballX = leftPaddleX + paddleWidth + 1;
-                    ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                    if (p1Canon) {
+                        // normalSpeedX = Math.abs(ballSpeedX);
+                        // normalSpeedY = Math.abs(ballSpeedY) || 4;
+                        ballSpeedY = 0;
+                        ballSpeedX = 30;
+                        p1Canon = false;
+                        canonActive = true;
+                    } else if (canonActive) {
+                        ballSpeedX = normalSpeedX;
+                        ballSpeedY = normalSpeedY;
+                        canonActive = false;
+                    } else {
+                        ballSpeedX = Math.min(Math.abs(ballSpeedX) * 1.1, maxSpeed);
+                    }
                 }
             }
         }
