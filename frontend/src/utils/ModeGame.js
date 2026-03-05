@@ -56,7 +56,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let rightPaddleY = (canvas.height - p2paddleHeight) / 2;
 
     let ballX = canvas.width / 2, ballY = canvas.height / 2;
-    let ballSpeedX = 0, ballSpeedY = 0;
+    let ballSpeedX = 5, ballSpeedY = 5;
     let score1 = 0, score2 = 0;
 
     let p1Bonuses = [], p2Bonuses = [];
@@ -65,19 +65,47 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let p2blockmovement = false;
     let p1Inverse = false;
     let p2Inverse = false;
+    let p1Invisible = false;
+    let p2Invisible = false;
+    let p1multiballs = false;
+    let p2multiballs = false;
+    let color_sec = false;
+///////////////////////////////////////
+    // Initialise les fausses balles (à mettre au niveau de let score1, score2, etc.)
+    let p1FakeBalls = Array.from({length: 30}, () => ({
+        x: Math.random() * (canvas.width / 2 - 20) + 10,
+        y: Math.random() * (canvas.height - 20) + 10,
+        dx: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedX),
+        dy: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedY),
+    }));
+    let p1BallBlink = false;
 
+    //
+
+    // Au niveau de let score1, score2 :
+    let p2FakeBalls = Array.from({length: 30}, () => ({
+        x: Math.random() * (canvas.width / 2 - 20) + canvas.width / 2 + 10,
+        y: Math.random() * (canvas.height - 20) + 10,
+        dx: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedX),
+        dy: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedY),
+    }));
+    let p2BallBlink = false;
+///////////////////////////////////////
     const BONUS_DEFS = [
         // { id: 'wall',   label: '🛡️ Mur'   },
         // { id: 'boost',  label: '⚡ Boost'  },
         // { id: 'freeze', label: '❄️ Freeze' },
-        // { id: 's_malus',label: '👺 MALUS'}, // speed malus
-        { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
+         { id: 'canon', label: '🎳 Canon'},
+        // { id: 'multiclonage', label: '👺 MALUS'},
+        // { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
         // { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
         // { id: 'p_malus', label: '👺 MALUS'}, // raqutte mini
+        // { id: 'y_malus', label: '👺 MALUS'}, // raqutte invisible
     ];
 
     function applyBonus(bonus, side) {
-        if (bonus.id === 'wall') {
+        if (bonus.id === 'wall')
+        {
             if (side === 'left') {
                 if (p1paddleHeight === canvas.height) return;
                 const orig = p1paddleHeight;
@@ -101,17 +129,6 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             const ox = ballSpeedX, oy = ballSpeedY;
             ballSpeedX = 0; ballSpeedY = 0;
             setTimeout(() => { ballSpeedX = ox; ballSpeedY = oy; }, 2000);
-        }
-        else if (bonus.id === 's_malus')
-        {
-            if (side === 'left')
-            {
-                { p2SpeedMult = 4; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
-            }
-            else
-            {
-                { p1SpeedMult = 4; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
-            }
         }
         else if (bonus.id === 'i_malus')
         {
@@ -152,6 +169,48 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 setTimeout(() => {p1paddleHeight = 80}, 3000);
             }
         }
+        else if (bonus.id === 'y_malus')
+        {
+            if (side == 'left')
+            {
+                p2Invisible = true;
+                setTimeout(() => {p2Invisible = false}, 5000);
+
+            }
+            else
+            {
+                p1Invisible = true;
+                setTimeout(() => {p1Invisible = false}, 5000);
+            }
+        }
+        else if (bonus.id === 'multiclonage')
+        {
+            if (side === 'left')
+            {
+                p2multiballs = true;
+                setTimeout(() => {p2multiballs = false}, 5000);
+                color_sec = true;
+                setTimeout(() => {color_sec = false}, 100);
+            }
+            else
+            {
+                p1multiballs = true;
+                setTimeout(() => {p1multiballs = false}, 5000);
+                color_sec = true;
+                setTimeout(() => {color_sec = false}, 100);
+            }
+        }
+        // else if (bonus.id === 'canon')
+        // {
+        //     if (side === 'left')
+        //     {
+
+        //     }
+        //     else
+        //     {
+
+        //     }
+        // }
         // continuer
     }
 
@@ -282,10 +341,30 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         setTimeout(() => { iaFreezeActive = false; }, 2000); // durée du freeze
     }
     function update() {
-        console.log("y = ", rightPaddleY);
-        console.log("x = ", rightPaddleX);
-        console.log("canva = ", canvas.width * 0.90);
-        console.log("ballX = ", ballX);
+
+        if (p1multiballs) {
+            p1FakeBalls.forEach(b => {
+                const speed = Math.sqrt(ballSpeedX ** 2 + ballSpeedY ** 2);
+                const norm  = Math.sqrt(b.dx ** 2 + b.dy ** 2);
+                if (norm > 0) { b.dx = b.dx / norm * speed; b.dy = b.dy / norm * speed; }
+                
+                b.x += b.dx; b.y += b.dy;
+                if (b.y <= 7 || b.y >= canvas.height - 7) b.dy *= -1;
+                if (b.x <= 7) b.dx = Math.abs(b.dx);
+                if (b.x >= canvas.width / 2 - 7) b.dx = -Math.abs(b.dx);
+            });
+        }
+        if (p2multiballs) {
+            p2FakeBalls.forEach(b => {
+                const speed = Math.sqrt(ballSpeedX ** 2 + ballSpeedY ** 2);
+                const norm  = Math.sqrt(b.dx ** 2 + b.dy ** 2);
+                if (norm > 0) { b.dx = b.dx / norm * speed; b.dy = b.dy / norm * speed; }
+                b.x += b.dx; b.y += b.dy;
+                if (b.y <= 7 || b.y >= canvas.height - 7) b.dy *= -1;
+                if (b.x <= canvas.width / 2 + 7) b.dx =  Math.abs(b.dx); // rebond milieu → droite
+                if (b.x >= canvas.width - 7)     b.dx = -Math.abs(b.dx); // rebond bord droit → gauche
+            });
+        }
         updateBonus();
 
 
@@ -477,8 +556,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
     function resetBall() {
         ballX = canvas.width / 2; ballY = canvas.height / 2;
-        ballSpeedX = (Math.random() > 0.5 ? 15 : -15);
-        ballSpeedY = (Math.random() > 0.5 ? 15 : -15);
+        ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
+        ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
         leftPaddleX  = canvas.width / 2 - (Math.min(canvas.width / 2, canvas.height / 2) - 10);
         leftPaddleY  = (canvas.height - p1paddleHeight) / 2;
         rightPaddleX = canvas.width - paddleWidth - 10;
@@ -578,22 +657,78 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         ctx.shadowBlur = 0;
 
         // 4. Raquette gauche
-        ctx.shadowColor = userColor; ctx.shadowBlur = 18; ctx.fillStyle = userColor;
-        ctx.beginPath();
-        ctx.roundRect(leftPaddleX, leftPaddleY, paddleWidth, p1paddleHeight, [4]);
-        ctx.fill();
+        if (p1Invisible == false)
+        {
+            ctx.shadowColor = userColor; ctx.shadowBlur = 18; ctx.fillStyle = userColor;
+            ctx.beginPath();
+            ctx.roundRect(leftPaddleX, leftPaddleY, paddleWidth, p1paddleHeight, [4]);
+            ctx.fill();
+        }
+        else
+        {
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+            ctx.beginPath();
+            ctx.roundRect(leftPaddleX, leftPaddleY, paddleWidth, p1paddleHeight, [4]);
+            ctx.fill();
+        }
 
         // 5. Raquette droite
-        ctx.shadowColor = '#fff'; ctx.shadowBlur = 18; ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.roundRect(rightPaddleX, rightPaddleY, paddleWidth, p2paddleHeight, [4]);
-        ctx.fill();
+        if (p2Invisible === false)
+        {
+            ctx.shadowColor = '#fff'; ctx.shadowBlur = 18; ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.roundRect(rightPaddleX, rightPaddleY, paddleWidth, p2paddleHeight, [4]);
+            ctx.fill();
+        }
+        else
+        {
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+            ctx.beginPath();
+            ctx.roundRect(rightPaddleX, rightPaddleY, paddleWidth, p2paddleHeight, [4]);
+            ctx.fill();
+        }
 
-        // 6. Balle
-        ctx.shadowColor = '#fff'; ctx.shadowBlur = 20; ctx.fillStyle = '#fff';
+        if (p1multiballs)
+        {
+            ctx.shadowColor = '#fff'; ctx.shadowBlur = 8; ctx.fillStyle = '#fff';
+            p1FakeBalls.forEach(b => {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        // Fausses balles P2
+        if (p2multiballs)
+        {
+            ctx.shadowColor = '#fff'; ctx.shadowBlur = 8; ctx.fillStyle = '#fff';
+            p2FakeBalls.forEach(b => {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+    // Vraie balle — une seule fois
+    const anyMultiballs = p1multiballs || p2multiballs;
+    const anyBlink      = p1BallBlink  || p2BallBlink;
+    if (anyMultiballs && anyBlink) {
+        // Frame éteinte — invisible
+    } else {
+        if (color_sec === true)
+            ctx.shadowColor = '#ff0055';
+        else
+            ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur  = 8;
+        if (color_sec === true)
+            ctx.fillStyle = '#ff0055';
+        else
+            ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(ballX, ballY, 7, 0, Math.PI * 2);
         ctx.fill();
+    }
+    ctx.shadowBlur = 0;
 
         ctx.restore();
     }
