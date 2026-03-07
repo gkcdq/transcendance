@@ -131,6 +131,73 @@ pagination
   - [ ] Export user data in a readable format
   - [ ] Confirmation emails for data operations
 
-## Individual Contributions
+# Individual Contributions
 
 _TODO_
+
+# File review
+
+
+
+- - Backend (backend/src/)
+
+- manage.py                                — point d'entrée Django, commandes comme migrate, runserver
+
+- transcendance/settings.py                — configuration Django (DB, apps installées, CORS, etc.)
+- transcendance/asgi.py                    — gère les WebSockets via Django Channels
+- transcendance/urls.py                    — chemin dont Django a besoin
+
+- users/urls.py                            — définit l'API de ton application utilisateur, en reliant chaque URL
+- users/views.py                           — API REST : login, register, profil, amis, RGPD
+- users/models.py                          — modèle UserProfile (wins, losses, avatar, etc.)
+- users/signals.py                         — crée automatiquement un profil quand un User est créé
+- users/admin.py                           — enregistre le modèle UserProfile dans l'interface d'administration de Django (modif/supp depuis le site)
+- users/apps.py                            — active l'application users et automatise le chargement des signaux (comme créer un profil)
+
+- users/providers/fortytwo/provider.py     — OAuth 42 : échange le code contre un token (Traitement des donnees de l'api 42 (image, nom, email ...))
+- users/providers/fortytwo/urls.py         — routes d'authentification OAuth2
+- users/providers/fortytwo/views.py        — Logique de connexion OAuth2 spécifique à l'API 42
+
+- game/consumers.py                        — logique WebSocket du jeu online (matchmaking, game loop serveur)
+- game/views.py                            — API REST : créer une room, lister les rooms actives
+- game/apps.py                             — configuration de notre jeu dans Django
+- game/routing.py                          — les routes WebSocket du online
+- game/models.py                           — modèle de base de données pour une file d'attente
+- game/urls.py                             — définit les routes HTTP du online
+
+- chat/apps.py                             — configure l'application chat
+- chat/consumers.py                        — WebSocket du chat global
+- chat/models.py                           — définit la structure des messages dans ta base de données
+- chat/routing.py                          — enregistre la route WebSocket pour le chat
+- chat/urls.py                             — définit une route HTTP pointant vers l'historique des messages
+- chat/views.py                            — récupère les 50 messages les plus récents depuis la base de données
+
+- Dockerfile                               — décrit les étapes de construction (installe les dépendances (Python, Node.js, PostgreSQL))
+- package.json                             — définit la configuration de l'environnement de Node.js, listant les dépendances (Express, Socket.io)
+- requirement.txt                          — regroupe l'ensemble des bibliothèques nécessaires : Django, PostgreSQL, ASGI/WebSockets
+- server.js                                — serveur Node.js pour le callback OAuth 42
+
+
+
+- - Frontend (frontend/src/)
+
+- main.js                — bootstrap : init userStore, déclare navigateTo, router, fonctions globales
+
+- utils/Routes.js        — définit toutes les routes (/, /game, /profile, etc.) avec leur render() et init()
+- utils/State.js         — état global partagé : currentPongInstance, isOnline, globalChatWS, lockNav, unlockNav
+- utils/userStore.js     — abstraction localStorage ↔ API Django : get, set, recordMatch, logout
+- utils/Pong.js          — jeu local classique : initPongGame + startGameLogic
+- utils/ModeGame.js      — jeu mode octogone : initModeGame + startGameModeLogic avec bonus
+- utils/OnlinePong.js    — jeu online via WebSocket : initOnlinePong
+- utils/settings.js      — page settings : couleur raquette, difficulté IA, suppression compte
+- utils/api.js           — helpers fetch génériques (probablement peu utilisé depuis que userStore gère les appels)
+
+- components/Navbar.js   — rendu de la navbar
+
+
+
+- - Infrastructure
+
+- nginx/nginx.conf      — reverse proxy : redirige /api/ vers Django, /ws/ vers Channels, le reste vers le frontend
+- docker-compose.yml    — orchestre les 3 containers : frontend (nginx), backend (Django+Daphne), db (PostgreSQL)
+- Makefile              — raccourcis : make up, make down, make logs, etc.

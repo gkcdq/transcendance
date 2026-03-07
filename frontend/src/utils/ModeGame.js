@@ -40,12 +40,15 @@ export function initModeGame(p1Name = "Player", p2Name = "IA")
 
 function startGameModeLogic(name1, name2, canvas, ctx)
 {
+    // parametres globaux
     let startTime     = Date.now();
     let lastBonusTime = 0;
     let isGameOver    = false;
     let animationId;
     const userColor   = userStore.get('user_color', '#00babc');
     const aiBaseSpeed = parseFloat(userStore.get('ai_level', '5.3')) || 5.3;
+
+    // parametres raquettes
     const paddleWidth = 10;
     let p1paddleHeight = 80;
     let p2paddleHeight = 80;
@@ -55,10 +58,13 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let rightPaddleX = canvas.width - paddleWidth;
     let rightPaddleY = (canvas.height - p2paddleHeight) / 2;
 
+    // parametres de la balle
     let ballX = canvas.width / 2, ballY = canvas.height / 2;
     let ballSpeedX = 5, ballSpeedY = 5;
     let score1 = 0, score2 = 0;
     const maxSpeed = 20;
+
+    // parametres des bonus
     let p1Bonuses = [], p2Bonuses = [];
     let p1SpeedMult = 1, p2SpeedMult = 1;
     let p1blockmovement = false;
@@ -75,7 +81,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let canonActive = false;
     let normalSpeedX = 0;
     let normalSpeedY = 0;
-    // Initialise les fausses balles (à mettre au niveau de let score1, score2, etc.)
+
+    // Initialise les fausses balles
     let p1FakeBalls = Array.from({length: 30}, () => ({
         x: Math.random() * (canvas.width / 2 - 20) + 10,
         y: Math.random() * (canvas.height - 20) + 10,
@@ -91,10 +98,10 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     }));
     let p2BallBlink = false;
     const BONUS_DEFS = [
-        { id: 'wall',   label: '🛡️ Mur'   },
-        { id: 'boost',  label: '⚡ Boost'  },
-        { id: 'freeze', label: '❄️ Freeze' },
-        { id: 'canon', label: '🎳 Canon'},
+        { id: 'wall',   label: '🛡️ Mur'   }, // le mur du mexique
+        { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
+        { id: 'freeze', label: '❄️ Freeze' }, // stop la balle
+        { id: 'canon', label: '🎳 Canon'}, // coup droit
         { id: 'multiclonage', label: '👺 MALUS'},
         { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
         { id: 'f_malus',label: '👺 MALUS'}, // freeze malus

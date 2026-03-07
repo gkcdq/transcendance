@@ -12,15 +12,13 @@ function navigateTo(path) {
 function render(path) {
     const content = routes[path] || '<h1>404 Not Found</h1>';
     document.getElementById('app').innerHTML = content;
-    
-    // Si on arrive sur la page de profil, on appelle ton API
     if (path === '/profile') {
         fetchProfile();
     }
 }
 
-// Gérer le bouton retour du navigateur
+// bouton retour du navigateur
 window.onpopstate = () => render(window.location.pathname);
 
-// Premier chargement
+// premier chagment
 render(window.location.pathname);

@@ -1,9 +1,9 @@
-Django>=4.2
-psycopg2-binary  # Pour PostgreSQL
-channels         # Pour les WebSockets (pour le jeu)
-daphne           # Le serveur ASGI (temps réel)
-django-environ   # Pour gérer .env proprement
-django-allauth==0.61.1
-requests
-Pillow
-channels_redis
+Django>=4.2              # Version de Django
+psycopg2-binary          # Pour PostgreSQL
+channels                 # Pour les WebSockets (pour le jeu)
+daphne                   # Le serveur ASGI (temps réel)
+django-environ           # Pour gérer .env proprement
+django-allauth==0.61.1   # bibliothèque standard Django pour gérer l'authentification
+requests                 # Appeler l'API 42 pour authentifier tes utilisateurs.
+Pillow                   # Gérer, redimensionner ou valider les avatars des joueurs.
+channels_redis           # permet à Django Channels de communiquer avec Redis

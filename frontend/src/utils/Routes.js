@@ -13,6 +13,7 @@ const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redir
 const playModePageHTML = `
     <div class="game-container">
         <div id="game-controls">
+            <p> Vos bonus sont en bas de l'ecran du cote de votre raquette</p>
             <button id="btn-start-game" class="cyber-button">Lancer la partie</button>
             <p id="game-status">Mode Octogone Prêt</p>
         </div>
@@ -21,7 +22,7 @@ const playModePageHTML = `
                    clip-path: polygon(31.25% 0%, 68.75% 0%, 100% 25%, 100% 75%, 68.75% 100%, 31.25% 100%, 0% 75%, 0% 25%);
                    background: rgba(0,0,0,0.8);">
         </canvas>
-    </div>ds
+    </div>
 `;
 const playPageHTML = `
     <div class="game-container">
@@ -174,20 +175,20 @@ export const routes = {
                                         <span class="badge-live">LIVE PREVIEW</span>
                                     </div>
                                     <div class="pong-controls-guide">
-                                        <h3>Reminder :</h3>
                                         <p class="subtitle">Une balle, deux raquettes, un seul vainqueur.</p>
                                         <div class="controls-grid">
                                             <div class="player-keys">
                                             <div>
                                                 <p>Local Game : Raquette Gauche ⤵</p>
                                             </div>
-                                                <div class="keys"><span class="key">W</span> <span class="key">A</span> <span class="key">S</span><span class="key">D</span></div>
+                                                <div class="keys"><span class="key">W</span> <span class="key">A</span> <span class="key">S</span><span class="key">D</span> <span class="key">Shift</span></div>
                                             </div>
                                             <div class="divider"></div>
                                             <div class="player-keys">
                                                 <p>Local Game : Raquette Droite ⤵</p>
-                                                <div class="keys"><span class="key">↑</span> <span class="key">↓</span> <span class="key">→</span> <span class="key">←</span></div>
+                                                <div class="keys"><span class="key">↑</span> <span class="key">↓</span> <span class="key">→</span> <span class="key">←</span> <span class="key">0</span></div>
                                             </div>
+                                            <h6> 'Shift' and '0' to activate bonus in Octogone Mode</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -339,9 +340,9 @@ export const routes = {
                             </div>
                         </div>
                             <div class="category-block">
-                            <h3 style="color:#a855f7;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #a855f7;padding-left:10px;letter-spacing:1px;">🔥 Mode Octogone</h3>
+                            <h3 style="color:#a855f7;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #a855f7;padding-left:10px;letter-spacing:1px;">🔥 Octogone Mode 🔥</h3>
                             <div class="setup-group" style="border:1px solid #a855f7;padding:15px;border-radius:8px;background:rgba(168,85,247,0.05);">
-                                <p style="color:#a855f7;font-size:0.7rem;margin-bottom:10px;">Map octogonale + power-ups toutes les 10s.</p>
+                                <p style="color:#a855f7;font-size:0.7rem;margin-bottom:10px;">Map octogonale + bonus/mallus.</p>
                                 <button id="btn-ModeIA" class="cyber-button" style="width:100%;margin-bottom:8px;border-color:#a855f7;color:#a855f7;">🤖 vs IA</button>
                                 <label style="color:#a855f7;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 2</label>
                                 <input type="text" id="p2-mode-name" placeholder="Pseudo joueur 2" class="cyber-input" style="width:100%;margin-bottom:8px;">
