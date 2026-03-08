@@ -394,7 +394,10 @@ export async function initProfile() {
     } else {
         historyContainer.innerHTML = history.map(match => `
             <div class="match-item ${match.result === 'Victoire' ? 'match-win' : 'match-loss'}">
-                <span>${match.date}</span><strong>${match.result}</strong><span>Score: ${match.score}</span>
+                <span>${match.date}</span>
+                <strong>${match.result}</strong>
+                <span>opponent : ${match.opponent || 'Inconnu'}</span>
+                <span>Score: ${match.score}</span>
             </div>`).join('');
     }
     await loadFriends();

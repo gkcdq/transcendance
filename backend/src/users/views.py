@@ -247,3 +247,4 @@ def delete_account(request):
     user = request.user
     user.delete()
     return JsonResponse({'status': 'deleted'})
+

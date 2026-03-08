@@ -11,6 +11,9 @@ all:
 stop:
 	$(DOCKER_COMPOSE) stop
 
+up:
+	$(DOCKER_COMPOSE) up --detach
+
 # tout arreter et supprimer les containers
 down:
 	$(DOCKER_COMPOSE) down
@@ -23,7 +26,6 @@ clean:
 	rm -f backend/package-lock.json
 	@echo "Nettoyage complet effectué."
 
-# voir les logs en temps reel
 logs:
 	$(DOCKER_COMPOSE) logs -f
 
@@ -31,7 +33,7 @@ logs:
 init-django:
 	$(DOCKER_COMPOSE) run --rm backend django-admin startproject transcendence src
 
-.PHONY: all stop down clean logs init-django
+.PHONY: all stop up down clean logs init-django
 
 
 # --------------------------------- COMMANDE ---------------------------------
@@ -47,8 +49,3 @@ init-django:
 # https://localhost:8443/admin/
 # https://localhost:8443/api/users/me/
 # https://localhost:8443/style.css
-
-
-
-
-# pourquoi quand je relance ma page apres avoir make clean + make + ctrl->shit->r j'ai ce message qui s'applique si jai quitter ma derniere partie (celle d'avant make clean)
