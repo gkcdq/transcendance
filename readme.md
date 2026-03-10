@@ -344,8 +344,6 @@ _TODO_
 - utils/settings.js — Settings page: paddle color, AI difficulty, account deletion.
 - utils/api.js — Generic fetch helpers (likely rarely used since userStore handles calls).
 
-- components/Navbar.js — Navbar rendering.
-
 - - _Infrastructure_
 
 - nginx/nginx.conf — Reverse proxy: redirects /api/ to Django, /ws/ to Channels, and everything else to the frontend.

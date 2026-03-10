@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import UserProfile, FriendRequest
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 @csrf_exempt
 @require_POST
@@ -57,7 +58,7 @@ def login_view(request):
 
 
 def get_leaderboard(request):
-    profiles = User.objects.select_related('profile').exclude(username='windows').order_by(
+    profiles = User.objects.select_related('profile').exclude(username=settings.DJANGO_SUPERUSER_USERNAME).order_by(
         '-profile__wins', '-profile__xp'
     )[:10]
     data = []
