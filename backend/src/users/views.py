@@ -62,7 +62,7 @@ def get_leaderboard(request):
         '-profile__wins', '-profile__xp'
     )[:10]
     data = []
-    for i, user in enumerate(profiles, 1):
+    for i, user in enumerate(profiles, 1): 
         p = user.profile
         data.append({
             'rank':    i,
