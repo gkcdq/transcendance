@@ -19,7 +19,7 @@ window.logout = async () => {
     try {
         await fetch('/api/users/logout/', {
             method: 'POST', credentials: 'include',
-            headers: { 'X-CSRFToken': getCsrfToken() }
+            headers: { 'X-CSRFToken': getCsrfToken() } 
         });
     } catch(e) {}
     currentUser = null;
