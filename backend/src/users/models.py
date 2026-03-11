@@ -6,7 +6,8 @@ from django.dispatch import receiver
 
 class UserProfile(models.Model):
     user          = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar        = models.URLField(blank=True, null=True)
+    avatar        = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar_url    = models.URLField(blank=True, null=True)
     wins          = models.IntegerField(default=0)
     losses        = models.IntegerField(default=0)
     xp            = models.IntegerField(default=0)

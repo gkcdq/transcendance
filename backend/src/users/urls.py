@@ -5,6 +5,7 @@ from .views import (
     logout_view, oauth_login,
     get_friends, get_friend_requests, send_friend_request,
     respond_friend_request, remove_friend, search_users,
+    upload_avatar,
 )
 
 urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
     path('register/',                         views.register,         name='register'),
     path('login/',                            views.login_view,       name='login'),
     path('delete/',                           views.delete_account,   name='delete-account'),
+    path('upload-avatar/',                    upload_avatar),
 ]

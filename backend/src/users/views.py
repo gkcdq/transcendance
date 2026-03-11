@@ -28,10 +28,10 @@ def register(request):
 
     user           = User.objects.create_user(username=username, email=email, password=password)
     profile        = user.profile
-    profile.avatar = f'https://ui-avatars.com/api/?name={username}&background=0D1117&color=00babc'
+    profile.avatar = None
     profile.save()
     login(request, user)
-    return JsonResponse({'username': user.username, 'avatar': profile.avatar})
+    return JsonResponse({'username': user.username, 'avatar': get_avatar_url(profile, request)})
 
 @csrf_exempt
 @require_POST
@@ -67,7 +67,7 @@ def get_leaderboard(request):
         data.append({
             'rank':    i,
             'username': user.username,
-            'avatar':  p.avatar or f'https://ui-avatars.com/api/?name={user.username}&background=0D1117&color=00babc',
+            'avatar':  get_avatar_url(p, request),
             'wins':    p.wins,
             'losses':  p.losses,
             'xp':      p.xp,
@@ -87,14 +87,16 @@ def oauth_login(request):
     user, created = User.objects.get_or_create(username=username)
     profile = user.profile
     if avatar:
-        profile.avatar = avatar
+        # Avatar OAuth = URL externe → stocke comme string, pas comme fichier
+        profile.avatar_url = avatar  # ← champ séparé
     profile.is_online = True
     profile.save()
     user.backend = 'django.contrib.auth.backends.ModelBackend'
     login(request, user)
     return JsonResponse({
         "status": "ok", "created": created,
-        "username": user.username, "avatar": profile.avatar or avatar,
+        "username": user.username,
+        "avatar": get_avatar_url(profile, request),
         "wins": profile.wins, "losses": profile.losses, "xp": profile.xp,
     })
 
@@ -104,7 +106,7 @@ def get_user_profile(request):
     profile = request.user.profile
     return JsonResponse({
         "username":      request.user.username,
-        "avatar":        profile.avatar or None,
+        "avatar":        get_avatar_url(profile, request),
         "wins":          profile.wins,
         "losses":        profile.losses,
         "xp":            profile.xp,
@@ -239,8 +241,8 @@ def search_users(request):
         username=request.user.username
     ).select_related('profile')[:10]
     return JsonResponse({"users": [
-        {"username": u.username, "avatar": u.profile.avatar or None, "is_online": u.profile.is_online}
-        for u in users
+    {"username": u.username, "avatar": get_avatar_url(u.profile, request), "is_online": u.profile.is_online}
+    for u in users
     ]})
 
 @login_required
@@ -250,3 +252,31 @@ def delete_account(request):
     user.delete()
     return JsonResponse({'status': 'deleted'})
 
+@login_required
+@require_http_methods(["POST"])
+def upload_avatar(request):
+    if 'avatar' not in request.FILES:
+        return JsonResponse({'error': 'Aucun fichier'}, status=400)
+    file = request.FILES['avatar']
+    if file.size > 2 * 1024 * 1024:
+        return JsonResponse({'error': 'Fichier trop lourd (2MB max)'}, status=400)
+    if not file.content_type.startswith('image/'):
+        return JsonResponse({'error': 'Format invalide'}, status=400)
+    profile = request.user.profile
+    profile.avatar = file
+    profile.avatar_url = ''  # ← vide l'URL OAuth pour éviter le conflit
+    profile.save()
+    url = request.build_absolute_uri(profile.avatar.url)
+    return JsonResponse({'avatar': url})
+
+def get_avatar_url(profile, request=None):
+    if profile.avatar:
+        try:
+            url = profile.avatar.url
+            if url.startswith('/media/'):
+                return f'https://localhost:8443{url}'
+        except Exception:
+            pass
+    if hasattr(profile, 'avatar_url') and profile.avatar_url:
+        return profile.avatar_url
+    return '/Mokoko.webp'  # ← chemin relatif, pas d'URL absolue

@@ -325,7 +325,7 @@ function renderAuthUI(isLoggedIn) {
     const container = document.getElementById('auth-status');
     if (!container) return;
     const name   = currentUser?.username || userStore.get('user_name');
-    const avatar = currentUser?.avatar   || userStore.get('user_avatar');
+    const avatar = userStore.get('user_avatar');
     if (isLoggedIn && name && avatar) {
         container.innerHTML = `
             <div class="pilot-profile">
@@ -595,9 +595,11 @@ export function initChat() {
         if (isMe) msgDiv.style.background = '#00babc33';
         const time = new Date(msg.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
         msgDiv.innerHTML = `
-            <span class="sender">${msg.sender}</span>
+            <span class="sender"><strong>${msg.sender} :</strong></span>
             <span class="msg-text">${escapeHtml(msg.content)}</span>
-            <span class="msg-time">${time}</span>`;
+            <span class="msg-time" style="font-size: 0.8rem; opacity: 0.7; margin-left: 20px;">
+        ${time}
+    </span>`;
         container.appendChild(msgDiv);
         if (!isHistory) container.scrollTop = container.scrollHeight;
     }

@@ -168,7 +168,7 @@ export const userStore = {
             } catch {}
         }
         const keysToReset = ['pong_wins','pong_losses','pong_total_seconds','user_xp','match_history','global_chat_history'];
-        const keysToRemove = ['user_name','user_avatar','user_data'];
+        const keysToRemove = ['user_name', 'user_avatar', 'user_data', 'is_staff'];
 
         keysToReset.forEach(k => localStorage.setItem(k, k.includes('history') ? '[]' : '0'));
         keysToRemove.forEach(k => localStorage.removeItem(k));
@@ -185,6 +185,7 @@ export const userStore = {
     // ─── Privé ─────────────────────────────────
     _syncToLocalStorage() {
         Object.entries(this._cache).forEach(([k, v]) => {
+            if (k === 'user_avatar') return; // ← ne cache jamais l'avatar en localStorage
             if (v !== null && v !== undefined) localStorage.setItem(k, v);
         });
     },

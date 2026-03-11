@@ -41,4 +41,37 @@ export function initSettings() {
         document.getElementById('ai-difficulty').value = '5';
         msg.innerHTML = '<p style="color:#8b949e;margin-top:15px;">Paramètres réinitialisés par défaut.</p>';
     };
+    const btnAvatar   = document.getElementById('btn-upload-avatar');
+    const avatarInput = document.getElementById('avatar-input');
+    if (avatarInput) {
+        avatarInput.onchange = () => {
+            const file = avatarInput.files[0];
+            if (!file) return;
+            const preview = document.getElementById('avatar-preview');
+            if (preview) preview.innerHTML = `<img src="${URL.createObjectURL(file)}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #00babc;">`;
+        };
+    }
+    if (btnAvatar) btnAvatar.onclick = async () => {
+        const file = avatarInput.files[0];
+        if (!file) { alert('Sélectionne une image.'); return; }
+        if (file.size > 2 * 1024 * 1024) { alert('Fichier trop lourd (2MB max)'); return; }
+        if (!file.type.startsWith('image/')) { alert('Format invalide'); return; }
+        const formData = new FormData();
+        formData.append('avatar', file);
+        try {
+            const res = await fetch('/api/users/upload-avatar/', {
+                method: 'POST', credentials: 'include',
+                headers: { 'X-CSRFToken': getCsrfToken() },
+                body: formData,
+            });
+            const data = await res.json();
+            if (res.ok) {
+                //await userStore.set('user_avatar', data.avatar);
+                await userStore.init();
+                msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Avatar mis à jour !</p>';
+            } else {
+                alert(data.error);
+            }
+        } catch (e) { alert('Erreur réseau.'); }
+    };
 }

@@ -555,39 +555,43 @@ export const routes = {
     '/settings': {
         title: 'Paramètres',
         render: () => `
-        <canvas id="pong-canvas-bg"></canvas>
-            <div class="settings-container">
-                <h2>Configuration du Joueur</h2>
-                <form id="settings-form">
-                    <div class="setting-group">
-                        <label>Pseudo (Verrouillé)</label>
-                        <input type="text" id="username-input" readonly style="background:rgba(255,255,255,0.05);cursor:not-allowed;border-color:rgba(255,255,255,0.1);color:#8b949e;">
+            <canvas id="pong-canvas-bg"></canvas>
+                <div class="settings-container">
+                    <h2>Configuration du Joueur</h2>
+                    <form id="settings-form">
+                        <div class="setting-group">
+                            <label>Pseudo (Verrouillé)</label>
+                            <input type="text" id="username-input" readonly style="background:rgba(255,255,255,0.05);cursor:not-allowed;border-color:rgba(255,255,255,0.1);color:#8b949e;">
+                        </div>
+                        <div class="setting-group">
+                            <label>Avatar</label>
+                            <input type="file" id="avatar-input" accept="image/*" class="cyber-input" style="margin-bottom:8px;">
+                            <div id="avatar-preview" style="margin-bottom:8px;"></div>
+                            <button type="button" id="btn-upload-avatar" class="cyber-button" style="width:100%;">📷 Changer l'avatar</button>
+                        </div>
+                        <div class="setting-group">
+                            <label>Couleur de la raquette</label>
+                            <div class="color-picker"><input type="color" id="paddle-color" value="#00babc"></div>
+                        </div>
+                        <div class="setting-group">
+                            <label>Difficulté IA par défaut</label>
+                            <select id="ai-difficulty">
+                                <option value="3">Facile</option>
+                                <option value="5">Normal</option>
+                                <option value="9">Expert</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-save">Enregistrer les modifications</button>
+                        <button type="button" id="btn-reset-settings" class="cyber-button" style="width:100%;margin-top:8px;border-color:#8b949e;color:#8b949e;">↺ Réinitialiser par défaut</button>
+                    </form>
+                    <div id="settings-msg"></div>
+                    <div style="margin-top:40px;border-top:1px solid rgba(255,0,85,0.2);padding-top:20px;">
+                        <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">⚖️ Données personnelles (RGPD)</h3>
+                        <button id="btn-delete-account" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">
+                            🗑️ Supprimer mon compte
+                        </button>
                     </div>
-                    <div class="setting-group">
-                        <label>Couleur de la raquette</label>
-                        <div class="color-picker"><input type="color" id="paddle-color" value="#00babc"></div>
-                    </div>
-                    <div class="setting-group">
-                        <label>Difficulté IA par défaut</label>
-                        <select id="ai-difficulty">
-                            <option value="3">Facile</option>
-                            <option value="5">Normal</option>
-                            <option value="9">Expert</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-save">Enregistrer les modifications</button>
-                    <button type="button" id="btn-reset-settings" class="cyber-button" style="width:100%;margin-top:8px;border-color:#8b949e;color:#8b949e;">↺ Réinitialiser par défaut</button>
-                </form>
-                <div id="settings-msg"></div>
-
-                <div style="margin-top:40px;border-top:1px solid rgba(255,0,85,0.2);padding-top:20px;">
-                    <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">⚖️ Données personnelles (RGPD)</h3>
-
-                    <button id="btn-delete-account" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">
-                        🗑️ Supprimer mon compte
-                    </button>
-                </div>
-            </div>`,
+                </div>`,
             init: () => {
                 initBouncingBalls();
                 initSettings();

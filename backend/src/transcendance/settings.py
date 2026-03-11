@@ -92,3 +92,8 @@ CHANNEL_LAYERS = {
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 DJANGO_SUPERUSER_USERNAME = os.environ.get('DJANGO_SUPERUSER_USERNAME') 
+
+
+# pour les pp
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = '/app/media'
