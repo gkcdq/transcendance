@@ -1,5 +1,11 @@
 import { getCsrfToken, userStore } from './userStore.js';
 await userStore.init();
+if (userStore.get('is_staff') === 'true') {
+    const navLinks = document.querySelector('.nav-links');
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="/admin-panel" data-link style="color:#ff4466;">⚙️ Admin</a>`;
+    navLinks.appendChild(li);
+}
 import { initPongGame } from './Pong.js';
 import { initOnlinePong } from './OnlinePong.js';
 import { initSettings } from './settings.js';
@@ -252,7 +258,7 @@ export const routes = {
                                 await userStore.set('user_name',   data.username);
                                 await userStore.set('user_avatar', data.avatar);
                                 localStorage.setItem('user_data', JSON.stringify({ username: data.username, avatar: data.avatar }));
-                                navigateTo('/');
+                                window.location.href = '/';
                             } else {
                                 msg.innerHTML = `<span style="color:#ff4d6d;">${data.error}</span>`;
                             }
@@ -926,5 +932,24 @@ export const routes = {
             if (!roomId) { navigateTo('/game'); return; }
             initSpectatorMode(roomId);
         }
+    },
+    '/admin-panel': {
+        title: 'Administration',
+        render: () => {
+            const isAdmin = userStore.get('is_staff') === 'true';
+            if (!isAdmin) {
+                navigateTo('/');
+                return '';
+            }
+            return `
+                <div class="hero-container" style="position:relative; z-index:1; text-align:center; padding-top:80px;">
+                    <h2>⚙️ Espace Administration</h2>
+                    <p style="color:#8b949e; margin:20px 0;">Bienvenue, administrateur.</p>
+                    <a href="/admin/" class="cyber-button" style="display:inline-block; margin-top:20px; color:#ff4466; border-color:#ff4466;">
+                        🔧 Accéder au panneau Django Admin
+                    </a>
+                </div>`;
+        },
+        init: () => {}
     },
 };

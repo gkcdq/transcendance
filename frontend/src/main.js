@@ -1,7 +1,7 @@
 // import
 import { userStore, getCsrfToken } from './utils/userStore.js';
 import { initOnlinePong } from './utils/OnlinePong.js';
-import { letCurrentPongInstance, returnCurrentPongInstance, lockNav, unlockNav } from './utils/State.js';
+import { letCurrentPongInstance, returnCurrentPongInstance, unlockNav, lockNavAdmin } from './utils/State.js';
 import { routes } from './utils/Routes.js';
 
 // ─── OAuth 42 ────────────────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ export function initBouncingBalls() {
 
     // On passe à 40 balles pour un effet de "pluie de néons"
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
-    const balls = Array.from({ length: 40}, () => ({
+    const balls = Array.from({ length: 400}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         // On varie un peu plus les vitesses pour plus de dynamisme
@@ -266,6 +266,7 @@ const router = async () => {
     const path  = window.location.pathname;
     const route = routes[path] || routes['/404'];
     const isLoggedIn = await checkAuth();
+    updateNavbar();
     if (path === '/game' && !isLoggedIn) { navigateTo('/jouer-denied'); return; }
     if (path === '/chat' && !isLoggedIn) { navigateTo('/chat-denied');  return; }
     if (path === '/profile' && !isLoggedIn) { navigateTo('/profil-denied');  return; }
@@ -369,6 +370,7 @@ document.addEventListener('click', e => {
     if (!link) return;
     const href = link.getAttribute('href');
     if (href.startsWith('http')) return;
+    if (href.startsWith('/admin')) return;
     if (href.startsWith('/')) {
         if (href.includes('/accounts/')) return;
         e.preventDefault();
@@ -384,6 +386,16 @@ document.addEventListener('click', e => {
 });
 window.addEventListener('popstate', router);
 router();
+
+export function updateNavbar() {
+    const btn = document.getElementById('admin-nav-btn');
+    if (!btn) return;
+    
+    const isAdmin = userStore.get('is_staff') === 'true';
+    btn.style.display = isAdmin ? 'block' : 'none';
+    
+    if (isAdmin) lockNavAdmin();
+}
 
 // ─── Profil ───────────────────────────────────────────────────────────────────
 export async function initProfile() {

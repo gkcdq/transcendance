@@ -233,10 +233,10 @@ _TODO_
       - [❌] Users can upload an avatar (with a default avatar if none provided).
       - [✔️] Users can add other users as friends and see their online status.
       - [✔️] Users have a profile page displaying their information.
-- [➖] _Major_ Advanced permissions system:
+- [✔️] _Major_ Advanced permissions system:
       - [✔️] View, edit, and delete users (CRUD).
       - [✔️] Roles management (admin, user, guest, moderator, etc.).
-      - [➖] Different views and actions based on user role.
+      - [✔️] Different views and actions based on user role.
 - [✔️] _Minor_ Game statistics and match history (requires a game module).
       - [✔️] Track user game statistics (wins, losses, ranking, level, etc.).
       - [✔️] Display match history (1v1 games, dates, results, opponents).
@@ -260,10 +260,10 @@ _TODO_
       - [✔️] Players must be able to play live matches.
       - [➖] The game must have clear rules and win/loss conditions.
       - [✔️] The game can be 2D or 3D.
-- [➖] _Major_ Remote players — Enable two players on separate computers to play the same game in real-time.
+- [❌] _Major_ Remote players — Enable two players on separate computers to play the same game in real-time.
       - [✔️] Handle network latency and disconnections gracefully.
       - [✔️] Provide a smooth user experience for remote gameplay.
-      - [➖] Implement reconnection logic.
+      - [❌] Implement reconnection logic.
 - [✔️] _Minor_ Implement a tournament system.
       - [✔️] Clear matchup order and bracket system.
       - [✔️] Track who plays against whom.

@@ -15,13 +15,15 @@
             <div class="logo" onclick="navigateTo('/')" style="cursor:pointer">TRANSCENDENCE</div>
             
             <ul class="nav-links">
-                <li><a href="/" data-link>Accueil 🏠</a></li>
+                <li id="nav-home"><a href="/" data-link>Accueil 🏠</a></li>
                 <li><a href="/game" data-link>Jouer 🎾</a></li>
                 <li><a href="/tournament" data-link>Tournoi ⚔️</a></li>
-                <li><a href="/chat" data-link>Chat 📨</a></li>
+                <li id="nav-chat"><a href="/chat" data-link>Chat 📨</a></li>
                 <li><a href="/profile" data-link>Profile 📜</a></li>
-                <li><a href="/leaderboard" data-link>Classement 📊</a></li>
+                <li id="nav-leaderboard"><a href="/leaderboard" data-link>Classement 📊</a></li>
                 <li><a href="/settings" data-link>Paramètres 🛠️</a></li>
+                <li id="admin-nav-btn" style="display:none;">
+                    <a href="/admin-panel" data-link style="color:#ff4466;">⚙️ Admin</a>
             </ul>
 
             <div id="auth-status"></div>

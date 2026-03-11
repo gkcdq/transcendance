@@ -112,6 +112,7 @@ def get_user_profile(request):
         "paddle_color":  profile.paddle_color,
         "ai_difficulty": profile.ai_difficulty,
         "is_online":     profile.is_online,
+        "is_staff":      request.user.is_staff,
     })
 
 

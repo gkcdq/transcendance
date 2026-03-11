@@ -25,6 +25,15 @@ export function lockNav() {
     }
 }
 
+// pour l'admin
+export function lockNavAdmin() {
+    document.querySelectorAll('.nav-links li').forEach(li => {
+        if (li.id !== 'admin-nav-btn' && li.id !== 'nav-chat' && li.id !== 'nav-leaderboard' && li.id !== 'nav-home') {
+            li.style.display = 'none';
+        }
+    });
+}
+
 export function unlockNav() {
     sessionStorage.removeItem('active_room');
     document.querySelectorAll('.nav-links a').forEach(a => {

@@ -1,21 +1,6 @@
-/**
- * userStore.js — Couche d'abstraction localStorage ↔ Django API
- * 
- * Utilisation :
- *   import { userStore } from './userStore.js';
- * 
- *   await userStore.init();           // À appeler une fois au démarrage
- *   userStore.get('wins')             // Lit depuis cache (sync)
- *   await userStore.set('wins', 5)    // Écrit en DB + localStorage
- *   await userStore.recordMatch(...)  // Enregistre un match complet
- *   await userStore.logout()          // Déconnexion propre
- */
-
 const API_BASE = '/api/users';
 
-// ─────────────────────────────────────────────
 // Helpers fetch avec CSRF Django
-// ─────────────────────────────────────────────
 export function getCsrfToken() {
     // Essaie d'abord le cookie csrftoken
     const cookie = document.cookie
@@ -62,7 +47,6 @@ const LS_KEYS = {
 export const userStore = {
     _cache: {},
     _isAuthenticated: false,
-
     /**
      * init() — À appeler une fois au chargement de l'app.
      * Si l'utilisateur est connecté (session Django active),
@@ -82,15 +66,13 @@ export const userStore = {
                 ai_level:           data.ai_difficulty || '5',
                 user_xp:            data.xp || 0,
                 pong_total_seconds: data.total_seconds || 0,
+                is_staff:           String(data.is_staff), // ← ici
             };
-            // Sync localStorage pour compatibilité avec l'ancien code
+            localStorage.setItem('is_staff', String(data.is_staff)); // ← ici
             this._syncToLocalStorage();
-            console.log('[userStore] Chargé depuis Django ✓', this._cache);
         } catch {
-            // Non connecté ou API down → fallback localStorage
             this._isAuthenticated = false;
             this._loadFromLocalStorage();
-            console.log('[userStore] Fallback localStorage ✓');
         }
         return this._cache;
     },
@@ -192,7 +174,7 @@ export const userStore = {
         keysToRemove.forEach(k => localStorage.removeItem(k));
         this._cache = {};
         this._isAuthenticated = false;
-
+        localStorage.setItem('is_staff', 'false');
         window.location.href = '/';
     },
 
