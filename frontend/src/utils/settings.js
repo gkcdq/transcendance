@@ -74,4 +74,47 @@ export function initSettings() {
             }
         } catch (e) { alert('Erreur réseau.'); }
     };
+    const btnEmail = document.getElementById('btn-update-email');
+    if (btnEmail) btnEmail.onclick = async () => {
+        const email = document.getElementById('email-input').value.trim();
+        if (!email) { alert('Entre un email.'); return; }
+        try {
+            const res = await fetch('/api/users/me/update/', {
+                method: 'PATCH', credentials: 'include',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                body: JSON.stringify({ email }),
+            });
+            if (res.ok) msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Email mis à jour !</p>';
+            else {
+                const data = await res.json();
+                alert(data.error || 'Erreur.');
+            }
+        } catch (e) { alert('Erreur réseau.'); }
+    };
+
+    const btnPassword = document.getElementById('btn-update-password');
+    if (btnPassword) btnPassword.onclick = async () => {
+        const oldPwd  = document.getElementById('old-password').value;
+        const newPwd  = document.getElementById('new-password').value;
+        const confirm = document.getElementById('confirm-password').value;
+        if (!oldPwd || !newPwd) { alert('Remplis tous les champs.'); return; }
+        if (newPwd !== confirm)  { alert('Les mots de passe ne correspondent pas.'); return; }
+        if (newPwd.length < 8)   { alert('Mot de passe trop court (8 caractères min).'); return; }
+        try {
+            const res = await fetch('/api/users/me/password/', {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                body: JSON.stringify({ old_password: oldPwd, new_password: newPwd }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.innerHTML = '<p style="color:#2ea043;margin-top:15px;">Mot de passe mis à jour !</p>';
+                document.getElementById('old-password').value = '';
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-password').value = '';
+            } else {
+                alert(data.error || 'Erreur.');
+            }
+        } catch (e) { alert('Erreur réseau.'); }
+    };
 }

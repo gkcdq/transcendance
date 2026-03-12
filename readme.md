@@ -255,10 +255,10 @@ _TODO_
   
   # Gaming and user experience
 
-- [➖] _Major_ Implement a complete web-based game where users can play against each other.
+- [✔️] _Major_ Implement a complete web-based game where users can play against each other.
       - [✔️] The game can be real-time multiplayer (e.g., Pong, Chess, Tic-Tac-Toe, Card game, etc.).
       - [✔️] Players must be able to play live matches.
-      - [➖] The game must have clear rules and win/loss conditions.
+      - [✔️] The game must have clear rules and win/loss conditions.
       - [✔️] The game can be 2D or 3D.
 - [✔️] _Minor_ Implement a tournament system.
       - [✔️] Clear matchup order and bracket system.

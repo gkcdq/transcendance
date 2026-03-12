@@ -110,6 +110,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     ];
 
     function applyBonus(bonus, side) {
+        if(!bonus) return;
         if (bonus.id === 'wall')
         {
             if (side === 'left') {

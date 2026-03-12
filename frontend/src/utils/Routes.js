@@ -19,7 +19,6 @@ const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redir
 const playModePageHTML = `
     <div class="game-container">
         <div id="game-controls">
-            <p> Vos bonus sont en bas de l'ecran du cote de votre raquette</p>
             <button id="btn-start-game" class="cyber-button">Lancer la partie</button>
             <p id="game-status">Mode Octogone Prêt</p>
         </div>
@@ -107,8 +106,8 @@ export const routes = {
                                 <!-- Login -->
                                 <div id="form-login">
                                     <div style="margin-bottom:14px;">
-                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Email ou Pseudo</label>
-                                        <input type="text" id="login-username" class="cyber-input" style="width:100%;" placeholder="ton@email.com">
+                                        <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Identifiant</label>
+                                        <input type="text" id="login-username" class="cyber-input" style="width:100%;" placeholder="Pseudo">
                                     </div>
                                     <div style="margin-bottom:20px;">
                                         <label style="color:#8b949e; font-size:0.72rem; text-transform:uppercase; display:block; margin-bottom:6px;">Mot de passe</label>
@@ -240,6 +239,7 @@ export const routes = {
                         tabLogin.style.borderBottomColor = 'transparent'; tabLogin.style.color = '#8b949e';
                     };
 
+                    // Login
                     const doLogin = async () => {
                         const username = document.getElementById('login-username').value.trim();
                         const password = document.getElementById('login-password').value;
@@ -624,6 +624,21 @@ export const routes = {
                         <button type="submit" class="btn-save">Enregistrer les modifications</button>
                         <button type="button" id="btn-reset-settings" class="cyber-button" style="width:100%;margin-top:8px;border-color:#8b949e;color:#8b949e;">↺ Réinitialiser par défaut</button>
                     </form>
+                    <p></p>
+                    <p></p>
+                    <p></p>
+                    <div class="setting-group">
+                        <label>Changer l'email</label>
+                        <input type="email" id="email-input" placeholder="Nouvel email" class="cyber-input" style="width:100%;margin-bottom:8px;">
+                        <button type="button" id="btn-update-email" class="cyber-button" style="width:100%;">✉️ Mettre à jour l'email</button>
+                    </div>
+                    <div class="setting-group">
+                        <label>Changer le mot de passe</label>
+                        <input type="password" id="old-password" placeholder="Ancien mot de passe" class="cyber-input" style="width:100%;margin-bottom:8px;">
+                        <input type="password" id="new-password" placeholder="Nouveau mot de passe" class="cyber-input" style="width:100%;margin-bottom:8px;">
+                        <input type="password" id="confirm-password" placeholder="Confirmer le mot de passe" class="cyber-input" style="width:100%;margin-bottom:8px;">
+                        <button type="button" id="btn-update-password" class="cyber-button" style="width:100%;">🔒 Mettre à jour le mot de passe</button>
+                    </div>
                     <div id="settings-msg"></div>
                     <div style="margin-top:40px;border-top:1px solid rgba(255,0,85,0.2);padding-top:20px;">
                         <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:15px;">⚖️ Données personnelles (RGPD)</h3>

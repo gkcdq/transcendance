@@ -53,13 +53,13 @@ class GameConsumer(AsyncWebsocketConsumer):
         room = GAME_ROOMS[self.room_id]
 
         # Reconnexion joueur existant
-        if self.username in room["usernames"].values():
-            self.side = [s for s, u in room["usernames"].items() if u == self.username][0]
-            room["players"].append(self.channel_name)
-            await self.send(json.dumps({"type": "joined", "side": self.side, "room": self.room_id}))
-            if room["state"]["status"] == "playing":
-                await self.send(json.dumps({"type": "game_start", "state": room["state"]}))
-            return
+        # if self.username in room["usernames"].values():
+        #     self.side = [s for s, u in room["usernames"].items() if u == self.username][0]
+        #     room["players"].append(self.channel_name)
+        #     await self.send(json.dumps({"type": "joined", "side": self.side, "room": self.room_id}))
+        #     if room["state"]["status"] == "playing":
+        #         await self.send(json.dumps({"type": "game_start", "state": room["state"]}))
+        #     return
 
         # Spectateur — room pleine
         if len(room["players"]) >= 2:

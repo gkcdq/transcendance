@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods, require_POST
@@ -39,22 +39,12 @@ def login_view(request):
     data     = json.loads(request.body)
     username = data.get('username', '').strip()
     password = data.get('password', '')
-
-    # Accepte email OU pseudo
-    if '@' in username:
-        try:
-            username = User.objects.get(email=username).username
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'Email introuvable.'}, status=401)
-
     user = authenticate(request, username=username, password=password)
     if user is None:
         return JsonResponse({'error': 'Pseudo ou mot de passe incorrect.'}, status=401)
-
     login(request, user)
     profile = user.profile
-    avatar  = profile.avatar or f'https://ui-avatars.com/api/?name={username}&background=0D1117&color=00babc'
-    return JsonResponse({'username': user.username, 'avatar': avatar})
+    return JsonResponse({'username': user.username, 'avatar': get_avatar_url(profile, request)})
 
 
 def get_leaderboard(request):
@@ -87,8 +77,7 @@ def oauth_login(request):
     user, created = User.objects.get_or_create(username=username)
     profile = user.profile
     if avatar:
-        # Avatar OAuth = URL externe → stocke comme string, pas comme fichier
-        profile.avatar_url = avatar  # ← champ séparé
+        profile.avatar_url = avatar 
     profile.is_online = True
     profile.save()
     user.backend = 'django.contrib.auth.backends.ModelBackend'
@@ -127,6 +116,9 @@ def update_user_profile(request):
         if field in data:
             setattr(profile, field, data[field])
     profile.save()
+    if 'email' in data:
+        request.user.email = data['email']
+        request.user.save()
     return JsonResponse({"status": "ok"})
 
 
@@ -264,7 +256,7 @@ def upload_avatar(request):
         return JsonResponse({'error': 'Format invalide'}, status=400)
     profile = request.user.profile
     profile.avatar = file
-    profile.avatar_url = ''  # ← vide l'URL OAuth pour éviter le conflit
+    profile.avatar_url = '' 
     profile.save()
     url = request.build_absolute_uri(profile.avatar.url)
     return JsonResponse({'avatar': url})
@@ -279,4 +271,19 @@ def get_avatar_url(profile, request=None):
             pass
     if hasattr(profile, 'avatar_url') and profile.avatar_url:
         return profile.avatar_url
-    return '/Mokoko.webp'  # ← chemin relatif, pas d'URL absolue
+    return '/Mokoko.webp'
+
+@login_required
+@require_http_methods(["POST"])
+def update_password(request):
+    data    = json.loads(request.body)
+    old_pwd = data.get('old_password')
+    new_pwd = data.get('new_password')
+    if not request.user.check_password(old_pwd):
+        return JsonResponse({'error': 'Ancien mot de passe incorrect'}, status=400)
+    if len(new_pwd) < 8:
+        return JsonResponse({'error': 'Mot de passe trop court (8 caractères min)'}, status=400)
+    request.user.set_password(new_pwd)
+    request.user.save()
+    update_session_auth_hash(request, request.user)
+    return JsonResponse({'status': 'ok'})
