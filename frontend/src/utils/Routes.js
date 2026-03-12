@@ -194,7 +194,6 @@ export const routes = {
                                                 <p>Local Game : Raquette Droite ⤵</p>
                                                 <div class="keys"><span class="key">↑</span> <span class="key">↓</span> <span class="key">→</span> <span class="key">←</span> <span class="key">0</span></div>
                                             </div>
-                                            <h6> 'Shift' and '0' to activate bonus in Octogone Mode</h6>
                                         </div>
                                     </div>
                                 </div>
@@ -241,7 +240,6 @@ export const routes = {
                         tabLogin.style.borderBottomColor = 'transparent'; tabLogin.style.color = '#8b949e';
                     };
 
-                    // Login
                     const doLogin = async () => {
                         const username = document.getElementById('login-username').value.trim();
                         const password = document.getElementById('login-password').value;
@@ -294,15 +292,19 @@ export const routes = {
                         } catch (e) { msg.innerHTML = '<span style="color:#ff4d6d;">Erreur réseau.</span>'; }
                     };
                 }
+                //
+                //
             },
 '/game': {
-        title: 'Jeu',
-        render: () => {
-            const myName = userStore.get('user_name', 'Player');
-            return `
-                <canvas id="pong-canvas-bg"></canvas>
-                <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;">
-                    <h2 style="text-transform:uppercase;letter-spacing:2px;">Pong Match</h2>
+    title: 'Jeu',
+    render: () => {
+        const myName = userStore.get('user_name', 'Player');
+        return `
+            <canvas id="pong-canvas-bg"></canvas>
+            <h2 style="text-transform:uppercase;letter-spacing:2px;">Pong Match</h2>
+            <div id="game-layout" style="display:flex;gap:30px;align-items:flex-start;justify-content:center;padding:20px;flex-wrap:wrap;">        
+                <!-- COLONNE GAUCHE -->
+                <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;min-width:320px;">
                     <div id="amical-options" style="display:flex;flex-direction:column;gap:25px;width:320px;">
 
                         <div class="category-block">
@@ -345,7 +347,8 @@ export const routes = {
                                 <div id="active-rooms-list"><p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p></div>
                             </div>
                         </div>
-                            <div class="category-block">
+
+                        <div class="category-block">
                             <h3 style="color:#a855f7;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #a855f7;padding-left:10px;letter-spacing:1px;">🔥 Octogone Mode 🔥</h3>
                             <div class="setup-group" style="border:1px solid #a855f7;padding:15px;border-radius:8px;background:rgba(168,85,247,0.05);">
                                 <p style="color:#a855f7;font-size:0.7rem;margin-bottom:10px;">Map octogonale + bonus/mallus.</p>
@@ -355,166 +358,203 @@ export const routes = {
                                 <button id="btn-Mode1v1" class="cyber-button" style="width:100%;border-color:#a855f7;color:#a855f7;">👥 1 VS 1</button>
                             </div>
                         </div>
+
                     </div>
                 </div>
-                <div id="pong-game-wrapper" style="display:none;">
-                    ${playPageHTML}
-                </div>`;
-        },
-        init: () => {
-            initBouncingBalls();
-            const setupContainer = document.getElementById('setup-container');
-            const gameWrapper    = document.getElementById('pong-game-wrapper');
-            const activeRoom = sessionStorage.getItem('active_room');
-            if (activeRoom) {sessionStorage.removeItem('active_room');}
-            const btnIA          = document.getElementById('btn-play-ia');
-            const btnFriend      = document.getElementById('btn-play-friend');
-            const btnMatchmaking = document.getElementById('btn-matchmaking');
-            const btnJoin        = document.getElementById('btn-join-room');
-            const btnModeIA      = document.getElementById('btn-ModeIA');
-            const btnMode1v1 = document.getElementById('btn-Mode1v1');
-            if (btnMode1v1) btnMode1v1.onclick = () => {
-                gameWrapper.innerHTML = playModePageHTML;
-                const name2 = document.getElementById('p2-mode-name').value || "Joueur 2";
-                setupContainer.style.display = 'none';
-                gameWrapper.style.display    = 'block';
-                initModeGame(userStore.get('user_name', 'Joueur 1'), name2);
-            };
 
-            if (btnIA) btnIA.onclick = () => {
-                gameWrapper.innerHTML = playPageHTML;
-                setupContainer.style.display = 'none';
-                gameWrapper.style.display    = 'block';
-                initPongGame(userStore.get('user_name', 'Joueur'), "IA");
-            };
+                <!-- COLONNE DROITE : règles -->
+                <div style="min-width:280px;max-width:320px;display:flex;flex-direction:column;gap:97px;margin-top:20px;">
+                    
+                    <div style="border:1px solid #00babc;border-radius:8px;padding:15px;background:rgba(0,186,188,0.05);">
+                        <h3 style="color:#00babc;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🤖 IA</h3>
+                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Entraine toi avec une intelligence artificielle. La difficulté est réglable dans les paramètres. Premier à 5 points gagne.</p>
+                    </div>
 
-            if (btnModeIA) btnModeIA.onclick = () => {
-                gameWrapper.innerHTML = playModePageHTML;
-                setupContainer.style.display = 'none';
-                gameWrapper.style.display    = 'block';
-                initModeGame(userStore.get('user_name', 'Joueur'), "IA");
-            };
+                    <div style="border:1px solid #ffb921;border-radius:8px;padding:15px;background:rgba(247,255,0,0.05);">
+                        <h3 style="color:#ffb921;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">👥 Local 1v1</h3>
+                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Deux joueurs sur le même clavier. J1 : <kbd>WASD</kbd>. J2 : <kbd>🠔↑↓🠖</kbd>. Premier à 5 points gagne.</p>
+                    </div>
 
-            if (btnFriend) btnFriend.onclick = () => {
-                gameWrapper.innerHTML = playPageHTML;
-                const name2 = document.getElementById('p2-name').value || "Invité";
-                setupContainer.style.display = 'none';
-                gameWrapper.style.display    = 'block';
-                initPongGame(userStore.get('user_name', 'Joueur 1'), name2);
-            };
+                    <div style="border:1px solid #ff0055;border-radius:8px;padding:15px;background:rgba(255,0,85,0.05);">
+                        <h3 style="color:#ff0055;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🌐 Online</h3>
+                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Joue en ligne ou rejoins une room avec un code. La partie se joue en temps réel via WebSocket. Premier à 5 points gagne.</p>
+                    </div>
 
-            if (btnMatchmaking) btnMatchmaking.onclick = async () => {
-                gameWrapper.innerHTML = playPageHTML;
-                const mmStatus = document.getElementById('mm-status');
-                mmStatus.style.display = 'block';
-                mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
-                btnMatchmaking.disabled = true;
-                sessionStorage.setItem('matchmaking_active', '1');
+                    <div style="border:1px solid #8b949e;border-radius:8px;padding:15px;background:rgba(139,148,158,0.05);">
+                        <h3 style="color:#8b949e;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">👁️ Spectateur</h3>
+                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Regarde une partie en cours en temps réel d'autre joueur, sans intervenir.</p>
+                    </div>
 
-                let isSearching = true;
-                const interval = setInterval(async () => {
-                   // lockNav();
-                    if (!isSearching || document.getElementById('mm-status') != mmStatus)
-                        {
-                            clearInterval(interval);
-                            mmStatus.style.display = 'none';
-                            btnMatchmaking.disabled = false;
-                            sessionStorage.removeItem('matchmaking_active'); 
-                            console.log("annulation du matchmaking.\n");
-                            return;
-                        }
-                    try {
-                        const res  = await fetch('/api/game/matchmaking/', {
-                            method: 'POST', credentials: 'include',
-                            headers: {'X-CSRFToken': getCsrfToken()}
-                        });
-                        if (res.status === 401 || res.redirected) 
-                            {
-                                clearInterval(interval);
-                                mmStatus.style.display = 'none';
-                                isSearching = false;
-                                sessionStorage.removeItem('matchmaking_active'); 
-                                window.location.href = '/';
-                                return;
-                            }
-                        const data = await res.json();
+                    <div style="border:1px solid #a855f7;border-radius:8px;padding:15px;background:rgba(168,85,247,0.05);">
+                        <h3 style="color:#a855f7;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🔥 Octogone Mode</h3>
+                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;"><strong>Arène</strong> : Octogone avec rebonds sur murs diagonaux. <strong>Capacités</strong> : Bonus activables via 'Shift' (J1) / '0' (J2). <strong> Solo </strong>Mode entraînement contre l'IA inclus.</p>
+                        <ul style="color:#8b949e;font-size:0.75rem;line-height:1.8;padding-left:15px;margin-top:5px;">
+                            <li>🧱 <strong style="color:#a855f7;">Wall</strong> ➜ mur du mexique 3s</li>
+                            <li>❄️ <strong style="color:#a855f7;">Freeze</strong> ➜ gèle la balle 2s</li>
+                            <li>⚡ <strong style="color:#a855f7;">Boost</strong> ➜ accélère la raquette 5s</li>
+                            <li>💥 <strong style="color:#a855f7;">Canon</strong> ➜ un tir droit puissant</li>
+                            <li>👺 <strong style="color:#a855f7;">MALUS</strong> ▼</li>
+                            <li>Apparition de balle dans le camp adverse 5s</li>
+                            <li>Inversion des directions adverse 5s</li>
+                            <li>Fige l'adversaire sur place 2s</li>
+                            <li>Réduit la taille de la raquette adverse 3s</li>
+                            <li>Rend la raquette de l'adversaire invisible 5s</li>
+                        </ul>
+                    </div>
 
-                        if (data.status === 'matched') {
-                            clearInterval(interval);
-                            sessionStorage.removeItem('matchmaking_active');
-                            lockNav();
-                            // Remplace tout le contenu par juste le canvas
-                            const app = document.getElementById('app');
-                            app.innerHTML = `
-                                <canvas id="pong-canvas-bg"></canvas>
-                                <div class="game-container" style="position:relative;z-index:1;">
-                                    <canvas id="pongCanvas" width="1200" height="650"></canvas>
-                                </div>`;
-                            initBouncingBalls();
-                            initOnlinePong(data.room_id);
-                        } else {
-                            // Toujours en attente on anime les points
-                            const dots = '.'.repeat((Date.now() / 500 % 3 | 0) + 1);
-                            mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
-                        }
-                    } catch (e) {
-                        isSearching = false;
-                        clearInterval(interval);
-                        btnMatchmaking.disabled = false;
-                        sessionStorage.removeItem('matchmaking_active');  // ← stop
-                        console.error('MATCHMAKING ERROR: ', e);
-                        mmStatus.innerHTML = `<span style="color:#ff4d6d;">Errrrrreur réseau.</span>`;
-                    }
-                }, 2000);
-
-                // Bouton annuler
-                mmStatus.innerHTML += `<br><button id="btn-cancel-mm" style="background:none;border:none;color:#8b949e;cursor:pointer;margin-top:8px;font-size:0.8rem;">Annuler</button>`;
-                setTimeout(() => {
-                    const btnCancel = document.getElementById('btn-cancel-mm');
-                    if (btnCancel) btnCancel.onclick = () => {
-                        isSearching = false;
-                        clearInterval(interval);
-                        btnMatchmaking.disabled = false;
-                        sessionStorage.removeItem('matchmaking_active'); 
-                        cancelMatchmaking();
-                        mmStatus.style.display = 'none';
-                    };
-                }, 100);
-            };
-
-            if (btnJoin) btnJoin.onclick = () => {
-                const code = document.getElementById('room-id-input').value.trim();
-                if (!code) return;
-                setupContainer.style.display = 'none';
-                gameWrapper.style.display    = 'block';
-                initOnlinePong(code);
-            };
-            function refreshRooms() {
-                fetch('/api/game/rooms/', { credentials: 'include' })
-                    .then(r => r.json())
-                    .then(data => {
-                        const list = document.getElementById('active-rooms-list');
-                        if (!list) { clearInterval(roomsInterval); return; }
-                        if (!data.rooms || data.rooms.length === 0) {
-                            list.innerHTML = '<p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p>';
-                            return;
-                        }
-                        list.innerHTML = data.rooms.map(r => `
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                                <span style="color:#ccc;font-size:0.75rem;">⚔️ ${r.players.join(' vs ')}</span>
-                                <a href="/spectate?room=${r.room_id}" data-link
-                                   style="color:#8b949e;font-size:0.7rem;border:1px solid #8b949e;padding:3px 8px;border-radius:4px;text-decoration:none;">
-                                   👁️ Regarder
-                                </a>
-                            </div>`).join('');
-                    })
-                    .catch(() => {});
-            }
-            refreshRooms();
-            const roomsInterval = setInterval(refreshRooms, 3000);
-            window.addEventListener('popstate', () => clearInterval(roomsInterval), { once: true });
-        }
+                </div>
+            </div>
+            <div id="pong-game-wrapper" style="display:none;">
+                ${playPageHTML}
+            </div>`;
     },
+    init: () => {
+        initBouncingBalls();
+        const gameLayout     = document.getElementById('game-layout');
+        const gameWrapper    = document.getElementById('pong-game-wrapper');
+        const activeRoom = sessionStorage.getItem('active_room');
+        if (activeRoom) { sessionStorage.removeItem('active_room'); }
+        const btnIA          = document.getElementById('btn-play-ia');
+        const btnFriend      = document.getElementById('btn-play-friend');
+        const btnMatchmaking = document.getElementById('btn-matchmaking');
+        const btnJoin        = document.getElementById('btn-join-room');
+        const btnModeIA      = document.getElementById('btn-ModeIA');
+        const btnMode1v1     = document.getElementById('btn-Mode1v1');
+
+        if (btnMode1v1) btnMode1v1.onclick = () => {
+            gameWrapper.innerHTML = playModePageHTML;
+            const name2 = document.getElementById('p2-mode-name').value || "Joueur 2";
+            gameLayout.style.display = 'none'; 
+            gameWrapper.style.display = 'block';
+            initModeGame(userStore.get('user_name', 'Joueur 1'), name2);
+        };
+
+        if (btnIA) btnIA.onclick = () => {
+            gameWrapper.innerHTML = playPageHTML;
+            gameLayout.style.display = 'none';
+            gameWrapper.style.display = 'block';
+            initPongGame(userStore.get('user_name', 'Joueur'), "IA");
+        };
+
+        if (btnModeIA) btnModeIA.onclick = () => {
+            gameWrapper.innerHTML = playModePageHTML;
+            gameLayout.style.display = 'none';
+            gameWrapper.style.display = 'block';
+            initModeGame(userStore.get('user_name', 'Joueur'), "IA");
+        };
+
+        if (btnFriend) btnFriend.onclick = () => {
+            gameWrapper.innerHTML = playPageHTML;
+            const name2 = document.getElementById('p2-name').value || "Invité";
+            gameLayout.style.display = 'none'; 
+            gameWrapper.style.display = 'block';
+            initPongGame(userStore.get('user_name', 'Joueur 1'), name2);
+        };
+
+        if (btnMatchmaking) btnMatchmaking.onclick = async () => {
+            gameWrapper.innerHTML = playPageHTML;
+            const mmStatus = document.getElementById('mm-status');
+            mmStatus.style.display = 'block';
+            mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
+            btnMatchmaking.disabled = true;
+            sessionStorage.setItem('matchmaking_active', '1');
+
+            let isSearching = true;
+            const interval = setInterval(async () => {
+                if (!isSearching || document.getElementById('mm-status') != mmStatus) {
+                    clearInterval(interval);
+                    mmStatus.style.display = 'none';
+                    btnMatchmaking.disabled = false;
+                    sessionStorage.removeItem('matchmaking_active');
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/game/matchmaking/', {
+                        method: 'POST', credentials: 'include',
+                        headers: { 'X-CSRFToken': getCsrfToken() }
+                    });
+                    if (res.status === 401 || res.redirected) {
+                        clearInterval(interval);
+                        mmStatus.style.display = 'none';
+                        isSearching = false;
+                        sessionStorage.removeItem('matchmaking_active');
+                        window.location.href = '/';
+                        return;
+                    }
+                    const data = await res.json();
+                    if (data.status === 'matched') {
+                        clearInterval(interval);
+                        sessionStorage.removeItem('matchmaking_active');
+                        lockNav();
+                        const app = document.getElementById('app');
+                        app.innerHTML = `
+                            <canvas id="pong-canvas-bg"></canvas>
+                            <div class="game-container" style="position:relative;z-index:1;">
+                                <canvas id="pongCanvas" width="1200" height="650"></canvas>
+                            </div>`;
+                        initBouncingBalls();
+                        initOnlinePong(data.room_id);
+                    } else {
+                        const dots = '.'.repeat((Date.now() / 500 % 3 | 0) + 1);
+                        mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
+                    }
+                } catch (e) {
+                    isSearching = false;
+                    clearInterval(interval);
+                    btnMatchmaking.disabled = false;
+                    sessionStorage.removeItem('matchmaking_active');
+                    mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
+                }
+            }, 2000);
+
+            mmStatus.innerHTML += `<br><button id="btn-cancel-mm" style="background:none;border:none;color:#8b949e;cursor:pointer;margin-top:8px;font-size:0.8rem;">Annuler</button>`;
+            setTimeout(() => {
+                const btnCancel = document.getElementById('btn-cancel-mm');
+                if (btnCancel) btnCancel.onclick = () => {
+                    isSearching = false;
+                    clearInterval(interval);
+                    btnMatchmaking.disabled = false;
+                    sessionStorage.removeItem('matchmaking_active');
+                    cancelMatchmaking();
+                    mmStatus.style.display = 'none';
+                };
+            }, 100);
+        };
+
+        if (btnJoin) btnJoin.onclick = () => {
+            const code = document.getElementById('room-id-input').value.trim();
+            if (!code) return;
+            gameLayout.style.display = 'none'; 
+            gameWrapper.style.display = 'block';
+            initOnlinePong(code);
+        };
+
+        function refreshRooms() {
+            fetch('/api/game/rooms/', { credentials: 'include' })
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('active-rooms-list');
+                    if (!list) { clearInterval(roomsInterval); return; }
+                    if (!data.rooms || data.rooms.length === 0) {
+                        list.innerHTML = '<p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p>';
+                        return;
+                    }
+                    list.innerHTML = data.rooms.map(r => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span style="color:#ccc;font-size:0.75rem;">⚔️ ${r.players.join(' vs ')}</span>
+                            <a href="/spectate?room=${r.room_id}" data-link
+                               style="color:#8b949e;font-size:0.7rem;border:1px solid #8b949e;padding:3px 8px;border-radius:4px;text-decoration:none;">
+                               👁️ Regarder
+                            </a>
+                        </div>`).join('');
+                })
+                .catch(() => {});
+        }
+        refreshRooms();
+        const roomsInterval = setInterval(refreshRooms, 3000);
+        window.addEventListener('popstate', () => clearInterval(roomsInterval), { once: true });
+    }
+},
 
 '/404': { title: '404', render: () => `<h1>404</h1><p>Invalid.</p>` },
 
