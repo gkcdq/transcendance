@@ -158,7 +158,7 @@ def get_friends(request):
         friend = req.receiver if req.sender == user else req.sender
         friends.append({
             "username":  friend.username,
-            "avatar":    friend.profile.avatar or None,
+            "avatar":    get_avatar_url(friend.profile, request),
             "is_online": friend.profile.is_online,
         })
     return JsonResponse({"friends": friends})
@@ -168,7 +168,7 @@ def get_friends(request):
 def get_friend_requests(request):
     pending = FriendRequest.objects.filter(receiver=request.user, status='pending').select_related('sender__profile')
     return JsonResponse({"requests": [
-        {"id": r.id, "username": r.sender.username, "avatar": r.sender.profile.avatar or None}
+        {"id": r.id, "username": r.sender.username, "avatar": get_avatar_url(r.sender.profile, request)}
         for r in pending
     ]})
 

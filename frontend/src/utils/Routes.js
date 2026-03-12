@@ -295,270 +295,267 @@ export const routes = {
                 //
                 //
             },
-'/game': {
-    title: 'Jeu',
-    render: () => {
-        const myName = userStore.get('user_name', 'Player');
-        return `
-            <canvas id="pong-canvas-bg"></canvas>
-            <h2 style="text-transform:uppercase;letter-spacing:2px;">Pong Match</h2>
-            <div id="game-layout" style="display:flex;gap:30px;align-items:flex-start;justify-content:center;padding:20px;flex-wrap:wrap;">        
-                <!-- COLONNE GAUCHE -->
-                <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;min-width:320px;">
-                    <div id="amical-options" style="display:flex;flex-direction:column;gap:25px;width:320px;">
+    '/game': {
+        title: 'Jeu',
+        render: () => {
+            const myName = userStore.get('user_name', 'Player');
+            return `
+                <canvas id="pong-canvas-bg"></canvas>
+                <h2 style="text-transform:uppercase;letter-spacing:2px;">⚔️ Pong Match ⚔️</h2>
+                <div id="game-layout" style="display:flex;gap:30px;align-items:flex-start;justify-content:center;padding:20px;flex-wrap:wrap;">        
+                    <!-- COLONNE GAUCHE -->
+                    <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;min-width:320px;">
+                        <div id="amical-options" style="display:flex;flex-direction:column;gap:25px;width:320px;">
 
-                        <div class="category-block">
-                            <h3 style="color:#00babc;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #00babc;padding-left:10px;letter-spacing:1px;">Entraînement</h3>
-                            <div class="setup-group" style="border:1px solid #00babc;padding:15px;border-radius:8px;background:rgba(0,186,188,0.05);">
-                                <label style="color:#00babc;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Votre Profil</label>
-                                <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width:100%;margin-bottom:10px;cursor:not-allowed;opacity:0.8;">
-                                <button id="btn-play-ia" class="cyber-button" style="width:100%;">Player vs IA</button>
-                            </div>
-                        </div>
-
-                        <div class="category-block">
-                            <h3 style="color:#ffb921;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ffb921;padding-left:10px;letter-spacing:1px;">Local</h3>
-                            <div class="setup-group" style="border:1px solid #ffb921;padding:15px;border-radius:8px;background:rgba(247,255,0,0.05);">
-                                <label style="color:#ffb921;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 1</label>
-                                <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width:100%;margin-bottom:10px;cursor:not-allowed;opacity:0.8;">
-                                <label style="color:#ffb921;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 2</label>
-                                <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width:100%;margin-bottom:15px;" autofocus>
-                                <button id="btn-play-friend" class="cyber-button" style="width:100%;background:#ffb921;">1 VS 1</button>
-                            </div>
-                        </div>
-
-                        <div class="category-block">
-                            <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ff0055;padding-left:10px;letter-spacing:1px;">Online</h3>
-                            <div class="setup-group" style="border:1px solid #ff0055;padding:15px;border-radius:8px;background:rgba(255,0,85,0.05);">
-                                <p style="color:#ff0055;font-size:0.7rem;margin-bottom:10px;">Joue contre un adversaire en ligne.</p>
-                                <button id="btn-matchmaking" class="cyber-button" style="width:100%;background:#ff0055;border-color:#ff0055;color:#050505;margin-bottom:10px;">🔍 Matchmaking</button>
-                                <div id="mm-status" style="margin-top:8px;font-size:0.8rem;color:#ff0055;display:none;"></div>
-                                <div style="border-top:1px solid rgba(255,0,85,0.2);padding-top:10px;margin-top:10px;">
-                                    <label style="color:#ff0055;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Rejoindre une room</label>
-                                    <input type="text" id="room-id-input" placeholder="Code de la room..." class="cyber-input" style="width:100%;margin-bottom:8px;">
-                                    <button id="btn-join-room" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">Rejoindre</button>
+                            <div class="category-block">
+                                <h3 style="color:#00babc;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #00babc;padding-left:10px;letter-spacing:1px;">Entraînement</h3>
+                                <div class="setup-group" style="border:1px solid #00babc;padding:15px;border-radius:8px;background:rgba(0,186,188,0.05);">
+                                    <label style="color:#00babc;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Votre Profil</label>
+                                    <input type="text" value="${myName}" readonly class="cyber-input readonly-input" style="width:100%;margin-bottom:10px;cursor:not-allowed;opacity:0.8;">
+                                    <button id="btn-play-ia" class="cyber-button" style="width:100%;">Player vs IA</button>
                                 </div>
                             </div>
+
+                            <div class="category-block">
+                                <h3 style="color:#ffb921;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ffb921;padding-left:10px;letter-spacing:1px;">Local</h3>
+                                <div class="setup-group" style="border:1px solid #ffb921;padding:15px;border-radius:8px;background:rgba(247,255,0,0.05);">
+                                    <label style="color:#ffb921;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 1</label>
+                                    <input type="text" id="p1-fixed" value="${myName}" readonly class="cyber-input readonly-input" style="width:100%;margin-bottom:10px;cursor:not-allowed;opacity:0.8;">
+                                    <label style="color:#ffb921;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 2</label>
+                                    <input type="text" id="p2-name" placeholder="Entrer son pseudo" class="cyber-input" style="width:100%;margin-bottom:15px;" autofocus>
+                                    <button id="btn-play-friend" class="cyber-button" style="width:100%;background:#ffb921;">1 VS 1</button>
+                                </div>
+                            </div>
+
+                            <div class="category-block">
+                                <h3 style="color:#ff0055;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #ff0055;padding-left:10px;letter-spacing:1px;">Online</h3>
+                                <div class="setup-group" style="border:1px solid #ff0055;padding:15px;border-radius:8px;background:rgba(255,0,85,0.05);">
+                                    <p style="color:#ff0055;font-size:0.7rem;margin-bottom:10px;">Joue contre un adversaire en ligne.</p>
+                                    <button id="btn-matchmaking" class="cyber-button" style="width:100%;background:#ff0055;border-color:#ff0055;color:#050505;margin-bottom:10px;">🔍 Matchmaking</button>
+                                    <div id="mm-status" style="margin-top:8px;font-size:0.8rem;color:#ff0055;display:none;"></div>
+                                    <div style="border-top:1px solid rgba(255,0,85,0.2);padding-top:10px;margin-top:10px;">
+                                        <label style="color:#ff0055;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Rejoindre une room</label>
+                                        <input type="text" id="room-id-input" placeholder="Code de la room..." class="cyber-input" style="width:100%;margin-bottom:8px;">
+                                        <button id="btn-join-room" class="cyber-button" style="width:100%;border-color:#ff0055;color:#ff0055;">Rejoindre</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="category-block">
+                                <h3 style="color:#8b949e;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #8b949e;padding-left:10px;letter-spacing:1px;">👁️ Spectateur</h3>
+                                <div class="setup-group" style="border:1px solid #8b949e;padding:15px;border-radius:8px;background:rgba(139,148,158,0.05);">
+                                    <div id="active-rooms-list"><p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p></div>
+                                </div>
+                            </div>
+
+                            <div class="category-block">
+                                <h3 style="color:#a855f7;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #a855f7;padding-left:10px;letter-spacing:1px;">🔥 Octogone Mode 🔥</h3>
+                                <div class="setup-group" style="border:1px solid #a855f7;padding:15px;border-radius:8px;background:rgba(168,85,247,0.05);">
+                                    <p style="color:#a855f7;font-size:0.7rem;margin-bottom:10px;">Map octogonale + bonus/mallus.</p>
+                                    <button id="btn-ModeIA" class="cyber-button" style="width:100%;margin-bottom:8px;border-color:#a855f7;color:#a855f7;">🤖 vs IA</button>
+                                    <label style="color:#a855f7;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 2</label>
+                                    <input type="text" id="p2-mode-name" placeholder="Pseudo joueur 2" class="cyber-input" style="width:100%;margin-bottom:8px;">
+                                    <button id="btn-Mode1v1" class="cyber-button" style="width:100%;border-color:#a855f7;color:#a855f7;">👥 1 VS 1</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- COLONNE DROITE : règles -->
+                    <div style="min-width:280px;max-width:320px;display:flex;flex-direction:column;gap:97px;margin-top:20px;">
+                        
+                        <div style="border:1px solid #00babc;border-radius:8px;padding:15px;background:rgba(0,186,188,0.05);">
+                            <h3 style="color:#00babc;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🤖 IA</h3>
+                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Entraine toi avec une intelligence artificielle. La difficulté est réglable dans les paramètres. Premier à 5 points gagne.</p>
                         </div>
 
-                        <div class="category-block">
-                            <h3 style="color:#8b949e;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #8b949e;padding-left:10px;letter-spacing:1px;">👁️ Spectateur</h3>
-                            <div class="setup-group" style="border:1px solid #8b949e;padding:15px;border-radius:8px;background:rgba(139,148,158,0.05);">
-                                <div id="active-rooms-list"><p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p></div>
-                            </div>
+                        <div style="border:1px solid #ffb921;border-radius:8px;padding:15px;background:rgba(247,255,0,0.05);">
+                            <h3 style="color:#ffb921;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">👥 Local 1v1</h3>
+                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Deux joueurs sur le même clavier. J1 : <kbd>WASD</kbd>. J2 : <kbd>🠔↑↓🠖</kbd>. Premier à 5 points gagne.</p>
                         </div>
 
-                        <div class="category-block">
-                            <h3 style="color:#a855f7;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #a855f7;padding-left:10px;letter-spacing:1px;">🔥 Octogone Mode 🔥</h3>
-                            <div class="setup-group" style="border:1px solid #a855f7;padding:15px;border-radius:8px;background:rgba(168,85,247,0.05);">
-                                <p style="color:#a855f7;font-size:0.7rem;margin-bottom:10px;">Map octogonale + bonus/mallus.</p>
-                                <button id="btn-ModeIA" class="cyber-button" style="width:100%;margin-bottom:8px;border-color:#a855f7;color:#a855f7;">🤖 vs IA</button>
-                                <label style="color:#a855f7;font-size:0.7rem;display:block;margin-bottom:5px;text-transform:uppercase;opacity:0.8;">Joueur 2</label>
-                                <input type="text" id="p2-mode-name" placeholder="Pseudo joueur 2" class="cyber-input" style="width:100%;margin-bottom:8px;">
-                                <button id="btn-Mode1v1" class="cyber-button" style="width:100%;border-color:#a855f7;color:#a855f7;">👥 1 VS 1</button>
-                            </div>
+                        <div style="border:1px solid #ff0055;border-radius:8px;padding:15px;background:rgba(255,0,85,0.05);">
+                            <h3 style="color:#ff0055;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🌐 Online</h3>
+                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Joue en ligne ou rejoins une room avec un code. La partie se joue en temps réel via WebSocket. Premier à 5 points gagne.</p>
+                        </div>
+
+                        <div style="border:1px solid #8b949e;border-radius:8px;padding:15px;background:rgba(139,148,158,0.05);">
+                            <h3 style="color:#8b949e;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">👁️ Spectateur</h3>
+                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Regarde une partie en cours en temps réel d'autre joueur, sans intervenir.</p>
+                        </div>
+
+                        <div style="border:1px solid #a855f7;border-radius:8px;padding:15px;background:rgba(168,85,247,0.05);">
+                            <h3 style="color:#a855f7;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🔥 Octogone Mode</h3>
+                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;"><strong>Arène</strong> : Octogone avec rebonds sur murs diagonaux. <strong>Capacités</strong> : Bonus activables via 'Shift' (J1) / '0' (J2). <strong> Solo </strong>Mode entraînement contre l'IA inclus. Premier à 5 points gagne. </p>
+                            <ul style="color:#8b949e;font-size:0.75rem;line-height:1.8;padding-left:15px;margin-top:5px;">
+                                <li>🧱 <strong style="color:#a855f7;">Wall</strong> ➜ mur du mexique 3s</li>
+                                <li>❄️ <strong style="color:#a855f7;">Freeze</strong> ➜ gèle la balle 2s</li>
+                                <li>⚡ <strong style="color:#a855f7;">Boost</strong> ➜ accélère la raquette 5s</li>
+                                <li>💥 <strong style="color:#a855f7;">Canon</strong> ➜ un tir droit puissant</li>
+                                <li>👺 <strong style="color:#a855f7;">MALUS</strong> ▼</li>
+                                <li>Apparition de balle dans le camp adverse 5s</li>
+                                <li>Inversion des directions adverse 5s</li>
+                                <li>Fige l'adversaire sur place 2s</li>
+                                <li>Réduit la taille de la raquette adverse 3s</li>
+                                <li>Rend la raquette de l'adversaire invisible 5s</li>
+                            </ul>
                         </div>
 
                     </div>
                 </div>
-
-                <!-- COLONNE DROITE : règles -->
-                <div style="min-width:280px;max-width:320px;display:flex;flex-direction:column;gap:97px;margin-top:20px;">
-                    
-                    <div style="border:1px solid #00babc;border-radius:8px;padding:15px;background:rgba(0,186,188,0.05);">
-                        <h3 style="color:#00babc;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🤖 IA</h3>
-                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Entraine toi avec une intelligence artificielle. La difficulté est réglable dans les paramètres. Premier à 5 points gagne.</p>
-                    </div>
-
-                    <div style="border:1px solid #ffb921;border-radius:8px;padding:15px;background:rgba(247,255,0,0.05);">
-                        <h3 style="color:#ffb921;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">👥 Local 1v1</h3>
-                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Deux joueurs sur le même clavier. J1 : <kbd>WASD</kbd>. J2 : <kbd>🠔↑↓🠖</kbd>. Premier à 5 points gagne.</p>
-                    </div>
-
-                    <div style="border:1px solid #ff0055;border-radius:8px;padding:15px;background:rgba(255,0,85,0.05);">
-                        <h3 style="color:#ff0055;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🌐 Online</h3>
-                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Joue en ligne ou rejoins une room avec un code. La partie se joue en temps réel via WebSocket. Premier à 5 points gagne.</p>
-                    </div>
-
-                    <div style="border:1px solid #8b949e;border-radius:8px;padding:15px;background:rgba(139,148,158,0.05);">
-                        <h3 style="color:#8b949e;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">👁️ Spectateur</h3>
-                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;">Regarde une partie en cours en temps réel d'autre joueur, sans intervenir.</p>
-                    </div>
-
-                    <div style="border:1px solid #a855f7;border-radius:8px;padding:15px;background:rgba(168,85,247,0.05);">
-                        <h3 style="color:#a855f7;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🔥 Octogone Mode</h3>
-                        <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;"><strong>Arène</strong> : Octogone avec rebonds sur murs diagonaux. <strong>Capacités</strong> : Bonus activables via 'Shift' (J1) / '0' (J2). <strong> Solo </strong>Mode entraînement contre l'IA inclus.</p>
-                        <ul style="color:#8b949e;font-size:0.75rem;line-height:1.8;padding-left:15px;margin-top:5px;">
-                            <li>🧱 <strong style="color:#a855f7;">Wall</strong> ➜ mur du mexique 3s</li>
-                            <li>❄️ <strong style="color:#a855f7;">Freeze</strong> ➜ gèle la balle 2s</li>
-                            <li>⚡ <strong style="color:#a855f7;">Boost</strong> ➜ accélère la raquette 5s</li>
-                            <li>💥 <strong style="color:#a855f7;">Canon</strong> ➜ un tir droit puissant</li>
-                            <li>👺 <strong style="color:#a855f7;">MALUS</strong> ▼</li>
-                            <li>Apparition de balle dans le camp adverse 5s</li>
-                            <li>Inversion des directions adverse 5s</li>
-                            <li>Fige l'adversaire sur place 2s</li>
-                            <li>Réduit la taille de la raquette adverse 3s</li>
-                            <li>Rend la raquette de l'adversaire invisible 5s</li>
-                        </ul>
-                    </div>
-
-                </div>
-            </div>
-            <div id="pong-game-wrapper" style="display:none;">
-                ${playPageHTML}
+                <div id="pong-game-wrapper" style="display:none;">
+                    ${playPageHTML}
             </div>`;
-    },
-    init: () => {
-        initBouncingBalls();
-        const gameLayout     = document.getElementById('game-layout');
-        const gameWrapper    = document.getElementById('pong-game-wrapper');
-        const activeRoom = sessionStorage.getItem('active_room');
-        if (activeRoom) { sessionStorage.removeItem('active_room'); }
-        const btnIA          = document.getElementById('btn-play-ia');
-        const btnFriend      = document.getElementById('btn-play-friend');
-        const btnMatchmaking = document.getElementById('btn-matchmaking');
-        const btnJoin        = document.getElementById('btn-join-room');
-        const btnModeIA      = document.getElementById('btn-ModeIA');
-        const btnMode1v1     = document.getElementById('btn-Mode1v1');
+        },
+        init: () => {
+            initBouncingBalls();
+            const gameLayout     = document.getElementById('game-layout');
+            const gameWrapper    = document.getElementById('pong-game-wrapper');
+            const activeRoom = sessionStorage.getItem('active_room');
+            if (activeRoom) { sessionStorage.removeItem('active_room'); }
+            const btnIA          = document.getElementById('btn-play-ia');
+            const btnFriend      = document.getElementById('btn-play-friend');
+            const btnMatchmaking = document.getElementById('btn-matchmaking');
+            const btnJoin        = document.getElementById('btn-join-room');
+            const btnModeIA      = document.getElementById('btn-ModeIA');
+            const btnMode1v1     = document.getElementById('btn-Mode1v1');
 
-        if (btnMode1v1) btnMode1v1.onclick = () => {
-            gameWrapper.innerHTML = playModePageHTML;
-            const name2 = document.getElementById('p2-mode-name').value || "Joueur 2";
-            gameLayout.style.display = 'none'; 
-            gameWrapper.style.display = 'block';
-            initModeGame(userStore.get('user_name', 'Joueur 1'), name2);
-        };
+            if (btnMode1v1) btnMode1v1.onclick = () => {
+                gameWrapper.innerHTML = playModePageHTML;
+                const name2 = document.getElementById('p2-mode-name').value || "Joueur 2";
+                gameLayout.style.display = 'none'; 
+                gameWrapper.style.display = 'block';
+                initModeGame(userStore.get('user_name', 'Joueur 1'), name2);
+            };
 
-        if (btnIA) btnIA.onclick = () => {
-            gameWrapper.innerHTML = playPageHTML;
-            gameLayout.style.display = 'none';
-            gameWrapper.style.display = 'block';
-            initPongGame(userStore.get('user_name', 'Joueur'), "IA");
-        };
+            if (btnIA) btnIA.onclick = () => {
+                gameWrapper.innerHTML = playPageHTML;
+                gameLayout.style.display = 'none';
+                gameWrapper.style.display = 'block';
+                initPongGame(userStore.get('user_name', 'Joueur'), "IA");
+            };
 
-        if (btnModeIA) btnModeIA.onclick = () => {
-            gameWrapper.innerHTML = playModePageHTML;
-            gameLayout.style.display = 'none';
-            gameWrapper.style.display = 'block';
-            initModeGame(userStore.get('user_name', 'Joueur'), "IA");
-        };
+            if (btnModeIA) btnModeIA.onclick = () => {
+                gameWrapper.innerHTML = playModePageHTML;
+                gameLayout.style.display = 'none';
+                gameWrapper.style.display = 'block';
+                initModeGame(userStore.get('user_name', 'Joueur'), "IA");
+            };
 
-        if (btnFriend) btnFriend.onclick = () => {
-            gameWrapper.innerHTML = playPageHTML;
-            const name2 = document.getElementById('p2-name').value || "Invité";
-            gameLayout.style.display = 'none'; 
-            gameWrapper.style.display = 'block';
-            initPongGame(userStore.get('user_name', 'Joueur 1'), name2);
-        };
+            if (btnFriend) btnFriend.onclick = () => {
+                gameWrapper.innerHTML = playPageHTML;
+                const name2 = document.getElementById('p2-name').value || "Invité";
+                gameLayout.style.display = 'none'; 
+                gameWrapper.style.display = 'block';
+                initPongGame(userStore.get('user_name', 'Joueur 1'), name2);
+            };
 
-        if (btnMatchmaking) btnMatchmaking.onclick = async () => {
-            gameWrapper.innerHTML = playPageHTML;
-            const mmStatus = document.getElementById('mm-status');
-            mmStatus.style.display = 'block';
-            mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
-            btnMatchmaking.disabled = true;
-            sessionStorage.setItem('matchmaking_active', '1');
+            if (btnMatchmaking) btnMatchmaking.onclick = async () => {
+                gameWrapper.innerHTML = playPageHTML;
+                const mmStatus = document.getElementById('mm-status');
+                mmStatus.style.display = 'block';
+                mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche d'adversaire...</span>`;
+                btnMatchmaking.disabled = true;
+                sessionStorage.setItem('matchmaking_active', '1');
 
-            let isSearching = true;
-            const interval = setInterval(async () => {
-                if (!isSearching || document.getElementById('mm-status') != mmStatus) {
-                    clearInterval(interval);
-                    mmStatus.style.display = 'none';
-                    btnMatchmaking.disabled = false;
-                    sessionStorage.removeItem('matchmaking_active');
-                    return;
-                }
-                try {
-                    const res = await fetch('/api/game/matchmaking/', {
-                        method: 'POST', credentials: 'include',
-                        headers: { 'X-CSRFToken': getCsrfToken() }
-                    });
-                    if (res.status === 401 || res.redirected) {
+                let isSearching = true;
+                const interval = setInterval(async () => {
+                    if (!isSearching || document.getElementById('mm-status') != mmStatus) {
                         clearInterval(interval);
                         mmStatus.style.display = 'none';
+                        btnMatchmaking.disabled = false;
+                        sessionStorage.removeItem('matchmaking_active');
+                        return;
+                    }
+                    try {
+                        const res = await fetch('/api/game/matchmaking/', {
+                            method: 'POST', credentials: 'include',
+                            headers: { 'X-CSRFToken': getCsrfToken() }
+                        });
+                        if (res.status === 401 || res.redirected) {
+                            clearInterval(interval);
+                            mmStatus.style.display = 'none';
+                            isSearching = false;
+                            sessionStorage.removeItem('matchmaking_active');
+                            window.location.href = '/';
+                            return;
+                        }
+                        const data = await res.json();
+                        if (data.status === 'matched') {
+                            clearInterval(interval);
+                            sessionStorage.removeItem('matchmaking_active');
+                            lockNav();
+                            const app = document.getElementById('app');
+                            app.innerHTML = `
+                                <canvas id="pong-canvas-bg"></canvas>
+                                <div class="game-container" style="position:relative;z-index:1;">
+                                    <canvas id="pongCanvas" width="1200" height="650"></canvas>
+                                </div>`;
+                            initBouncingBalls();
+                            initOnlinePong(data.room_id);
+                        } else {
+                            const dots = '.'.repeat((Date.now() / 500 % 3 | 0) + 1);
+                            mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
+                        }
+                    } catch (e) {
                         isSearching = false;
-                        sessionStorage.removeItem('matchmaking_active');
-                        window.location.href = '/';
-                        return;
-                    }
-                    const data = await res.json();
-                    if (data.status === 'matched') {
                         clearInterval(interval);
+                        btnMatchmaking.disabled = false;
                         sessionStorage.removeItem('matchmaking_active');
-                        lockNav();
-                        const app = document.getElementById('app');
-                        app.innerHTML = `
-                            <canvas id="pong-canvas-bg"></canvas>
-                            <div class="game-container" style="position:relative;z-index:1;">
-                                <canvas id="pongCanvas" width="1200" height="650"></canvas>
-                            </div>`;
-                        initBouncingBalls();
-                        initOnlinePong(data.room_id);
-                    } else {
-                        const dots = '.'.repeat((Date.now() / 500 % 3 | 0) + 1);
-                        mmStatus.innerHTML = `<span style="color:#ff0055;">🔍 Recherche${dots}</span>`;
+                        mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
                     }
-                } catch (e) {
-                    isSearching = false;
-                    clearInterval(interval);
-                    btnMatchmaking.disabled = false;
-                    sessionStorage.removeItem('matchmaking_active');
-                    mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
-                }
-            }, 2000);
+                }, 2000);
 
-            mmStatus.innerHTML += `<br><button id="btn-cancel-mm" style="background:none;border:none;color:#8b949e;cursor:pointer;margin-top:8px;font-size:0.8rem;">Annuler</button>`;
-            setTimeout(() => {
-                const btnCancel = document.getElementById('btn-cancel-mm');
-                if (btnCancel) btnCancel.onclick = () => {
-                    isSearching = false;
-                    clearInterval(interval);
-                    btnMatchmaking.disabled = false;
-                    sessionStorage.removeItem('matchmaking_active');
-                    cancelMatchmaking();
-                    mmStatus.style.display = 'none';
-                };
-            }, 100);
-        };
+                mmStatus.innerHTML += `<br><button id="btn-cancel-mm" style="background:none;border:none;color:#8b949e;cursor:pointer;margin-top:8px;font-size:0.8rem;">Annuler</button>`;
+                setTimeout(() => {
+                    const btnCancel = document.getElementById('btn-cancel-mm');
+                    if (btnCancel) btnCancel.onclick = () => {
+                        isSearching = false;
+                        clearInterval(interval);
+                        btnMatchmaking.disabled = false;
+                        sessionStorage.removeItem('matchmaking_active');
+                        cancelMatchmaking();
+                        mmStatus.style.display = 'none';
+                    };
+                }, 100);
+            };
 
-        if (btnJoin) btnJoin.onclick = () => {
-            const code = document.getElementById('room-id-input').value.trim();
-            if (!code) return;
-            gameLayout.style.display = 'none'; 
-            gameWrapper.style.display = 'block';
-            initOnlinePong(code);
-        };
+            if (btnJoin) btnJoin.onclick = () => {
+                const code = document.getElementById('room-id-input').value.trim();
+                if (!code) return;
+                gameLayout.style.display = 'none'; 
+                gameWrapper.style.display = 'block';
+                initOnlinePong(code);
+            };
 
-        function refreshRooms() {
-            fetch('/api/game/rooms/', { credentials: 'include' })
-                .then(r => r.json())
-                .then(data => {
-                    const list = document.getElementById('active-rooms-list');
-                    if (!list) { clearInterval(roomsInterval); return; }
-                    if (!data.rooms || data.rooms.length === 0) {
-                        list.innerHTML = '<p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p>';
-                        return;
-                    }
-                    list.innerHTML = data.rooms.map(r => `
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                            <span style="color:#ccc;font-size:0.75rem;">⚔️ ${r.players.join(' vs ')}</span>
-                            <a href="/spectate?room=${r.room_id}" data-link
-                               style="color:#8b949e;font-size:0.7rem;border:1px solid #8b949e;padding:3px 8px;border-radius:4px;text-decoration:none;">
-                               👁️ Regarder
-                            </a>
-                        </div>`).join('');
-                })
-                .catch(() => {});
+            function refreshRooms() {
+                fetch('/api/game/rooms/', { credentials: 'include' })
+                    .then(r => r.json())
+                    .then(data => {
+                        const list = document.getElementById('active-rooms-list');
+                        if (!list) { clearInterval(roomsInterval); return; }
+                        if (!data.rooms || data.rooms.length === 0) {
+                            list.innerHTML = '<p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p>';
+                            return;
+                        }
+                        list.innerHTML = data.rooms.map(r => `
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <span style="color:#ccc;font-size:0.75rem;">⚔️ ${r.players.join(' vs ')}</span>
+                                <a href="/spectate?room=${r.room_id}" data-link
+                                style="color:#8b949e;font-size:0.7rem;border:1px solid #8b949e;padding:3px 8px;border-radius:4px;text-decoration:none;">
+                                👁️ Regarder
+                                </a>
+                            </div>`).join('');
+                    })
+                    .catch(() => {});
+            }
+            refreshRooms();
+            const roomsInterval = setInterval(refreshRooms, 3000);
+            window.addEventListener('popstate', () => clearInterval(roomsInterval), { once: true });
         }
-        refreshRooms();
-        const roomsInterval = setInterval(refreshRooms, 3000);
-        window.addEventListener('popstate', () => clearInterval(roomsInterval), { once: true });
-    }
-},
-
-'/404': { title: '404', render: () => `<h1>404</h1><p>Invalid.</p>` },
-
-    '/accounts/fortytwo/login/callback/': {
+    },
+    '/404': { title: '404', render: () => `<h1>404</h1><p>Invalid.</p>` }, '/accounts/fortytwo/login/callback/': {
         title: 'Authentification',
         render: () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -570,7 +567,6 @@ export const routes = {
             return `<h1>Erreur : Pas de code reçu de 42.</h1>`;
         }
     },
-
     '/chat': {
         title: 'Chat',
         render: () => `

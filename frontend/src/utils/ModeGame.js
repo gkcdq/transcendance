@@ -98,7 +98,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     }));
     let p2BallBlink = false;
     const BONUS_DEFS = [
-        { id: 'wall',   label: '🛡️ Mur'   }, // le mur du mexique
+        { id: 'wall',   label: '🧱 Mur'   }, // le mur du mexique
         { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
         { id: 'freeze', label: '❄️ Freeze' }, // stop la balle
         { id: 'canon', label: '🎳 Canon'}, // coup droit
