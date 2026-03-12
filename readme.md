@@ -228,8 +228,8 @@ _TODO_
 
   # User Management
 
-- [➖] _Major_ Standard user management and authentication.
-      - [➖] Users can update their profile information.
+- [✔️] _Major_ Standard user management and authentication.
+      - [✔️] Users can update their profile information.
       - [✔️] Users can upload an avatar (with a default avatar if none provided).
       - [✔️] Users can add other users as friends and see their online status.
       - [✔️] Users have a profile page displaying their information.
