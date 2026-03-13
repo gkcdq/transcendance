@@ -5,14 +5,14 @@ tmilin.
 
 ## Description
 
-_The “Description” section should also contain a clear name for the project and its
+_The "Description" section should also contain a clear name for the project and its
 key features._
 
 _TODO_
 
 ## Overview
 
-- - _Prérequis_
+- - _Prerequisites_
 
 -  Docker >= 24.0
 -  Docker Compose >= 2.0
@@ -21,7 +21,7 @@ _TODO_
 
 - - _Configuration_ (.env)
 
-- Crée un fichier .env à la racine du projet:
+- Create a .env file at the root of the project:
 ```PY
 \Database
 POSTGRES_DB=
@@ -39,17 +39,17 @@ DEBUG=
 ALLOWED_HOSTS=
 
 
-\Nom du containers pour le Makefile
+\Container name for the Makefile
 DOCKER_COMPOSE =
 
-\Pour les connection de l'intra
+\For 42 intra connections
 FORTYTWO_CLIENT_ID=
 FORTYTWO_CLIENT_SECRET=
 ```
-- - _Accès_
+- - _Access_
 
 - Frontend ➡️ https://localhost:8443/
-- Admin Django ➡️ https://localhost:8443/admin/
+- Django Admin ➡️ https://localhost:8443/admin/
 
 ### Release
 
@@ -102,119 +102,119 @@ _TODO_
 
 ## How it works
 
-__🖥️ L'utilisateur__
+__🖥️ The User__
 
-Sur le navigateur, l'utilisateur voit UNE seul page ➡️ `index.html`.
-Ensuite, tout est gere par JavaScript Vanilla SPA ➡️ `Single Page Application`.
-Le navigateur communique avec le server de deux facons :
-- _REST API_ ➡️ requette HTTP classique (`login`, `profil`, ...).
-- _WebSocket_ ➡️ connexion permanente en temps reel pour le jeu, le mode spectateur et le chat.
+In the browser, the user sees ONE single page ➡️ `index.html`.
+Everything is then handled by Vanilla JavaScript SPA ➡️ `Single Page Application`.
+The browser communicates with the server in two ways:
+- _REST API_ ➡️ classic HTTP request (`login`, `profile`, ...).
+- _WebSocket_ ➡️ permanent real-time connection for the game, spectator mode and chat.
 
 ---
 
 __🚦 Nginx__
 
-Nginx est le premier point d'entree de toute les requetes. Il ecoute sur le port 8443 et redirige selon l'URL.
-Il gere egalement le contract SSL : openssl s_client -connect localhost:8443 -servername localhost
+Nginx is the first entry point for all requests. It listens on port 8443 and redirects based on the URL.
+It also handles the SSL certificate: openssl s_client -connect localhost:8443 -servername localhost
 
 ---
 
 __⚙️ Django__
 
-Django recoit les requetes de Nginx et gere toute la logique.
-Il est divise en plusieurs parties :
+Django receives requests from Nginx and handles all the logic.
+It is divided into several parts:
 
 
 [users/view.py]:
-- https://localhost:8443/api/users/me/                  ➡️ retourne le profil connecte en .JSON
-- https://localhost:8443/accounts/                      ➡️ retourne le profil vu du template Django.
-- https://localhost:8443/api/users/leaderboard/         ➡️ retourne le classement global en .JSON
-- https://localhost:8443/admin/                         ➡️ retourne le portail de l'administration Django.
-- https://localhost:8443/api/users/friends/             ➡️ retourne la liste d'ami du profil connecte en .JSON
-- https://localhost:8443/api/users/friends/requests/    ➡️ retourne les demandes d'ami du profil en .JSON
-- https://localhost:8443/api/users/search/              ➡️ retourne la page de recherche de profil en .JSON
+- https://localhost:8443/api/users/me/                  ➡️ returns the connected profile as .JSON
+- https://localhost:8443/accounts/                      ➡️ returns the profile viewed from the Django template.
+- https://localhost:8443/api/users/leaderboard/         ➡️ returns the global leaderboard as .JSON
+- https://localhost:8443/admin/                         ➡️ returns the Django administration portal.
+- https://localhost:8443/api/users/friends/             ➡️ returns the friend list of the connected profile as .JSON
+- https://localhost:8443/api/users/friends/requests/    ➡️ returns the friend requests of the profile as .JSON
+- https://localhost:8443/api/users/search/              ➡️ returns the profile search page as .JSON
 - ...
 
 [game/consumer.py]
-- Gere les WebSocket : la boucle de jeu online tourne a 60 tick/s
-- Recoit les inputs des joueurs, calcul les positions et renvoie l'etat.
+- Handles WebSockets: the online game loop runs at 60 ticks/s
+- Receives player inputs, calculates positions and sends back the state.
 
 [chat/consumer.py]
-- Gere les WebSocket
-- Recoit les messages, les sauvegarde et les redestribue a tous.
+- Handles WebSockets
+- Receives messages, saves them and broadcasts them to everyone.
 
 ---
 
 __🔌 Django Channels + Daphne__
 
-Django de base ne sait pas gerer les WebSocket.
-Django Channels ajoute cette capacite.
-Daphne est le serveur qui fait tourner Django en mode 'ASGI' (asynchrone) pour que ca fonctionne.
-- Navigateur ⬅️ __[WebSocket]__ ➡️ Nginx ➡️ Daphne ➡️ Django Channels.
+Django by default cannot handle WebSockets.
+Django Channels adds this capability.
+Daphne is the server that runs Django in 'ASGI' (asynchronous) mode to make it work.
+- Browser ⬅️ __[WebSocket]__ ➡️ Nginx ➡️ Daphne ➡️ Django Channels.
 
 ---
 
 __🗄️ PostgreSQL + Django ORM__
 
-\\ _PostgrSQL_
-- C'est la base donnees, elle stocke :
-- users,   scores,   amis,   messages.
+\\ _PostgreSQL_
+- It is the database, it stores:
+- users,   scores,   friends,   messages.
 
 \\ _Django ORM_
-- Permet d'ecrire en Python pour communique avec PostgrSQL.
-- Exemple de code avec l'ORM de Django : *user = User.objects.get(username='user_name')*
-- Exemple du meme code si on avait pas Django ORM : *SELECT * FROM users WHERE username = 'user_name'*
+- Allows writing in Python to communicate with PostgreSQL.
+- Example with Django ORM: *user = User.objects.get(username='user_name')*
+- Same example without Django ORM: *SELECT * FROM users WHERE username = 'user_name'*
 
 ---
 
 __🔑 OAuth 42 + Node.js__
 
-Quand on se connect en cliquant sur le bouton [42] :
+When logging in by clicking the [42] button:
 
-- 1. Navigateur ➡️ redirige vers api.intra.42.fr
-- 2. L'intra 42 ➡️ redirige vers ton serveur avec un "code"
-- 3. Nginx reçoit /accounts/... ➡️ redirige vers Node.js (port 3000)
-- 4. Node.js échange le code contre un token avec l'API 42
-- 5. Node.js récupère ton login + avatar depuis l'API 42
-- 6. Node.js notifie Django pour créer/mettre à jour le compte
-- 7. Node.js redirige le navigateur vers / avec login+avatar en paramètres
+- 1. Browser ➡️ redirects to api.intra.42.fr
+- 2. The 42 intra ➡️ redirects back to your server with a "code"
+- 3. Nginx receives /accounts/... ➡️ redirects to Node.js (port 3000)
+- 4. Node.js exchanges the code for a token with the 42 API
+- 5. Node.js retrieves your login + avatar from the 42 API
+- 6. Node.js notifies Django to create/update the account
+- 7. Node.js redirects the browser to / with login+avatar as parameters
 
-Node.js est utilise dans ce projet uniquement parce que la gestion OAuth etait plus simple à implementer qu'en Django pur.
+Node.js is used in this project solely because OAuth management was simpler to implement than in pure Django.
 
 ---
 
 __💾 localStorage / sessionStorage__
 
-Stockage cote navigateur, sans passer par le serveur.
+Browser-side storage, without going through the server.
 
-\\ _localStorage_ : persiste meme apres fermeture du navigateur.
-- Utilise pour : pseudo, avatar, wins, losses, XP, historiaue des matchs
+\\ _localStorage_ : persists even after closing the browser.
+- Used for: username, avatar, wins, losses, XP, match history
 
-\\ _sessionStorage_ : Efface a la fermeture de l'onglet.
-- Utilise pour : `matchmaking_active`, `active_room`.
+\\ _sessionStorage_ : cleared when the tab is closed.
+- Used for: `matchmaking_active`, `active_room`.
 
-`userStore.py` fait le pont entre les deux ➡️ il lit depuis l'API Django au demarrage et synchronise avec localStorage.
+`userStore.js` bridges the two ➡️ it reads from the Django API on startup and syncs with localStorage.
 
 ---
 
 __🐳 Docker / Docker Compose__
 
-Chaque service/technologie tourne dans un **container isole** :
+Each service/technology runs in an **isolated container**:
 
 ```JS
 docker-compose.yml
-├── nginx      (port 8443) - reverse proxy SSL.
+├── nginx      (port 8443) - SSL reverse proxy.
 ├── backend    (port 8000) - Django + Node.js (port 3000)
-├── frontend   (port 8080) - Nginx servant les fichiers statiques HTML/JS/CSS 💡
+├── frontend   (port 8080) - Nginx serving static HTML/JS/CSS files 💡
 ├── db         (port 5432) - PostgreSQL
-└── redis      (port 6379) - mémoire partagée pour Django Channels
+└── redis      (port 6379) - shared memory for Django Channels
 ```
-💡 `Pas utilise directement car Nginx sert les fichiers du frontend en lisant directement les volumes.`
+💡 `Not used directly as Nginx serves the frontend files by reading the volumes directly.`
 
-__Shema Global__
+__Global Schema__
 
 ```JS
-Navigateur:
+Browser:
     │
     │ HTTPS (Hypertext Transfer Protocol Secure) / WSS (WebSocket Secure)
     ▼
@@ -222,7 +222,7 @@ Navigateur:
     ├── /          → frontend (HTML/JS/CSS)
     ├── /api/      → Django :8000
     ├── /ws/       → Daphne :8000 (WebSocket)
-    ├── /media/    → fichiers avatars
+    ├── /media/    → avatar files
     └── /accounts/ → Node.js :3000
                           │
                     Django :8000
@@ -232,8 +232,7 @@ Navigateur:
                     Redis :6379
 ```
 
-
-## Complet Stack
+## Complete Stack
 
 - - __Backend__
 
@@ -321,14 +320,14 @@ Navigateur:
 └─────────────────────────────────┘
 ```
 __PK__ = _Primary Key_ :
-- C'est l'identifiant unique de chaque ligne dans la table.
-- Genere automatiquement par la DB (1, 2, 3, 4...)
-- Chaque table a une seule __PK__.
-- Exemple : `UserProfile.id = 42` ➡️ il n'existe qu'un seul profil avec l'id 42
+- Unique identifier for each row in the table.
+- Automatically generated by the DB (1, 2, 3, 4...)
+- Each table has only one __PK__.
+- Example: `UserProfile.id = 42` ➡️ there is only one profile with id 42
 __FK__ = _Foreign Key_ :
-- C'est une reference vers la __PK__ d'une autre table
-- Cree un lien entre deux tables
-- Exemple : `FriendRequest.sender_id = 42` ➡️ le sender est le user dont l'id est 42
+- A reference to the __PK__ of another table
+- Creates a link between two tables
+- Example: `FriendRequest.sender_id = 42` ➡️ the sender is the user whose id is 42
 
 
 ## Modules
@@ -416,7 +415,11 @@ __FK__ = _Foreign Key_ :
       - [❌] Optional: spectator chat.
 
 
-# File review (en)
+# Individual Contributions
+
+_TODO_
+
+# File review
 
 - - __Backend__ (backend/src/)
 
@@ -458,7 +461,7 @@ __FK__ = _Foreign Key_ :
 
 - - __Frontend__ (frontend/src/)
 
-- main.js                                 — Bootstrap: initializes userStore, declares MapsTo, router, and global functions.
+- main.js                                 — Bootstrap: initializes userStore, declares navigateTo, router, and global functions.
 
 - utils/Routes.js                         — Defines all routes (/, /game, /profile, etc.) with their render() and init() methods.
 - utils/State.js                          — Shared global state: currentPongInstance, isOnline, globalChatWS, lockNav, unlockNav.
@@ -468,146 +471,154 @@ __FK__ = _Foreign Key_ :
 - utils/OnlinePong.js                     — Online game via WebSocket: initOnlinePong.
 - utils/settings.js                       — Settings page: paddle color, AI difficulty, account deletion.
 
-- components/Navbar.js                    — navbar rendering
+- components/Navbar.js                    — Navbar rendering.
 
 - - __Infrastructure__
 
 - nginx/nginx.conf                        — Reverse proxy: redirects /api/ to Django, /ws/ to Channels, and everything else to the frontend.
-- docker-compose.yml                      — Orchestrates the 3 containers: frontend (Nginx), backend (Django+Daphne), and db (PostgreSQL).
+- docker-compose.yml                      — Orchestrates the containers: frontend (Nginx), backend (Django+Daphne), and db (PostgreSQL).
 - Makefile                                — Shortcuts: make up, make down, make logs, etc.
-
-
-
-# File review (fr)
-
-- - __Backend__ (backend/src/)
-
-- manage.py                                — point d'entrée Django, commandes comme migrate, runserver
-
-- transcendance/settings.py                — configuration Django (DB, apps installées, CORS, etc.)
-- transcendance/asgi.py                    — gère les WebSockets via Django Channels
-- transcendance/urls.py                    — chemin dont Django a besoin
-
-- users/urls.py                            — définit l'API de ton application utilisateur, en reliant chaque URL
-- users/views.py                           — API REST : login, register, profil, amis, RGPD
-- users/models.py                          — modèle UserProfile (wins, losses, avatar, etc.)
-- users/signals.py                         — crée automatiquement un profil quand un User est créé
-- users/admin.py                           — enregistre le modèle UserProfile dans l'interface d'administration de Django (modif/supp depuis le site)
-- users/apps.py                            — active l'application users et automatise le chargement des signaux (comme créer un profil)
-
-- users/providers/fortytwo/provider.py     — OAuth 42 : échange le code contre un token (Traitement des donnees de l'api 42 (image, nom, email ...))
-- users/providers/fortytwo/urls.py         — routes d'authentification OAuth2
-- users/providers/fortytwo/views.py        — Logique de connexion OAuth2 spécifique à l'API 42
-
-- game/consumers.py                        — logique WebSocket du jeu online (matchmaking, game loop serveur)
-- game/views.py                            — API REST : créer une room, lister les rooms actives
-- game/apps.py                             — configuration de notre jeu dans Django
-- game/routing.py                          — les routes WebSocket du online
-- game/models.py                           — modèle de base de données pour une file d'attente
-- game/urls.py                             — définit les routes HTTP du online
-
-- chat/apps.py                             — configure l'application chat
-- chat/consumers.py                        — WebSocket du chat global
-- chat/models.py                           — définit la structure des messages dans ta base de données
-- chat/routing.py                          — enregistre la route WebSocket pour le chat
-- chat/urls.py                             — définit une route HTTP pointant vers l'historique des messages
-- chat/views.py                            — récupère les 50 messages les plus récents depuis la base de données
-
-- Dockerfile                               — décrit les étapes de construction (installe les dépendances (Python, Node.js, PostgreSQL))
-- package.json                             — définit la configuration de l'environnement de Node.js, listant les dépendances (Express, Socket.io)
-- requirement.txt                          — regroupe l'ensemble des bibliothèques nécessaires : Django, PostgreSQL, ASGI/WebSockets
-- server.js                                — serveur Node.js pour le callback OAuth 42
-
-
-
-- - __Frontend__ (frontend/src/)
-
-- main.js                                 — bootstrap : init userStore, déclare navigateTo, router, fonctions globales
-
-- utils/Routes.js                         — définit toutes les routes (/, /game, /profile, etc.) avec leur render() et init()
-- utils/State.js                          — état global partagé : currentPongInstance, isOnline, globalChatWS, lockNav, unlockNav
-- utils/userStore.js                      — abstraction localStorage ↔ API Django : get, set, recordMatch, logout
-- utils/Pong.js                           — jeu local classique : initPongGame + startGameLogic
-- utils/ModeGame.js                       — jeu mode octogone : initModeGame + startGameModeLogic avec bonus
-- utils/OnlinePong.js                     — jeu online via WebSocket : initOnlinePong
-- utils/settings.js                       — page settings : couleur raquette, difficulté IA, suppression compte
-
-- components/Navbar.js                    — rendu de la navbar
-
-
-
-- - __Infrastructure__
-
-- nginx/nginx.conf                        — reverse proxy : redirige /api/ vers Django, /ws/ vers Channels, le reste vers le frontend
-- docker-compose.yml                      — orchestre les 3 containers : frontend (nginx), backend (Django+Daphne), db (PostgreSQL)
-- Makefile                                — raccourcis : make up, make down, make logs, etc.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ## Database & Django Commands
 
-__🐳 Accès aux containers__
+__🐳 Container access__
 ```bash
-# Entrer dans le container backend
+# Enter the backend container
 docker compose exec backend bash
 
-# Entrer dans le container base de données
+# Enter the database container
 docker compose exec db psql -U db_user -d transcendence_db
 ```
 
-__🗄️ PostgreSQL — naviguer dans la base de donnees__
+__🗄️ PostgreSQL — navigating the database__
 ```bash
-# Lister toutes les tables
+# List all tables
 \dt
 
-# Voir la structure d'une table
+# View the structure of a table
 \d users_userprofile
 
-# Voir tous les utilisateurs
+# View all users
 SELECT id, username, email FROM auth_user;
 
-# Voir tous les profils
+# View all profiles
 SELECT * FROM users_userprofile;
 
-# Voir les demandes d'amis
+# View friend requests
 SELECT * FROM users_friendrequest;
 
-# Voir les messages du chat
+# View chat messages
 SELECT * FROM chat_message ORDER BY timestamp DESC LIMIT 10;
 
-# Quitter psql
+# Quit psql
 \q
 ```
 
-__⚙️ Django — commandes utiles__
+__⚙️ Django — useful commands__
 ```bash
-# Appliquer les migrations
+# Apply migrations
 docker compose exec backend python3 src/manage.py migrate
 
-# Créer de nouvelles migrations
+# Create new migrations
 docker compose exec backend python3 src/manage.py makemigrations
 
-# Accéder au shell Django (Python interactif avec accès aux modèles)
+# Access the Django shell (interactive Python with access to models)
 docker compose exec backend python3 src/manage.py shell
 
-# Créer un superuser manuellement
+# Manually create a superuser
 docker compose exec backend python3 src/manage.py createsuperuser
 
-# Voir toutes les routes disponibles
-docker compose exec backend python3 src/manage.py show_urls
+# View all available routes
+docker compose exec backend python3 src/manage.py shell -c \
+"from django.urls import get_resolver; [print(u) for u in get_resolver().url_patterns]"
+```
+
+__Routes__
+
+🎮 Game:
+```
+game-create              → create an online game room
+game-matchmaking         → join the matchmaking queue
+game-matchmaking-cancel  → cancel the search
+active-rooms             → list ongoing matches (spectator)
+game-info                → info about a specific room
+```
+
+💬 Chat:
+```
+chat-history             → retrieve the 50 most recent messages
+```
+
+👤 Users:
+```
+user-me                  → connected user's profile
+user-update              → edit profile (paddle color, AI difficulty)
+user-match               → record a finished match
+user-logout              → logout
+user-leaderboard         → global leaderboard
+user-search              → search a user by username
+oauth-login              → login via OAuth 42 (called by Node.js)
+register                 → classic registration
+login                    → classic login
+update-password          → change password
+delete-account           → delete account (GDPR)
+```
+
+👥 Friends:
+```
+friends                  → friends list
+friend-requests          → received friend requests
+friend-send              → send a friend request
+friend-respond           → accept/decline a request
+friend-remove            → remove a friend
+```
+
+🔑 OAuth 42 + django-allauth:
+```
+fortytwo_login           → redirects to the 42 intra
+fortytwo_callback        → receives the code returned by the 42 intra
+socialaccount_*          → social account management (allauth)
+account_*                → allauth account management (email, password, logout...)
+```
+
+---
+
+```bash
+# View all URL links for routes
+docker compose exec backend python3 src/manage.py shell -c "
+from django.urls import reverse
+routes = [
+    'user-me', 'user-update', 'user-match', 'user-logout',
+    'user-leaderboard', 'user-search', 'oauth-login',
+    'register', 'login', 'delete-account',
+    'friends', 'friend-requests', 'friend-send',
+    'chat-history', 'game-create', 'game-matchmaking',
+    'active-rooms',
+]
+for name in routes:
+    try:
+        print(f'{name:35} → {reverse(name)}')
+    except:
+        print(f'{name:35} → (parameter required)')
+"
+```
+```
+user-me                             → /api/users/me/
+user-update                         → /api/users/me/update/
+user-match                          → /api/users/me/match/
+user-logout                         → /api/users/logout/
+user-leaderboard                    → /api/users/leaderboard/
+user-search                         → /api/users/search/
+oauth-login                         → /api/users/oauth-login/
+register                            → /api/users/register/
+login                               → /api/users/login/
+delete-account                      → /api/users/delete/
+friends                             → /api/users/friends/
+friend-requests                     → /api/users/friends/requests/
+friend-send                         → /api/users/friends/send/
+chat-history                        → /api/chat/history/
+game-create                         → /api/game/create/
+game-matchmaking                    → /api/game/matchmaking/
+active-rooms                        → /api/game/rooms/
+```
