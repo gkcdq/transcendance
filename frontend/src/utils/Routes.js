@@ -387,14 +387,14 @@ export const routes = {
 
                         <div style="border:1px solid #a855f7;border-radius:8px;padding:15px;background:rgba(168,85,247,0.05);">
                             <h3 style="color:#a855f7;font-size:0.85rem;text-transform:uppercase;margin-bottom:8px;">🔥 Octogone Mode</h3>
-                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;"><strong>Arène</strong> : Octogone avec rebonds sur murs diagonaux. <strong>Capacités</strong> : Bonus activables via 'Shift' (J1) / '0' (J2). <strong> Solo </strong>Mode entraînement contre l'IA inclus. Premier à 5 points gagne. </p>
+                            <p style="color:#8b949e;font-size:0.75rem;line-height:1.5;"><strong>Arène :</strong> Octogone avec rebonds sur murs diagonaux. <strong>Capacités :</strong> Bonus/Mallus activables via 'Shift' (J1) / '0' (J2). <strong> Solo : </strong>Mode entraînement contre l'IA inclus. Premier à 5 points gagne. </p>
                             <ul style="color:#8b949e;font-size:0.75rem;line-height:1.8;padding-left:15px;margin-top:5px;">
                                 <li>🧱 <strong style="color:#a855f7;">Wall</strong> ➜ mur du mexique 3s</li>
                                 <li>❄️ <strong style="color:#a855f7;">Freeze</strong> ➜ gèle la balle 2s</li>
                                 <li>⚡ <strong style="color:#a855f7;">Boost</strong> ➜ accélère la raquette 5s</li>
                                 <li>💥 <strong style="color:#a855f7;">Canon</strong> ➜ un tir droit puissant</li>
                                 <li>👺 <strong style="color:#a855f7;">MALUS</strong> ▼</li>
-                                <li>Apparition de balle dans le camp adverse 5s</li>
+                                <li>Apparition de balles chez l'adversaire 5s</li>
                                 <li>Inversion des directions adverse 5s</li>
                                 <li>Fige l'adversaire sur place 2s</li>
                                 <li>Réduit la taille de la raquette adverse 3s</li>

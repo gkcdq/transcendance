@@ -81,6 +81,11 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let canonActive = false;
     let normalSpeedX = 0;
     let normalSpeedY = 0;
+    let iaConfusedDir = 1;
+    let iaInverseConfusedFrames = 0;
+    let iaInverseConfusedDir = 0;
+    let iaFreezeActive = false;
+  
 
     // Initialise les fausses balles
     let p1FakeBalls = Array.from({length: 30}, () => ({
@@ -97,6 +102,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         dy: (Math.random() > 0.5 ? 1 : -1) * Math.abs(ballSpeedY),
     }));
     let p2BallBlink = false;
+
+    // Identifiant des bonus/mallus
     const BONUS_DEFS = [
         { id: 'wall',   label: '🧱 Mur'   }, // le mur du mexique
         { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
@@ -130,10 +137,12 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             if (side === 'left') { p1SpeedMult = 2; setTimeout(() => { p1SpeedMult = 1; }, 5000); }
             else { p2SpeedMult = 2; setTimeout(() => { p2SpeedMult = 1; }, 5000); }
         }
-        else if (bonus.id === 'freeze')
-        {
+        else if (bonus.id === 'freeze') {
             if (ballSpeedX === 0 && ballSpeedY === 0) return;
             const ox = ballSpeedX, oy = ballSpeedY;
+            console.log('y = ', ballSpeedY);
+            if (p2Canon === true || p1Canon === true)
+                normalSpeedX = ox; normalSpeedY = oy;
             ballSpeedX = 0; ballSpeedY = 0;
             setTimeout(() => { ballSpeedX = ox; ballSpeedY = oy; }, 2000);
         }
@@ -228,7 +237,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 }
             }
         }
-        // continuer
+        // continuer si les iddeee nous viennent
     }
 
 
@@ -285,7 +294,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup',   handleKeyUp);
 
-    function gameLoop() {
+    function gameLoop()
+    {
         if (isGameOver) return;
         update(); draw(); renderBonusBar();
         animationId = requestAnimationFrame(gameLoop);
@@ -293,58 +303,84 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     }
 
     function octagonBounce() {
-        const w  = canvas.width;   // 1000
-        const h  = canvas.height;  // 750
-        const oW = w * 0.3125;     // 312.5px — offset horizontal
-        const oH = h * 0.25;       // 187.5px — offset vertical
+        const w  = canvas.width;
+        const h  = canvas.height;
+        const oW = w * 0.3125;
+        const oH = h * 0.25;
 
         // Bords haut/bas
         if (ballY < 0) { ballY = 0; ballSpeedY *= -1; }
         if (ballY > h) { ballY = h; ballSpeedY *= -1; }
 
-        // Buts gauche/droite (goals)
+        // Buts
         if (ballX < 0) { score2++; score2 >= 5 ? endGame(name2) : resetBall(); return; }
         if (ballX > w) { score1++; score1 >= 5 ? endGame(name1) : resetBall(); return; }
 
-        // Coin haut-gauche : x/oW + y/oH < 1
+        // Coin haut-gauche
         if (ballX / oW + ballY / oH < 1) {
-            const t = ballSpeedX;
-            ballSpeedX =  Math.abs(ballSpeedY) * (oW / oH);
-            ballSpeedY =  Math.abs(t)          * (oH / oW);
-            // Repousse la balle hors du coin
-            ballX = (1 - ballY / oH) * oW + 1;
+            if (canonActive) {
+                const dirX = Math.sign(ballSpeedX) || 1;
+                ballSpeedX = normalSpeedX !== 0 ? Math.abs(normalSpeedX) * dirX : 7;
+                ballSpeedY = normalSpeedY !== 0 ? Math.abs(normalSpeedY) : 5;
+                canonActive = false;
+            } else {
+                const t = ballSpeedX;
+                ballSpeedX =  Math.abs(ballSpeedY) * (oW / oH);
+                ballSpeedY =  Math.abs(t) * (oH / oW);
+            }
+            ballX = (1 - ballY / oH) * oW + 2;
         }
 
-        // Coin haut-droit : (w-x)/oW + y/oH < 1
+        // Coin haut-droit
         if ((w - ballX) / oW + ballY / oH < 1) {
-            const t = ballSpeedX;
-            ballSpeedX = -Math.abs(ballSpeedY) * (oW / oH);
-            ballSpeedY =  Math.abs(t)          * (oH / oW);
-            ballX = w - (1 - ballY / oH) * oW - 1;
+            if (canonActive) {
+                const dirX = Math.sign(ballSpeedX) || -1;
+                ballSpeedX = normalSpeedX !== 0 ? -Math.abs(normalSpeedX) : -7;
+                ballSpeedY = normalSpeedY !== 0 ? Math.abs(normalSpeedY) : 5;
+                canonActive = false;
+            } else {
+                const t = ballSpeedX;
+                ballSpeedX = -Math.abs(ballSpeedY) * (oW / oH);
+                ballSpeedY =  Math.abs(t) * (oH / oW);
+            }
+            ballX = w - (1 - ballY / oH) * oW - 2;
         }
 
-        // Coin bas-gauche : x/oW + (h-y)/oH < 1
+        // Coin bas-gauche
         if (ballX / oW + (h - ballY) / oH < 1) {
-            const t = ballSpeedX;
-            ballSpeedX =  Math.abs(ballSpeedY) * (oW / oH);
-            ballSpeedY = -Math.abs(t)          * (oH / oW);
-            ballX = (1 - (h - ballY) / oH) * oW + 1;
+            if (canonActive) {
+                ballSpeedX = normalSpeedX !== 0 ? Math.abs(normalSpeedX) : 7;
+                ballSpeedY = normalSpeedY !== 0 ? -Math.abs(normalSpeedY) : -5;
+                canonActive = false;
+            } else {
+                const t = ballSpeedX;
+                ballSpeedX =  Math.abs(ballSpeedY) * (oW / oH);
+                ballSpeedY = -Math.abs(t) * (oH / oW);
+            }
+            ballX = (1 - (h - ballY) / oH) * oW + 2;
         }
 
-        // Coin bas-droit : (w-x)/oW + (h-y)/oH < 1
+        // Coin bas-droit
         if ((w - ballX) / oW + (h - ballY) / oH < 1) {
-            const t = ballSpeedX;
-            ballSpeedX = -Math.abs(ballSpeedY) * (oW / oH);
-            ballSpeedY = -Math.abs(t)          * (oH / oW);
-            ballX = w - (1 - (h - ballY) / oH) * oW - 1;
+            if (canonActive) {
+                ballSpeedX = normalSpeedX !== 0 ? -Math.abs(normalSpeedX) : -7;
+                ballSpeedY = normalSpeedY !== 0 ? -Math.abs(normalSpeedY) : -5;
+                canonActive = false;
+            } else {
+                const t = ballSpeedX;
+                ballSpeedX = -Math.abs(ballSpeedY) * (oW / oH);
+                ballSpeedY = -Math.abs(t) * (oH / oW);
+            }
+            ballX = w - (1 - (h - ballY) / oH) * oW - 2;
         }
     }
 
-    function constrainPaddle(px, py, pH) {
-        const w   = canvas.width;    // 1000
-        const h   = canvas.height;   // 750
-        const oW  = w * 0.3125;      // 312.5px
-        const oH  = h * 0.25;        // 187.5px
+    function constrainPaddle(px, py, pH)
+    {
+        const w   = canvas.width;
+        const h   = canvas.height;   
+        const oW  = w * 0.3125;     
+        const oH  = h * 0.25;       
 
         let minY = 0, maxY = h - pH;
 
@@ -361,15 +397,17 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             minY = diagY;
             maxY = h - pH - diagY;
         }
-
         return Math.max(minY, Math.min(maxY, py));
     }
-    let iaFreezeActive = false;
-    function onIaFreeze() {
+
+    function onIaFreeze()
+    {
         iaFreezeActive = true;
-        setTimeout(() => { iaFreezeActive = false; }, 2000); // durée du freeze
+        setTimeout(() => { iaFreezeActive = false; }, 2000);
     }
-    function update() {
+
+    function update()
+    {
 
         if (p1multiballs) {
             p1FakeBalls.forEach(b => {
@@ -451,20 +489,71 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
         // IA
         if (name2 === "IA") {
-        
-            if (iaFreezeActive)
-            {
-                const centerPaddle = rightPaddleY + p2paddleHeight / 2;
-                if (iaFreezeActive)
-                {
-                    const targetY = ballY;
-                    const targetX = Math.max(canvas.width / 2, ballX + 10);
-                    if (centerPaddle < targetY - 5) rightPaddleY += aiBaseSpeed * 2;
-                    else if (centerPaddle > targetY + 5) rightPaddleY -= aiBaseSpeed * 2;
-                    if (rightPaddleX > targetX + 3) rightPaddleX -= hSpeed;
-                    else if (rightPaddleX < targetX - 3) rightPaddleX += hSpeed;
-                }
+
+            if (p2blockmovement) {
+                
             }
+            else if (iaFreezeActive) {
+                const centerPaddle = rightPaddleY + p2paddleHeight / 2;
+                const targetY = ballY;
+                const targetX = Math.max(canvas.width / 2, ballX + 10);
+                if (centerPaddle < targetY - 5) rightPaddleY += aiBaseSpeed * 2;
+                else if (centerPaddle > targetY + 5) rightPaddleY -= aiBaseSpeed * 2;
+                if (rightPaddleX > targetX + 3) rightPaddleX -= hSpeed;
+                else if (rightPaddleX < targetX - 3) rightPaddleX += hSpeed;
+            }
+
+            // MALUS invisibilité — IA perdue si balle loin, dérive lentement
+            else if (p2Invisible && ballX < rightPaddleX - 200)
+            {
+                rightPaddleY += Math.sin(Date.now() / 300) * 1.5; // dérive lente bas→haut
+            }
+
+            // MALUS multiballes — perdue seulement si balle dans sa moitié, 50% chance de suivre une fausse balle
+            else if (p2multiballs && ballX > canvas.width / 2)
+            {
+                const sp = aiBaseSpeed * p2SpeedMult;
+                const centerPaddle = rightPaddleY + p2paddleHeight / 2;
+
+                // 50% chance de se tromper de direction
+                if (Math.random() < 0.005) {
+                    iaConfusedDir = (Math.random() < 0.5) ? 1 : -1;
+                }
+                rightPaddleY += sp * (iaConfusedDir || 1);
+            }
+
+            // MALUS inversion — se trompe de direction de temps en temps
+            else if (p2Inverse)
+            {
+                const sp = aiBaseSpeed * p2SpeedMult;
+                const hs = 4 * p2SpeedMult * 0.6;
+                const centerPaddle = rightPaddleY + p2paddleHeight / 2;
+
+                // Décide une direction fixe pour 1-2 secondes
+                if (iaInverseConfusedFrames === 0 && Math.random() < 0.008) {
+                    iaInverseConfusedFrames = 60 + Math.floor(Math.random() * 60);
+                    iaInverseConfusedDir = Math.random() < 0.5 ? canvas.height : 0; // fixé une fois
+                }
+
+                let targetY;
+                if (iaInverseConfusedFrames > 0) {
+                    targetY = iaInverseConfusedDir; // direction fixe, ne change pas
+                    iaInverseConfusedFrames--;
+                } else {
+                    targetY = ballSpeedX > 0 ? ballY : canvas.height / 2;
+                }
+
+                if (centerPaddle < targetY - 10) rightPaddleY += sp;
+                else if (centerPaddle > targetY + 10) rightPaddleY -= sp;
+                const targetX = ballSpeedX > 0
+                    ? Math.max(canvas.width / 2, ballX - 60)
+                    : canvas.width - paddleWidth - 10;
+                if (rightPaddleX > targetX + 3) rightPaddleX -= hs;
+                else if (rightPaddleX < targetX - 3) rightPaddleX += hs;
+                rightPaddleX = Math.max(canvas.width / 2, Math.min(canvas.width - paddleWidth - 10, rightPaddleX));
+            }
+
+            // Comportement normal
             else
             {
                 const sp = aiBaseSpeed * p2SpeedMult;
@@ -479,9 +568,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 if (rightPaddleX > targetX + 3) rightPaddleX -= hs;
                 else if (rightPaddleX < targetX - 3) rightPaddleX += hs;
                 rightPaddleX = Math.max(canvas.width / 2, Math.min(canvas.width - paddleWidth - 10, rightPaddleX));
-        
             }
-        } 
+        }
         else
         {
             const sp2 = 7 * p2SpeedMult, hs2 = 4 * p2SpeedMult;
@@ -503,7 +591,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 }
             }
         }
-        if (name2 === 'IA' && p2Bonuses.length > 0) {
+        if (name2 === 'IA' && p2Bonuses.length > 0)
+        {
             const bonus = p2Bonuses[0];
             const ballGoingRight = ballSpeedX > 0;
             const ballAligned    = ballY >= rightPaddleY && ballY <= rightPaddleY + p2paddleHeight;
@@ -531,27 +620,32 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         }
         // Contraint après mouvement
         rightPaddleY = constrainPaddle(rightPaddleX, rightPaddleY, p2paddleHeight);
-
         ballX += ballSpeedX; ballY += ballSpeedY;
         octagonBounce();
-
-
         // Collision raquette droite
-        if (ballSpeedX > 0) {
+        if (ballSpeedX > 0)
+        {
             const prevBallX = ballX - ballSpeedX;
             if (prevBallX < rightPaddleX + paddleWidth && ballX >= rightPaddleX) {
                 if (ballY + 6 > rightPaddleY && ballY - 6 < rightPaddleY + p2paddleHeight) {
                     ballX = rightPaddleX - 1;
-                    if (p2Canon) {
-                        // normalSpeedX = Math.abs(ballSpeedX); // sauvegarde avant canon
-                        // normalSpeedY = Math.abs(ballSpeedY) || 4;
-                        ballSpeedY = 0;
-                        ballSpeedX = -30;
-                        p2Canon = false;
-                        canonActive = true;
-                    } else if (canonActive) {
+                if (p2Canon) {
+                    normalSpeedX = Math.abs(ballSpeedX) || 7;  // ← sauvegarde ici
+                    normalSpeedY = Math.abs(ballSpeedY) || 5;
+                    ballSpeedY = 0;
+                    ballSpeedX = -30;
+                    p2Canon = false;
+                    canonActive = true;
+                } else if (canonActive) {
+                    if (normalSpeedX === 30)
+                    {
+                        normalSpeedX = 10;
+                        normalSpeedY = 10;
+                    }
                         // Raquette adverse touchée — restore vitesse normale
                         ballSpeedX = -normalSpeedX;
+                        if (normalSpeedY === 0)
+                            normalSpeedY = -7;
                         ballSpeedY = normalSpeedY;
                         canonActive = false;
                     } else {
@@ -562,20 +656,28 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         }
 
         // Collision raquette gauche
-        if (ballSpeedX < 0) {
+        if (ballSpeedX < 0)
+        {
             const prevBallX = ballX - ballSpeedX;
             if (prevBallX > leftPaddleX && ballX <= leftPaddleX + paddleWidth) {
                 if (ballY + 6 > leftPaddleY && ballY - 6 < leftPaddleY + p1paddleHeight) {
                     ballX = leftPaddleX + paddleWidth + 1;
-                    if (p1Canon) {
-                        // normalSpeedX = Math.abs(ballSpeedX);
-                        // normalSpeedY = Math.abs(ballSpeedY) || 4;
-                        ballSpeedY = 0;
-                        ballSpeedX = 30;
-                        p1Canon = false;
-                        canonActive = true;
-                    } else if (canonActive) {
+                if (p1Canon) {
+                    normalSpeedX = Math.abs(ballSpeedX) || 7;  // ← sauvegarde ici
+                    normalSpeedY = Math.abs(ballSpeedY) || 5;
+                    ballSpeedY = 0;
+                    ballSpeedX = 30;
+                    p1Canon = false;
+                    canonActive = true;
+                } else if (canonActive) {
+                    if (normalSpeedX === 30)
+                    {
+                        normalSpeedX = 10;
+                        normalSpeedY = 10;
+                    }
                         ballSpeedX = normalSpeedX;
+                        if (normalSpeedY === 0)
+                            normalSpeedY = 7;
                         ballSpeedY = normalSpeedY;
                         canonActive = false;
                     } else {
@@ -589,7 +691,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         else if (ballX >= canvas.width) { score1++; if (score1 === 5) endGame(name1); else resetBall(); }
     }
 
-    async function endGame(winnerName) {
+    async function endGame(winnerName)
+    {
         if (isGameOver) return;
         isGameOver = true;
         const sessionSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -621,7 +724,8 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         }
     }
 
-    function resetBall() {
+    function resetBall()
+    {
         ballX = canvas.width / 2; ballY = canvas.height / 2;
         ballSpeedX = (Math.random() > 0.5 ? 5 : -5);
         ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
@@ -629,10 +733,30 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         leftPaddleY  = (canvas.height - p1paddleHeight) / 2;
         rightPaddleX = canvas.width - paddleWidth - 10;
         rightPaddleY = (canvas.height - p2paddleHeight) / 2;
+        p1SpeedMult = 1, p2SpeedMult = 1;
+        p1blockmovement = false;
+        p2blockmovement = false;
+        p1Inverse = false;
+        p2Inverse = false;
+        p1Invisible = false;
+        p2Invisible = false;
+        p1multiballs = false;
+        p2multiballs = false;
+        color_sec = false;
+        p1Canon = false;
+        p2Canon = false;
+        canonActive = false;
+        normalSpeedX = 0;
+        normalSpeedY = 0;
+        iaConfusedDir = 1;
+        iaInverseConfusedFrames = 0;
+        iaInverseConfusedDir = 0;
+        iaFreezeActive = false;
     }
 
 
-    function draw() {
+    function draw()
+    {
         const w = canvas.width;   // 1000
         const h = canvas.height;  // 750
         const offsetW = w * 0.3125; // 312.5px — coins haut/bas (axe X)
