@@ -12,9 +12,9 @@ from django.conf import settings
 @csrf_exempt
 @require_POST
 def register(request):
-    data     = json.loads(request.body)
+    data = json.loads(request.body)
     username = data.get('username', '').strip()
-    email    = data.get('email', '').strip()
+    email = data.get('email', '').strip()
     password = data.get('password', '')
 
     if not username or not password or not email:
@@ -25,9 +25,11 @@ def register(request):
         return JsonResponse({'error': 'Ce pseudo est déjà pris.'}, status=400)
     if User.objects.filter(email=email).exists():
         return JsonResponse({'error': 'Cet email est déjà utilisé.'}, status=400)
+    if not '@' in email:
+        return JsonResponse({'error': 'missing @ in email.'}, status=400)
 
-    user           = User.objects.create_user(username=username, email=email, password=password)
-    profile        = user.profile
+    user = User.objects.create_user(username=username, email=email, password=password)
+    profile = user.profile
     profile.avatar = None
     profile.save()
     login(request, user)
@@ -36,7 +38,7 @@ def register(request):
 @csrf_exempt
 @require_POST
 def login_view(request):
-    data     = json.loads(request.body)
+    data = json.loads(request.body)
     username = data.get('username', '').strip()
     password = data.get('password', '')
     user = authenticate(request, username=username, password=password)
@@ -69,9 +71,9 @@ def get_leaderboard(request):
 @csrf_exempt
 @require_http_methods(["POST"])
 def oauth_login(request):
-    data     = json.loads(request.body)
+    data = json.loads(request.body)
     username = data.get('username')
-    avatar   = data.get('avatar', '')
+    avatar = data.get('avatar', '')
     if not username:
         return JsonResponse({"error": "username requis"}, status=400)
     user, created = User.objects.get_or_create(username=username)
@@ -176,7 +178,7 @@ def get_friend_requests(request):
 @login_required
 @require_http_methods(["POST"])
 def send_friend_request(request):
-    data     = json.loads(request.body)
+    data = json.loads(request.body)
     username = data.get('username')
     if not username:
         return JsonResponse({"error": "username requis"}, status=400)
@@ -199,7 +201,7 @@ def send_friend_request(request):
 @login_required
 @require_http_methods(["POST"])
 def respond_friend_request(request, request_id):
-    data   = json.loads(request.body)
+    data = json.loads(request.body)
     action = data.get('action')
     try:
         freq = FriendRequest.objects.get(id=request_id, receiver=request.user)
@@ -276,7 +278,7 @@ def get_avatar_url(profile, request=None):
 @login_required
 @require_http_methods(["POST"])
 def update_password(request):
-    data    = json.loads(request.body)
+    data = json.loads(request.body)
     old_pwd = data.get('old_password')
     new_pwd = data.get('new_password')
     if not request.user.check_password(old_pwd):

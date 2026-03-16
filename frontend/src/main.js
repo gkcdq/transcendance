@@ -4,7 +4,7 @@ import { initOnlinePong } from './utils/OnlinePong.js';
 import { letCurrentPongInstance, returnCurrentPongInstance, unlockNav, lockNavAdmin } from './utils/State.js';
 import { routes } from './utils/Routes.js';
 
-// ─── OAuth 42 ────────────────────────────────────────────────────────────────
+// OAuth 42
 const UID      = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
@@ -37,7 +37,7 @@ export let tournamentState = {
     isActive: false, players: [], matches: [], currentMatchIndex: 0
 };
 
-// ─── Leaderboard ─────────────────────────────────────────────────────────────
+// Leaderboard
 export async function loadLeaderboard() {
     const container = document.getElementById('leaderboard-container');
     if (!container) return;
@@ -142,31 +142,33 @@ export function initSpectatorMode(roomId) {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Scores
+        // score
         ctx.textAlign = 'center';
         ctx.font = 'bold 48px monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
         ctx.fillText(s.left.score,  canvas.width/4,       70);
         ctx.fillText(s.right.score, (canvas.width/4) * 3, 70);
 
-        // Noms
+        // Nom
         ctx.font = '13px monospace';
         ctx.fillStyle = '#00babc';
         ctx.fillText(s.left.name,  canvas.width/4,       95);
         ctx.fillStyle = '#ffffff';
         ctx.fillText(s.right.name, (canvas.width/4) * 3, 95);
 
-        // Raquettes
+        // raquettes
+        // <-
         ctx.shadowBlur = 15; ctx.shadowColor = '#00babc'; ctx.fillStyle = '#00babc';
         ctx.beginPath();
         ctx.roundRect(s.left.x, s.left.y, PW, PH, [4,4,4,4]);
         ctx.fill();
+        // ->
         ctx.shadowColor = '#fff'; ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.roundRect(s.right.x, s.right.y, PW, PH, [4,4,4,4]);
         ctx.fill();
 
-        // Balle
+        // ballle
         ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 20; ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(s.ball.x, s.ball.y, 7, 0, Math.PI * 2);
@@ -175,27 +177,24 @@ export function initSpectatorMode(roomId) {
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 export function initBouncingBalls() {
     const canvas = document.getElementById('pong-canvas-bg');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-
     const resize = () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     };
     window.addEventListener('resize', resize);
     resize();
-
-    // On passe à 40 balles pour un effet de "pluie de néons"
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
     const balls = Array.from({ length: 400}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        // On varie un peu plus les vitesses pour plus de dynamisme
         dx: (Math.random() - 0.5) * 5, 
         dy: (Math.random() - 0.5) * 5,
-        radius: Math.random() * 4 + 1, // Des balles de tailles variées
+        radius: Math.random() * 4 + 1,
         color: colors[Math.floor(Math.random() * colors.length)]
     }));
 
@@ -204,38 +203,29 @@ export function initBouncingBalls() {
             window.removeEventListener('resize', resize);
             return;
         }
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         balls.forEach(b => {
             if (b.x + b.radius > canvas.width || b.x - b.radius < 0) b.dx *= -1;
             if (b.y + b.radius > canvas.height || b.y - b.radius < 0) b.dy *= -1;
-            
             b.x += b.dx;
             b.y += b.dy;
-
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             ctx.fillStyle = b.color;
-            
-            // Note : shadowBlur est gourmand en performance. 
-            // Avec 40 balles, on le baisse un peu à 5 ou 8.
             ctx.shadowBlur = 8;
             ctx.shadowColor = b.color;
-            
             ctx.fill();
             ctx.closePath();
         });
-
         requestAnimationFrame(animate);
     }
     animate();
 }
 
 
-
 //////////////////////////////////////////////////////////////////////////////////////
-// ─── Tournoi ─────────────────────────────────────────────────────────────────
+//////////////////////////////////////////////////////////////////////////////////////
+// tournoi =
 export function initTournamentLogic() {
     const btnStart = document.getElementById('btn-start-t');
     if (btnStart) btnStart.onclick = () => {
@@ -260,7 +250,7 @@ export function initTournamentLogic() {
     };
 }
 
-// ─── Routeur ─────────────────────────────────────────────────────────────────
+// routeur =
 const router = async () => {
     console.log("Routeur appelé pour :", window.location.pathname);
     const path  = window.location.pathname;
@@ -281,7 +271,7 @@ const router = async () => {
     if (route.init && typeof route.init === 'function') route.init();
 };
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+//auth =
 async function checkAuth() {
     const urlParams = new URLSearchParams(window.location.search);
     const login     = urlParams.get('login');
@@ -320,7 +310,7 @@ async function checkAuth() {
     return false;
 }
 
-// ─── UI Auth ──────────────────────────────────────────────────────────────────
+// UI Auth ->
 function renderAuthUI(isLoggedIn) {
     const container = document.getElementById('auth-status');
     if (!container) return;
@@ -341,7 +331,7 @@ function renderAuthUI(isLoggedIn) {
     }
 }
 
-// ─── Navigation ───────────────────────────────────────────────────────────────
+// Navigation V
 
 async function cancelMatchmaking() {
     if (!sessionStorage.getItem('matchmaking_active')) return;
@@ -397,7 +387,7 @@ export function updateNavbar() {
     if (isAdmin) lockNavAdmin();
 }
 
-// ─── Profil ───────────────────────────────────────────────────────────────────
+// profil
 export async function initProfile() {
     const historyContainer = document.getElementById('match-history');
     const history          = JSON.parse(localStorage.getItem('match_history') || '[]');
@@ -500,7 +490,7 @@ async function searchUsers(query) {
     } catch (err) { container.innerHTML = '<p style="color:#8b949e">Erreur de recherche.</p>'; }
 }
 
-// ─── Amis ─────────────────────────────────────────────────────────────────────
+// amis
 async function sendFriendRequest(username) {
     try {
         const res  = await fetch('/api/users/friends/send/', {
@@ -554,7 +544,7 @@ async function inviteFriendToGame(username) {
     } catch (err) { alert('Erreur lors de la création de la room.'); }
 }
 
-// ─── Chat ─────────────────────────────────────────────────────────────────────
+//chat ->
 export function initChat() {
     if (globalChatWS && globalChatWS.readyState === WebSocket.OPEN) globalChatWS.close();
     const form = document.getElementById('chat-form');

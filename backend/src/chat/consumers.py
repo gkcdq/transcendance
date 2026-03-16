@@ -20,11 +20,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
         await self.set_online(True)
 
-        # Envoyer les 50 derniers messages à la connexion
+        # evoi les 50 derniers messages a la connexion
         messages = await self.get_last_messages()
         for msg in messages:
             await self.send(text_data=json.dumps({
-                "type":    "history",
+                "type": "history",
                 "message": msg,
             }))
 
@@ -47,15 +47,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
 
-        # Invitation à jouer
+        # Invit pour jouer
         if data.get('type') == 'game_invite':
             to      = data.get('to')
             room_id = data.get('room_id')
             await self.channel_layer.group_send(
                 f"chat_{to}",
                 {
-                    'type':    'game_invite',
-                    'from':    self.username,
+                    'type': 'game_invite',
+                    'from': self.username,
                     'room_id': room_id,
                 }
             )
@@ -68,26 +68,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Sauvegarder en DB
         message = await self.save_message(content)
 
-        # Broadcaster à tous
+        # enovoyer les messages a tous
         await self.channel_layer.group_send(
             self.room_group,
             {
-                "type":    "chat_message",
+                "type": "chat_message",
                 "message": message,
             }
         )
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
-            "type":    "message",
+            "type": "message",
             "message": event["message"],
         }))
 
     async def game_invite(self, event):
         try:
             await self.send(text_data=json.dumps({
-                "type":    "game_invite",
-                "from":    event["from"],
+                "type": "game_invite",
+                "from": event["from"],
                 "room_id": event["room_id"],
             }))
         except Exception:
@@ -101,7 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def save_message(self, content):
         msg = Message.objects.create(
-            user    = self.scope["user"],
+            user = self.scope["user"],
             content = content,
         )
         return msg.to_dict()

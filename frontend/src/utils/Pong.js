@@ -3,7 +3,6 @@ import { letCurrentPongInstance } from './State.js';
 import { tournamentState } from '../main.js';
 import { navigateTo } from './State.js';
 
-// ─── Pong Local ───────────────────────────────────────────────────────────────
 export function initPongGame(p1Name = "Player", p2Name = "IA") {
     const savedName = userStore.get('user_name');
     if (savedName && p1Name === "Player") p1Name = savedName;

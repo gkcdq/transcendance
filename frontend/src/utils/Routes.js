@@ -347,7 +347,7 @@ export const routes = {
                                     <div id="active-rooms-list"><p style="color:#8b949e;font-size:0.75rem;">Aucune partie en cours.</p></div>
                                 </div>
                             </div>
-
+                            
                             <div class="category-block">
                                 <h3 style="color:#a855f7;font-size:0.9rem;text-transform:uppercase;margin-bottom:10px;border-left:3px solid #a855f7;padding-left:10px;letter-spacing:1px;">🔥 Octogone Mode 🔥</h3>
                                 <div class="setup-group" style="border:1px solid #a855f7;padding:15px;border-radius:8px;background:rgba(168,85,247,0.05);">

@@ -1,7 +1,6 @@
 import { userStore } from './userStore.js';
 import { lockNav, unlockNav, setOnlineStatus, navigateTo} from './State.js';
 
-// ─── Pong Online ──────────────────────────────────────────────────────────────
 export function initOnlinePong(roomId) {
     sessionStorage.setItem('active_room', roomId);
     setOnlineStatus(1);
@@ -124,14 +123,14 @@ export function initOnlinePong(roomId) {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Scores
+        // Scoresw
         ctx.textAlign = 'center';
         ctx.font = 'bold 48px monospace';
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
         ctx.fillText(s.left.score,  canvas.width / 4,       70);
         ctx.fillText(s.right.score, (canvas.width / 4) * 3, 70);
 
-        // Noms
+        // nom
         ctx.font = '13px monospace';
         const leftColor  = mySide === 'left'  ? color : '#ffffff';
         const rightColor = mySide === 'right' ? color : '#ffffff';
@@ -150,14 +149,14 @@ export function initOnlinePong(roomId) {
         ctx.roundRect(s.left.x,  s.left.y,  PW, PH, [4,4,4,4]); ctx.fill();
         ctx.fill();
 
-        // Raquette droite
+        // Raqutte droite
         ctx.shadowColor = rightColor; ctx.shadowBlur = 15;
         ctx.fillStyle = rightColor;
         ctx.beginPath();
         ctx.roundRect(s.right.x, s.right.y, PW, PH, [4,4,4,4]); ctx.fill();
         ctx.fill();
 
-        // Balle
+        // bballe
         ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 20;
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
@@ -169,10 +168,8 @@ export function initOnlinePong(roomId) {
 
     function drawFinal(winner) {
         draw(state);
-        // Overlay flouté
         ctx.fillStyle = 'rgba(0,0,0,0.75)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        // Titre
         ctx.textAlign = 'center';
         ctx.shadowColor = color; ctx.shadowBlur = 30;
         ctx.fillStyle = color;

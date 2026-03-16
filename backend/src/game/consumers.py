@@ -4,23 +4,23 @@ import random
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
-GAME_ROOMS        = {}
+GAME_ROOMS = {}
 MATCHMAKING_QUEUE = []
 
-CANVAS_W  = 1200
-CANVAS_H  = 650
-PADDLE_W  = 10
-PADDLE_H  = 80
-BALL_R    = 8
+CANVAS_W = 1200
+CANVAS_H = 650
+PADDLE_W = 10
+PADDLE_H = 80
+BALL_R = 8
 WIN_SCORE = 5
 TICK_RATE = 1 / 60
 
 
 def initial_state():
     return {
-        "ball":   {"x": CANVAS_W / 2,        "y": CANVAS_H / 2,              "vx": 6, "vy": 6},
-        "left":   {"x": 0,                    "y": (CANVAS_H - PADDLE_H) / 2, "score": 0, "name": ""},
-        "right":  {"x": CANVAS_W - PADDLE_W,  "y": (CANVAS_H - PADDLE_H) / 2, "score": 0, "name": ""},
+        "ball": {"x": CANVAS_W / 2, "y": CANVAS_H / 2, "vx": 6, "vy": 6},
+        "left": {"x": 0, "y": (CANVAS_H - PADDLE_H) / 2, "score": 0, "name": ""},
+        "right": {"x": CANVAS_W - PADDLE_W, "y": (CANVAS_H - PADDLE_H) / 2, "score": 0, "name": ""},
         "status": "waiting",
         "winner": None,
     }
@@ -29,10 +29,10 @@ def initial_state():
 class GameConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
-        self.room_id    = self.scope['url_route']['kwargs']['room_id']
+        self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group = f"game_{self.room_id}"
-        self.side       = None
-        self.username   = (
+        self.side = None
+        self.username = (
             self.scope["user"].username
             if self.scope["user"].is_authenticated
             else f"Guest_{self.channel_name[-4:]}"
@@ -43,11 +43,11 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if self.room_id not in GAME_ROOMS:
             GAME_ROOMS[self.room_id] = {
-                "players":    [],
+                "players": [],
                 "spectators": [],
-                "usernames":  {},
-                "state":      initial_state(),
-                "task":       None,
+                "usernames": {},
+                "state": initial_state(),
+                "task": None,
             }
 
         room = GAME_ROOMS[self.room_id]
@@ -61,7 +61,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         #         await self.send(json.dumps({"type": "game_start", "state": room["state"]}))
         #     return
 
-        # Spectateur — room pleine
+        #sSpectateur - room pleine
         if len(room["players"]) >= 2:
             self.side = "spectator"
             room["spectators"].append(self.channel_name)
@@ -70,15 +70,15 @@ class GameConsumer(AsyncWebsocketConsumer):
                 await self.send(json.dumps({"type": "game_start", "state": room["state"]}))
             return
 
-        # Première connexion joueur
+        # premiere connexion joueur
         if len(room["players"]) == 0:
             self.side = "left"
             room["state"]["left"]["name"] = self.username
-            room["usernames"]["left"]     = self.username
+            room["usernames"]["left"] = self.username
         elif len(room["players"]) == 1:
             self.side = "right"
             room["state"]["right"]["name"] = self.username
-            room["usernames"]["right"]     = self.username
+            room["usernames"]["right"] = self.username
 
         room["players"].append(self.channel_name)
         await self.send(json.dumps({"type": "joined", "side": self.side, "room": self.room_id}))
@@ -86,7 +86,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         if len(room["players"]) == 2:
             room["state"]["status"] = "playing"
             await self.channel_layer.group_send(self.room_group, {
-                "type":  "game_start",
+                "type": "game_start",
                 "state": room["state"],
             })
             room["task"] = asyncio.ensure_future(self.game_loop(self.room_id))
@@ -127,21 +127,21 @@ class GameConsumer(AsyncWebsocketConsumer):
             speed_h = 4
 
             if self.side == "left":
-                if key == "up"    and state["left"]["y"] > 0:                       state["left"]["y"]  -= speed_v
-                if key == "down"  and state["left"]["y"] < CANVAS_H - PADDLE_H:     state["left"]["y"]  += speed_v
-                if key == "left"  and state["left"]["x"] > 0:                       state["left"]["x"]  -= speed_h
+                if key == "up" and state["left"]["y"] > 0: state["left"]["y"]  -= speed_v
+                if key == "down" and state["left"]["y"] < CANVAS_H - PADDLE_H: state["left"]["y"]  += speed_v
+                if key == "left" and state["left"]["x"] > 0: state["left"]["x"]  -= speed_h
                 if key == "right" and state["left"]["x"] < CANVAS_W / 2 - PADDLE_W: state["left"]["x"]  += speed_h
             elif self.side == "right":
-                if key == "up"    and state["right"]["y"] > 0:                      state["right"]["y"] -= speed_v
-                if key == "down"  and state["right"]["y"] < CANVAS_H - PADDLE_H:    state["right"]["y"] += speed_v
-                if key == "left"  and state["right"]["x"] > CANVAS_W / 2:           state["right"]["x"] -= speed_h
-                if key == "right" and state["right"]["x"] < CANVAS_W - PADDLE_W:    state["right"]["x"] += speed_h
+                if key == "up" and state["right"]["y"] > 0: state["right"]["y"] -= speed_v
+                if key == "down" and state["right"]["y"] < CANVAS_H - PADDLE_H: state["right"]["y"] += speed_v
+                if key == "left" and state["right"]["x"] > CANVAS_W / 2: state["right"]["x"] -= speed_h
+                if key == "right" and state["right"]["x"] < CANVAS_W - PADDLE_W: state["right"]["x"] += speed_h
 
     async def game_loop(self, room_id):
         start_time = asyncio.get_event_loop().time()
         try:
             while room_id in GAME_ROOMS:
-                room  = GAME_ROOMS[room_id]
+                room = GAME_ROOMS[room_id]
                 state = room["state"]
 
                 if state["status"] != "playing":
@@ -149,35 +149,35 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 self.update_physics(state)
 
-                # Envoie aux joueurs
+                # envoie aux joueurs
                 try:
                     await self.channel_layer.group_send(f"game_{room_id}", {
-                        "type":  "game_tick",
+                        "type": "game_tick",
                         "state": state,
                     })
                 except Exception:
                     pass
 
-                # Envoie aux spectateurs
+                # Envoie aux specta
                 for spec_channel in list(room.get("spectators", [])):
                     try:
                         await self.channel_layer.send(spec_channel, {
-                            "type":  "game_tick",
+                            "type": "game_tick",
                             "state": state,
                         })
                     except Exception:
                         pass
 
                 if state["left"]["score"] >= WIN_SCORE or state["right"]["score"] >= WIN_SCORE:
-                    winner          = state["left"]["name"] if state["left"]["score"] >= WIN_SCORE else state["right"]["name"]
+                    winner = state["left"]["name"] if state["left"]["score"] >= WIN_SCORE else state["right"]["name"]
                     state["status"] = "finished"
                     state["winner"] = winner
                     state["duration"] = int(asyncio.get_event_loop().time() - start_time)
                     try:
                         await self.channel_layer.group_send(f"game_{room_id}", {
-                            "type":   "game_over",
+                            "type": "game_over",
                             "winner": winner,
-                            "state":  state,
+                            "state": state,
                         })
                     except Exception:
                         pass
@@ -185,9 +185,9 @@ class GameConsumer(AsyncWebsocketConsumer):
                     for spec_channel in list(room.get("spectators", [])):
                         try:
                             await self.channel_layer.send(spec_channel, {
-                                "type":   "game_over",
+                                "type": "game_over",
                                 "winner": winner,
-                                "state":  state,
+                                "state": state,
                             })
                         except Exception:
                             pass
@@ -241,13 +241,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     def reset_ball(self, state):
         state["ball"] = {
-            "x":  CANVAS_W / 2,
-            "y":  CANVAS_H / 2,
+            "x": CANVAS_W / 2,
+            "y": CANVAS_H / 2,
             "vx": 6 * (1 if random.random() > 0.5 else -1),
             "vy": 6 * (1 if random.random() > 0.5 else -1),
         }
-        state["left"]["x"]  = 0
-        state["left"]["y"]  = (CANVAS_H - PADDLE_H) / 2
+        state["left"]["x"] = 0
+        state["left"]["y"] = (CANVAS_H - PADDLE_H) / 2
         state["right"]["x"] = CANVAS_W - PADDLE_W
         state["right"]["y"] = (CANVAS_H - PADDLE_H) / 2
 
@@ -259,14 +259,14 @@ class GameConsumer(AsyncWebsocketConsumer):
             for side in ["left", "right"]:
                 name = state[side]["name"]
                 try:
-                    user    = User.objects.get(username=name)
+                    user = User.objects.get(username=name)
                     profile = user.profile
                     if name == winner:
                         profile.wins += 1
                         profile.xp   += 100
                     else:
                         profile.losses += 1
-                        profile.xp     += 20
+                        profile.xp += 20
                     profile.total_seconds += state.get("duration", 0)
                     profile.save()
                 except User.DoesNotExist:

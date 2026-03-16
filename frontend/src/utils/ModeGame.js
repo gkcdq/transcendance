@@ -82,6 +82,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let normalSpeedX = 0;
     let normalSpeedY = 0;
     let iaConfusedDir = 1;
+    let iaValide = false;
     let iaInverseConfusedFrames = 0;
     let iaInverseConfusedDir = 0;
     let iaFreezeActive = false;
@@ -105,15 +106,15 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
     // Identifiant des bonus/mallus
     const BONUS_DEFS = [
-        { id: 'wall',   label: '🧱 Mur'   }, // le mur du mexique
-        { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
-        { id: 'freeze', label: '❄️ Freeze' }, // stop la balle
-        { id: 'canon', label: '🎳 Canon'}, // coup droit
+        // { id: 'wall',   label: '🧱 Mur'   }, // le mur du mexique
+        // { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
+        // { id: 'freeze', label: '❄️ Freeze' }, // stop la balle
+        // { id: 'canon', label: '🎳 Canon'}, // coup droit
         { id: 'multiclonage', label: '👺 MALUS'},
-        { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
-        { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
-        { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
-        { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
+        // { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
+        // { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
+        // { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
+        // { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
     ];
 
     function applyBonus(bonus, side) {
@@ -190,7 +191,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             if (side == 'left')
             {
                 p2Invisible = true;
-                setTimeout(() => {p2Invisible = false}, 5000);
+                setTimeout(() => {p2Invisible = false}, 3000);
 
             }
             else
@@ -208,13 +209,13 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 color_sec = true;
                 setTimeout(() => {color_sec = false}, 100);
             }
-            else
-            {
-                p1multiballs = true;
-                setTimeout(() => {p1multiballs = false}, 5000);
-                color_sec = true;
-                setTimeout(() => {color_sec = false}, 100);
-            }
+            // else
+            // {
+            //     p1multiballs = true;
+            //     setTimeout(() => {p1multiballs = false}, 5000);
+            //     color_sec = true;
+            //     setTimeout(() => {color_sec = false}, 100);
+            // }
         }
         else if (bonus.id === 'canon')
         {
@@ -510,16 +511,20 @@ function startGameModeLogic(name1, name2, canvas, ctx)
             }
 
             // MALUS multiballes — perdue seulement si balle dans sa moitié, 50% chance de suivre une fausse balle
-            else if (p2multiballs && ballX > canvas.width / 2)
-            {
+            else if (p2multiballs && ballX > canvas.width / 2) {
                 const sp = aiBaseSpeed * p2SpeedMult;
                 const centerPaddle = rightPaddleY + p2paddleHeight / 2;
 
-                // 50% chance de se tromper de direction
-                if (Math.random() < 0.005) {
-                    iaConfusedDir = (Math.random() < 0.5) ? 1 : -1;
+                // 30% de chance de se tromper de direction au moment où la balle arrive
+                if (Math.random() < 0.2) {
+                    iaConfusedDir = (Math.random() < 0.3) ? -1 : 1; // 30% de mauvaise direction
                 }
-                rightPaddleY += sp * (iaConfusedDir || 1);
+
+                const targetY = ballY;
+                const direction = (centerPaddle < targetY - 10) ? 1 : (centerPaddle > targetY + 10) ? -1 : 0;
+
+                rightPaddleY += sp * direction * iaConfusedDir;
+                rightPaddleY = Math.max(0, Math.min(canvas.height - p2paddleHeight, rightPaddleY));
             }
 
             // MALUS inversion — se trompe de direction de temps en temps
@@ -545,6 +550,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
                 if (centerPaddle < targetY - 10) rightPaddleY += sp;
                 else if (centerPaddle > targetY + 10) rightPaddleY -= sp;
+                rightPaddleY = Math.max(0, Math.min(canvas.height - p2paddleHeight, rightPaddleY));
                 const targetX = ballSpeedX > 0
                     ? Math.max(canvas.width / 2, ballX - 60)
                     : canvas.width - paddleWidth - 10;
@@ -752,6 +758,9 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         iaInverseConfusedFrames = 0;
         iaInverseConfusedDir = 0;
         iaFreezeActive = false;
+        p1paddleHeight = 80;
+        p2paddleHeight = 80;
+        
     }
 
 

@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 
-# variable que Django cherche
+# variable que django cherche
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
