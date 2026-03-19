@@ -189,7 +189,7 @@ export function initBouncingBalls() {
     window.addEventListener('resize', resize);
     resize();
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
-    const balls = Array.from({ length: 400}, () => ({
+    const balls = Array.from({ length: 20}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         dx: (Math.random() - 0.5) * 5, 

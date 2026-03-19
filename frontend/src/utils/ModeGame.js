@@ -106,15 +106,15 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
     // Identifiant des bonus/mallus
     const BONUS_DEFS = [
-        // { id: 'wall',   label: '🧱 Mur'   }, // le mur du mexique
-        // { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
-        // { id: 'freeze', label: '❄️ Freeze' }, // stop la balle
-        // { id: 'canon', label: '🎳 Canon'}, // coup droit
+        { id: 'wall',   label: '🧱 Mur'   }, // le mur du mexique
+        { id: 'boost',  label: '⚡ Boost'  }, // accelere sa raquette
+        { id: 'freeze', label: '❄️ Freeze' }, // stop la balle
+        { id: 'canon', label: '🎳 Canon'}, // coup droit
         { id: 'multiclonage', label: '👺 MALUS'},
-        // { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
-        // { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
-        // { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
-        // { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
+        { id: 'i_malus',label: '👺 MALUS'}, // inverse malus
+        { id: 'f_malus',label: '👺 MALUS'}, // freeze malus
+        { id: 'p_malus', label: '👺 MALUS'}, // raquette mini
+        { id: 'y_malus', label: '👺 MALUS'}, // raquette invisible
     ];
 
     function applyBonus(bonus, side) {
