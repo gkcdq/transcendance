@@ -2,8 +2,6 @@ import { userStore, getCsrfToken } from './userStore.js';
 await userStore.init();
 import { navigateTo } from '../main.js';
 
-
-// ─── Settings ─────────────────────────────────────────────────────────────────
 export function initSettings() {
     const form = document.getElementById('settings-form');
     const msg  = document.getElementById('settings-msg');

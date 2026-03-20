@@ -2,7 +2,7 @@ const API_BASE = '/api/users';
 
 // Helpers fetch avec CSRF Django
 export function getCsrfToken() {
-    // Essaie d'abord le cookie csrftoken
+    // Essaie dabord le cookie csrftoken
     const cookie = document.cookie
         .split('; ')
         .find(row => row.startsWith('csrftoken='));
@@ -27,9 +27,7 @@ async function apiFetch(path, options = {}) {
     return res.json();
 }
 
-// ─────────────────────────────────────────────
-// Clés localStorage → champs API Django
-// ─────────────────────────────────────────────
+// cle localStorage directiob champs API Django
 const LS_KEYS = {
     user_name:          'username',
     user_avatar:        'avatar',
@@ -41,17 +39,15 @@ const LS_KEYS = {
     pong_total_seconds: 'total_seconds',
 };
 
-// ─────────────────────────────────────────────
 // Store principal
-// ─────────────────────────────────────────────
 export const userStore = {
     _cache: {},
     _isAuthenticated: false,
     /**
      * init() — À appeler une fois au chargement de l'app.
      * Si l'utilisateur est connecté (session Django active),
-     * hydrate le cache depuis l'API et met à jour le localStorage.
-     * Sinon, lit le localStorage comme avant.
+     * prend le cache depuis l'API et met à jour le localStorage.
+     * s=inon lit le localStorage comme avant.
      */
     async init() {
         try {
@@ -66,9 +62,9 @@ export const userStore = {
                 ai_level:           data.ai_difficulty || '5',
                 user_xp:            data.xp || 0,
                 pong_total_seconds: data.total_seconds || 0,
-                is_staff:           String(data.is_staff), // ← ici
+                is_staff:           String(data.is_staff),
             };
-            localStorage.setItem('is_staff', String(data.is_staff)); // ← ici
+            localStorage.setItem('is_staff', String(data.is_staff));
             this._syncToLocalStorage();
         } catch {
             this._isAuthenticated = false;
@@ -121,14 +117,14 @@ export const userStore = {
         const newXp     = xp + (isVictory ? 100 : 20);
         const newSecs   = seconds + durationSeconds;
 
-        // ← Mise à jour cache + localStorage SEULEMENT, pas d'appel API ici
-        this._cache['pong_wins']          = newWins;
-        this._cache['pong_losses']        = newLosses;
-        this._cache['user_xp']            = newXp;
+        //  Maj dy cache + localStorage seul 
+        this._cache['pong_wins'] = newWins;
+        this._cache['pong_losses']= newLosses;
+        this._cache['user_xp'] = newXp;
         this._cache['pong_total_seconds'] = newSecs;
-        localStorage.setItem('pong_wins',          newWins);
-        localStorage.setItem('pong_losses',        newLosses);
-        localStorage.setItem('user_xp',            newXp);
+        localStorage.setItem('pong_wins', newWins);
+        localStorage.setItem('pong_losses', newLosses);
+        localStorage.setItem('user_xp', newXp);
         localStorage.setItem('pong_total_seconds', newSecs);
 
         // Historique local
@@ -141,16 +137,16 @@ export const userStore = {
         });
         localStorage.setItem('match_history', JSON.stringify(history.slice(0, 10)));
 
-        // ← Un seul appel API qui gère tout en DB
+        // Un seul appel API qui gere tout en DB
         if (this._isAuthenticated) {
             try {
                 await apiFetch('/me/match/', {
                     method: 'POST',
                     body: JSON.stringify({
-                        is_victory:       isVictory,
-                        score_player:     score1,
-                        score_opponent:   score2,
-                        opponent_name:    opponentName,
+                        is_victory: isVictory,
+                        score_player: score1,
+                        score_opponent: score2,
+                        opponent_name: opponentName,
                         duration_seconds: durationSeconds,
                     }),
                 });
@@ -182,10 +178,9 @@ export const userStore = {
         return this._isAuthenticated;
     },
 
-    // ─── Privé ─────────────────────────────────
     _syncToLocalStorage() {
         Object.entries(this._cache).forEach(([k, v]) => {
-            if (k === 'user_avatar') return; // ← ne cache jamais l'avatar en localStorage
+            if (k === 'user_avatar') return; // ne cache jamais l'avatar en localStorage
             if (v !== null && v !== undefined) localStorage.setItem(k, v);
         });
     },
