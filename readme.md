@@ -61,32 +61,6 @@ FORTYTWO_CLIENT_SECRET=s-s0t0ud-fa0a0a0a0a0a0a0a0a0a0a0a0a0
 - `make clean` to erase the database
 - `make` build the container image and deploy our site
 
-## Team Information
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-## Project Management
-
-_TODO_
-
 
 ## Features List
 
