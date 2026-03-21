@@ -14,10 +14,18 @@ class Message(models.Model):
         return f"{self.user.username}: {self.content[:50]}"
 
     def to_dict(self):
+        profile = self.user.profile
+        if profile.avatar:
+            avatar = profile.avatar.url
+        elif profile.avatar_url:
+            avatar = profile.avatar_url
+        else:
+            avatar = '/Mokoko.webp'
+
         return {
             "id": self.id,
             "sender": self.user.username,
-            "avatar": self.user.profile.avatar.url or None,
+            "avatar": avatar,
             "content": self.content,
             "timestamp": self.timestamp.isoformat(),
         }
