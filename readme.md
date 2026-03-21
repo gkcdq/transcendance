@@ -25,28 +25,28 @@ __Transcendence__ is a full-stack web application built as the final project of 
 - Create a .env file at the root of the project:
 ```
 Database:
-POSTGRES_DB=
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_HOST=
-POSTGRES_PORT=
+POSTGRES_DB=postgres_name
+POSTGRES_USER=postgres_user
+POSTGRES_PASSWORD=postgres_password
+POSTGRES_HOST=postgres_host
+POSTGRES_PORT=postgres_port
 
 
 Django:
-DJANGO_SUPERUSER_USERNAME=
-DJANGO_SUPERUSER_PASSWORD=
-DJANGO_SUPERUSER_EMAIL=
-DJANGO_SECRET_KEY=
-DEBUG=
-ALLOWED_HOSTS=
+DJANGO_SUPERUSER_USERNAME=superusername_example
+DJANGO_SUPERUSER_PASSWORD=superusername_password
+DJANGO_SUPERUSER_EMAIL=superusername@email.com
+DJANGO_SECRET_KEY=secret_key
+DEBUG=1
+ALLOWED_HOSTS=allowed_host
 
 
 Container name for the Makefile:
-DOCKER_COMPOSE =
+DOCKER_COMPOSE = docker compose
 
 
 For 42 intra connections:
-FORTYTWO_CLIENT_SECRET=
+FORTYTWO_CLIENT_SECRET=s-s0t0ud-fa0a0a0a0a0a0a0a0a0a0a0a0a0
 ```
 - __Access__
 
