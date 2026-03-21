@@ -26,7 +26,7 @@ clean:
 	rm -rf backend/media
 	find backend/src -type d -name "__pycache__" -exec rm -rf {} +
 	find backend/src -type d -name "*.pyc" -exec rm -rf {} +
-	@echo "Nettoyage complet effectué."
+	@echo "Nettoyage complet effectué." 
 
 logs:
 	$(DOCKER_COMPOSE) logs -f

@@ -410,16 +410,16 @@ export const routes = {
         },
         init: () => {
             initBouncingBalls();
-            const gameLayout     = document.getElementById('game-layout');
-            const gameWrapper    = document.getElementById('pong-game-wrapper');
+            const gameLayout = document.getElementById('game-layout');
+            const gameWrapper = document.getElementById('pong-game-wrapper');
             const activeRoom = sessionStorage.getItem('active_room');
             if (activeRoom) { sessionStorage.removeItem('active_room'); }
-            const btnIA          = document.getElementById('btn-play-ia');
-            const btnFriend      = document.getElementById('btn-play-friend');
+            const btnIA = document.getElementById('btn-play-ia');
+            const btnFriend = document.getElementById('btn-play-friend');
             const btnMatchmaking = document.getElementById('btn-matchmaking');
-            const btnJoin        = document.getElementById('btn-join-room');
-            const btnModeIA      = document.getElementById('btn-ModeIA');
-            const btnMode1v1     = document.getElementById('btn-Mode1v1');
+            const btnJoin = document.getElementById('btn-join-room');
+            const btnModeIA = document.getElementById('btn-ModeIA');
+            const btnMode1v1 = document.getElementById('btn-Mode1v1');
 
             if (btnMode1v1) btnMode1v1.onclick = () => {
                 gameWrapper.innerHTML = playModePageHTML;
@@ -783,7 +783,7 @@ export const routes = {
             },
             init: () => {
                 initBouncingBalls();
-                initProfile(); // Appelle ta logique de profil (fetch amis, historique, etc.) // Lance l'animation des balles en arrière-plan
+                initProfile();
             }
         },
 

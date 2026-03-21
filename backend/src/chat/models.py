@@ -17,7 +17,7 @@ class Message(models.Model):
         return {
             "id": self.id,
             "sender": self.user.username,
-            "avatar": self.user.profile.avatar or None,
+            "avatar": self.user.profile.avatar.url or None,
             "content": self.content,
             "timestamp": self.timestamp.isoformat(),
         }

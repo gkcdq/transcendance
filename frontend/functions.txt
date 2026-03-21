@@ -1,0 +1,494 @@
+================================================================================
+FUNCTIONS.TXT — ft_transcendence
+External functions and APIs used (not written by the team)
+================================================================================
+
+
+________________________________________________________________________________
+JAVASCRIPT — Browser APIs
+________________________________________________________________________________
+
+fetch(url, options)
+  Origin  : Browser Fetch API (built-in)
+  Returns : Promise<Response>
+  Usage   : Makes HTTP requests to the Django REST API
+  Example : fetch('/api/users/me/', { method: 'GET', headers: {...} })
+
+Response.json()
+  Origin  : Browser Fetch API (built-in)
+  Returns : Promise<Object>
+  Usage   : Parses the JSON body of a fetch() response
+  Example : const data = await response.json()
+
+Response.ok
+  Origin  : Browser Fetch API (built-in)
+  Returns : boolean (true if status 200-299)
+  Usage   : Checks if the HTTP request succeeded before using data
+
+await
+  Origin  : JavaScript language keyword (ES2017)
+  Usage   : Pauses execution inside an async function until a Promise resolves
+  Example : const data = await fetch('/api/users/me/')
+
+async function
+  Origin  : JavaScript language keyword (ES2017)
+  Usage   : Declares a function that can use await inside it
+  Example : async function loadProfile() { ... }
+
+Promise
+  Origin  : JavaScript built-in (ES2015)
+  Usage   : Represents a value that will be available in the future
+  Example : new Promise((resolve, reject) => { ... })
+
+JSON.stringify(value)
+  Origin  : JavaScript built-in
+  Usage   : Converts a JS object to a JSON string (for POST request bodies)
+  Example : body: JSON.stringify({ username, password })
+
+JSON.parse(string)
+  Origin  : JavaScript built-in
+  Usage   : Parses a JSON string into a JS object
+  Example : const data = JSON.parse(localStorage.getItem('match_history'))
+
+history.pushState(state, title, url)
+  Origin  : Browser History API (built-in)
+  Usage   : Changes the URL in the browser without reloading the page
+  Example : history.pushState({}, '', '/profile')
+
+window.location.href
+  Origin  : Browser Window API (built-in)
+  Usage   : Redirects the browser to a new URL (full page reload)
+  Example : window.location.href = '/'
+
+window.addEventListener(event, callback)
+  Origin  : Browser EventTarget API (built-in)
+  Usage   : Listens for global events (popstate for back/forward navigation)
+  Example : window.addEventListener('popstate', () => router())
+
+document.addEventListener(event, callback)
+  Origin  : Browser EventTarget API (built-in)
+  Usage   : Listens for DOM events (DOMContentLoaded, click interception)
+  Example : document.addEventListener('click', handleNavClick)
+
+element.addEventListener(event, callback)
+  Origin  : Browser EventTarget API (built-in)
+  Usage   : Attaches an event listener to a specific DOM element
+  Example : btn.addEventListener('click', () => navigateTo('/game'))
+
+document.querySelector(selector)
+  Origin  : Browser DOM API (built-in)
+  Usage   : Selects the first DOM element matching a CSS selector
+  Example : document.querySelector('#app')
+
+document.querySelectorAll(selector)
+  Origin  : Browser DOM API (built-in)
+  Usage   : Selects all DOM elements matching a CSS selector
+  Example : document.querySelectorAll('.nav-link')
+
+element.innerHTML
+  Origin  : Browser DOM API (built-in)
+  Usage   : Sets or reads the HTML content of a DOM element
+  Example : document.querySelector('#app').innerHTML = render()
+
+element.style
+  Origin  : Browser DOM API (built-in)
+  Usage   : Gets or sets inline CSS styles on a DOM element
+  Example : btn.style.display = 'none'
+
+element.classList.add / remove / toggle / contains
+  Origin  : Browser DOM API (built-in)
+  Usage   : Adds, removes, toggles, or checks CSS classes on an element
+  Example : btn.classList.toggle('active')
+
+element.getAttribute / setAttribute
+  Origin  : Browser DOM API (built-in)
+  Usage   : Reads or sets HTML attributes on DOM elements
+  Example : link.getAttribute('href')
+
+Math.random()
+  Origin  : JavaScript built-in Math object
+  Returns : float between 0 and 1
+  Usage   : Used in ModeGame.js for power-up spawning and AI confusion logic
+
+Math.abs(x)
+  Origin  : JavaScript built-in Math object
+  Usage   : Returns the absolute value of x
+  Example : Math.abs(ballSpeedX)
+
+Math.min(a, b) / Math.max(a, b)
+  Origin  : JavaScript built-in Math object
+  Usage   : Clamps paddle positions and ball speeds to valid ranges
+
+Math.floor(x)
+  Origin  : JavaScript built-in Math object
+  Usage   : Rounds down to nearest integer (frame counters, random indexes)
+
+Math.sign(x)
+  Origin  : JavaScript built-in Math object
+  Returns : -1, 0, or 1
+  Usage   : Gets direction of ball speed in canon bounce logic
+
+Math.sin(x) / Math.cos(x)
+  Origin  : JavaScript built-in Math object
+  Usage   : Used for sinusoidal drift in AI invisibility malus behavior
+
+setInterval(callback, ms)
+  Origin  : Browser Timer API (built-in)
+  Usage   : Repeats a function at a fixed interval (game loop, animations)
+  Example : setInterval(() => gameLoop(), 1000 / 60)
+
+clearInterval(id)
+  Origin  : Browser Timer API (built-in)
+  Usage   : Stops a setInterval loop (end of game, route change)
+
+setTimeout(callback, ms)
+  Origin  : Browser Timer API (built-in)
+  Usage   : Delays execution once (malus timers, UI feedback)
+
+requestAnimationFrame(callback)
+  Origin  : Browser Animation API (built-in)
+  Usage   : Schedules a function before the next screen repaint (smooth rendering)
+
+cancelAnimationFrame(id)
+  Origin  : Browser Animation API (built-in)
+  Usage   : Cancels a scheduled requestAnimationFrame
+
+canvas.getContext('2d')
+  Origin  : Browser Canvas API (built-in)
+  Usage   : Gets the 2D drawing context from an HTML5 <canvas> element
+
+ctx.fillRect(x, y, w, h)
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Draws a filled rectangle (paddles, ball, UI elements)
+
+ctx.clearRect(x, y, w, h)
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Clears a rectangle area (wipes canvas before each frame)
+
+ctx.beginPath() / ctx.arc() / ctx.fill()
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Draws filled circles (ball, power-up icons)
+
+ctx.fillText(text, x, y)
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Draws text on the canvas (scores, player names)
+
+ctx.strokeStyle / ctx.fillStyle / ctx.font / ctx.lineWidth
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Sets drawing colors, fonts, and line thickness
+
+ctx.moveTo / ctx.lineTo / ctx.stroke
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Draws lines (octagon borders, arena walls)
+
+ctx.save() / ctx.restore()
+  Origin  : Canvas 2D API (built-in)
+  Usage   : Saves and restores canvas state (for temporary style changes)
+
+localStorage.getItem(key)
+  Origin  : Browser Storage API (built-in)
+  Usage   : Reads a value from localStorage by key
+  Example : localStorage.getItem('username')
+
+localStorage.setItem(key, value)
+  Origin  : Browser Storage API (built-in)
+  Usage   : Writes a value to localStorage
+  Example : localStorage.setItem('wins', 5)
+
+localStorage.removeItem(key)
+  Origin  : Browser Storage API (built-in)
+  Usage   : Deletes a specific key from localStorage
+
+localStorage.clear()
+  Origin  : Browser Storage API (built-in)
+  Usage   : Clears all localStorage data (used on logout)
+
+sessionStorage.getItem / setItem / removeItem
+  Origin  : Browser Storage API (built-in)
+  Usage   : Same as localStorage but cleared when tab is closed
+  Used for: matchmaking_active, active_room
+
+
+________________________________________________________________________________
+WEBSOCKET — Browser WebSocket API
+________________________________________________________________________________
+
+new WebSocket(url)
+  Origin  : Browser WebSocket API (built-in)
+  Usage   : Opens a persistent WebSocket connection to Django Channels
+  Example : new WebSocket('wss://localhost:8443/ws/game/room_42/')
+
+ws.onopen = callback
+  Origin  : WebSocket API (built-in)
+  Usage   : Called when the WebSocket connection is established
+  Example : ws.onopen = () => console.log('connected')
+
+ws.onmessage = callback
+  Origin  : WebSocket API (built-in)
+  Usage   : Called every time a message is received from the server
+  Example : ws.onmessage = (event) => { const data = JSON.parse(event.data) }
+
+ws.onclose = callback
+  Origin  : WebSocket API (built-in)
+  Usage   : Called when the connection is closed (game over, disconnect)
+
+ws.onerror = callback
+  Origin  : WebSocket API (built-in)
+  Usage   : Called when a WebSocket error occurs
+
+ws.send(data)
+  Origin  : WebSocket API (built-in)
+  Usage   : Sends a message to the server
+  Example : ws.send(JSON.stringify({ type: 'input', key: 'w', pressed: true }))
+
+ws.close()
+  Origin  : WebSocket API (built-in)
+  Usage   : Closes the WebSocket connection (route change, logout)
+
+ws.readyState
+  Origin  : WebSocket API (built-in)
+  Returns : 0=CONNECTING 1=OPEN 2=CLOSING 3=CLOSED
+  Usage   : Checks connection state before sending messages
+
+
+________________________________________________________________________________
+DJANGO / PYTHON — Framework functions and decorators
+________________________________________________________________________________
+
+JsonResponse(data, status=200)
+  Origin  : django.http
+  Usage   : Returns a JSON HTTP response from a Django view
+  Example : return JsonResponse({'username': user.username})
+
+HttpResponse(content, status=200)
+  Origin  : django.http
+  Usage   : Returns a plain HTTP response
+
+@csrf_exempt
+  Origin  : django.views.decorators.csrf
+  Usage   : Disables CSRF check for a specific view (used for API endpoints
+            called by non-browser clients like Node.js OAuth callback)
+
+@login_required
+  Origin  : django.contrib.auth.decorators
+  Usage   : Redirects to login if user is not authenticated
+
+request.user
+  Origin  : Django authentication middleware
+  Usage   : The currently logged-in User object
+  Example : profile = request.user.profile
+
+request.method
+  Origin  : Django HttpRequest
+  Usage   : The HTTP method of the request (GET, POST, DELETE...)
+  Example : if request.method == 'POST':
+
+request.POST / request.GET
+  Origin  : Django HttpRequest
+  Usage   : Access form data (POST) or query parameters (GET)
+  Example : username = request.POST.get('username')
+
+request.FILES
+  Origin  : Django HttpRequest
+  Usage   : Access uploaded files (avatar upload)
+  Example : avatar = request.FILES.get('avatar')
+
+json.loads(request.body)
+  Origin  : Python standard library json
+  Usage   : Parses the JSON body of an incoming POST request
+
+Model.objects.get(**kwargs)
+  Origin  : Django ORM (QuerySet API)
+  Usage   : Fetches exactly one object matching the conditions
+  Example : User.objects.get(username='tmilin')
+
+Model.objects.filter(**kwargs)
+  Origin  : Django ORM (QuerySet API)
+  Usage   : Returns all objects matching the conditions
+  Example : FriendRequest.objects.filter(receiver=user, status='pending')
+
+Model.objects.create(**kwargs)
+  Origin  : Django ORM (QuerySet API)
+  Usage   : Creates and saves a new object in one step
+  Example : UserProfile.objects.create(user=user)
+
+Model.objects.all()
+  Origin  : Django ORM (QuerySet API)
+  Usage   : Returns all objects in the table
+
+Model.objects.order_by(field)
+  Origin  : Django ORM (QuerySet API)
+  Usage   : Orders a queryset by a field
+  Example : Message.objects.order_by('-timestamp')[:50]
+
+queryset.exists()
+  Origin  : Django ORM (QuerySet API)
+  Returns : boolean
+  Usage   : Checks if any object matches a filter without fetching all data
+
+queryset.values() / values_list()
+  Origin  : Django ORM (QuerySet API)
+  Usage   : Returns dicts or tuples instead of full model instances (lighter)
+
+instance.save()
+  Origin  : Django ORM
+  Usage   : Saves changes to an existing model instance to the database
+  Example : profile.wins += 1; profile.save()
+
+instance.delete()
+  Origin  : Django ORM
+  Usage   : Deletes a model instance from the database
+
+get_object_or_404(Model, **kwargs)
+  Origin  : django.shortcuts
+  Usage   : Fetches an object or returns a 404 response if not found
+
+authenticate(request, username, password)
+  Origin  : django.contrib.auth
+  Usage   : Validates credentials and returns a User or None
+
+login(request, user)
+  Origin  : django.contrib.auth
+  Usage   : Logs in a user and creates their session
+
+logout(request)
+  Origin  : django.contrib.auth
+  Usage   : Logs out the current user and clears their session
+
+@receiver(signal)
+  Origin  : django.dispatch
+  Usage   : Connects a function to a Django signal
+  Example : @receiver(post_save, sender=User) → auto-create UserProfile
+
+post_save
+  Origin  : django.db.models.signals
+  Usage   : Signal fired after a model instance is saved
+  Used in: signals.py to auto-create a UserProfile on User creation
+
+path(route, view, name=)
+  Origin  : django.urls
+  Usage   : Maps a URL pattern to a view function
+  Example : path('api/users/me/', get_user_profile, name='user-me')
+
+reverse(name)
+  Origin  : django.urls
+  Usage   : Returns the URL string for a named route
+  Example : reverse('user-me') → '/api/users/me/'
+
+re_path(pattern, view)
+  Origin  : django.urls
+  Usage   : Maps a regex URL pattern to a view
+
+include(module)
+  Origin  : django.urls
+  Usage   : Includes another urls.py file into the main router
+
+
+________________________________________________________________________________
+DJANGO CHANNELS — WebSocket server functions
+________________________________________________________________________________
+
+async_to_sync(coroutine)
+  Origin  : asgiref.sync
+  Usage   : Runs an async function from synchronous code
+
+await self.channel_layer.group_add(group, channel)
+  Origin  : channels_redis (Django Channels)
+  Usage   : Adds a WebSocket connection to a named group
+  Example : await self.channel_layer.group_add('game_room_42', self.channel_name)
+
+await self.channel_layer.group_send(group, message)
+  Origin  : channels_redis (Django Channels)
+  Usage   : Broadcasts a message to all connections in a group
+  Example : await self.channel_layer.group_send('game_room_42', {
+              'type': 'game_update', 'ball': {...}, 'score': [0, 0]
+            })
+
+await self.channel_layer.group_discard(group, channel)
+  Origin  : channels_redis (Django Channels)
+  Usage   : Removes a connection from a group (on disconnect)
+
+await self.send(text_data=)
+  Origin  : Django Channels WebsocketConsumer
+  Usage   : Sends a message to the connected WebSocket client
+
+await self.accept()
+  Origin  : Django Channels WebsocketConsumer
+  Usage   : Accepts an incoming WebSocket connection
+
+await self.close()
+  Origin  : Django Channels WebsocketConsumer
+  Usage   : Closes the WebSocket connection from server side
+
+asyncio.sleep(seconds)
+  Origin  : Python standard library asyncio
+  Usage   : Pauses an async function (used in game loop for 60 tick/s timing)
+  Example : await asyncio.sleep(1/60)
+
+asyncio.ensure_future(coroutine)
+  Origin  : Python standard library asyncio
+  Usage   : Schedules an async task (starts game loop in background)
+
+
+________________________________________________________________________________
+DOCKER / NGINX — Commands and directives
+________________________________________________________________________________
+
+docker compose up --build
+  Usage   : Builds images and starts all containers
+
+docker compose down -v
+  Usage   : Stops containers and deletes volumes (resets the database)
+
+docker compose exec <service> <command>
+  Usage   : Runs a command inside a running container
+  Example : docker compose exec backend bash
+
+docker compose logs -f
+  Usage   : Streams logs from all containers in real time
+
+docker compose ps
+  Usage   : Lists all running containers with their status and ports
+
+proxy_pass <url>
+  Origin  : Nginx directive
+  Usage   : Forwards the request to an internal service
+  Example : proxy_pass http://backend:8000;
+
+proxy_set_header
+  Origin  : Nginx directive
+  Usage   : Adds or overrides a header before forwarding the request
+  Example : proxy_set_header Host $host;
+
+proxy_http_version 1.1
+  Origin  : Nginx directive
+  Usage   : Required for WebSocket proxying (HTTP/1.1 supports Upgrade)
+
+proxy_set_header Upgrade $http_upgrade
+  Origin  : Nginx directive
+  Usage   : Passes the WebSocket upgrade request to the backend
+
+proxy_set_header Connection "upgrade"
+  Origin  : Nginx directive
+  Usage   : Required alongside Upgrade to switch to WebSocket protocol
+
+proxy_read_timeout <seconds>
+  Origin  : Nginx directive
+  Usage   : Max time to wait for backend response (86400 = 24h for WebSockets)
+
+try_files $uri $uri/ /index.html
+  Origin  : Nginx directive
+  Usage   : Falls back to index.html for unknown paths (required for SPA routing)
+
+alias <path>
+  Origin  : Nginx directive
+  Usage   : Serves files from a directory path that differs from the URL
+  Example : location /media/ { alias /app/media/; }
+
+ssl_protocols TLSv1.2 TLSv1.3
+  Origin  : Nginx directive
+  Usage   : Restricts accepted SSL/TLS protocol versions (disables old/insecure ones)
+
+openssl req -x509 -nodes -newkey rsa:2048
+  Origin  : OpenSSL CLI tool
+  Usage   : Generates a self-signed SSL certificate (used in nginx Dockerfile)

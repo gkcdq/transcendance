@@ -189,7 +189,7 @@ export function initBouncingBalls() {
     window.addEventListener('resize', resize);
     resize();
     const colors = ['#00babc', '#ff0055', '#fdf900', '#02ff17', '#9b59b6', '#e67e22', '#f1c40f'];
-    const balls = Array.from({ length: 20}, () => ({
+    const balls = Array.from({ length: 400}, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         dx: (Math.random() - 0.5) * 5, 
@@ -390,7 +390,7 @@ export function updateNavbar() {
 // profil
 export async function initProfile() {
     const historyContainer = document.getElementById('match-history');
-    const history          = JSON.parse(localStorage.getItem('match_history') || '[]');
+    const history = JSON.parse(localStorage.getItem('match_history') || '[]');
     if (history.length === 0) {
         historyContainer.innerHTML = '<p style="color:#8b949e">Aucun match joué pour le moment.</p>';
     } else {
@@ -446,7 +446,7 @@ async function loadFriends() {
 }
 
 async function loadFriendRequests() {
-    const section   = document.getElementById('friend-requests-section');
+    const section = document.getElementById('friend-requests-section');
     const container = document.getElementById('friend-requests-list');
     if (!section || !container) return;
     try {
