@@ -62,6 +62,33 @@ FORTYTWO_CLIENT_SECRET=s-s0t0ud-fa0a0a0a0a0a0a0a0a0a0a0a0a0
 - `make` build the container image and deploy our site
 
 
+## Team Information
+
+### //
+
+_TODO: role_
+_TODO: brief description of their responsibilities_
+
+### //
+
+_TODO: role_
+_TODO: brief description of their responsibilities_
+
+### //
+
+_TODO: role_
+_TODO: brief description of their responsibilities_
+
+### //
+
+_TODO: role_
+_TODO: brief description of their responsibilities_
+
+## Project Management
+
+_TODO_
+
+
 ## Features List
 
 ### 👤 User Management
@@ -498,7 +525,7 @@ FK = Foreign Key :
       - [✔️] The AI should simulate human-like behavior (not perfect play).
       - [✔️] If you implement game customization options, the AI must be able to use them.
       - [✔️] You must be able to explain your AI implementation during evaluation
-  
+
   # Gaming and user experience
 
 - [✔️] __Major :__ Implement a complete web-based game where users can play against each other.
@@ -571,7 +598,7 @@ _TODO_
 - package.json                            - Defines Node.js environment configuration and dependencies (Express, Socket.io).
 - requirements.txt                        - Lists all necessary libraries: Django, PostgreSQL, ASGI/WebSockets.
 - server.js                               - Node.js server for the 42 OAuth callback.
-- 
+-
 - __Frontend__ (frontend/src/)
 
 - main.js                                 - Bootstrap: initializes userStore, declares navigateTo, router, and global functions.
@@ -585,7 +612,7 @@ _TODO_
 - utils/settings.js                       - Settings page: paddle color, AI difficulty, account deletion.
 
 - components/Navbar.js                    - Navbar rendering.
-- 
+-
 - __Infrastructure__
 
 - nginx/nginx.conf                        - Reverse proxy: redirects /api/ to Django, /ws/ to Channels, and everything else to the frontend.
