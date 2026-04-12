@@ -1,11 +1,11 @@
 ================================================================================
-FUNCTIONS.TXT — ft_transcendence
+FUNCTIONS.TXT -transcendence
 External functions and APIs used (not written by the team)
 ================================================================================
 
 
 ________________________________________________________________________________
-JAVASCRIPT — Browser APIs
+JAVASCRIPT - Browser APIs
 ________________________________________________________________________________
 
 fetch(url, options)
@@ -210,7 +210,7 @@ sessionStorage.getItem / setItem / removeItem
 
 
 ________________________________________________________________________________
-WEBSOCKET — Browser WebSocket API
+WEBSOCKET - Browser WebSocket API
 ________________________________________________________________________________
 
 new WebSocket(url)
@@ -252,7 +252,7 @@ ws.readyState
 
 
 ________________________________________________________________________________
-DJANGO / PYTHON — Framework functions and decorators
+DJANGO / PYTHON - Framework functions and decorators
 ________________________________________________________________________________
 
 JsonResponse(data, status=200)
@@ -385,7 +385,7 @@ include(module)
 
 
 ________________________________________________________________________________
-DJANGO CHANNELS — WebSocket server functions
+DJANGO CHANNELS - WebSocket server functions
 ________________________________________________________________________________
 
 async_to_sync(coroutine)
@@ -431,7 +431,7 @@ asyncio.ensure_future(coroutine)
 
 
 ________________________________________________________________________________
-DOCKER / NGINX — Commands and directives
+DOCKER / NGINX - Commands and directives
 ________________________________________________________________________________
 
 docker compose up --build

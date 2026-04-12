@@ -1,3 +1,5 @@
+require('dotenv').config();
+console.log("SECRET chargé :", process.env.FORTYTWO_CLIENT_SECRET ? "✅ OK" : "❌ undefined");
 const express = require('express');
 const axios   = require('axios');
 const cors    = require('cors');
@@ -8,7 +10,7 @@ app.use(express.json());
 
 // Configuration OAuth 42
 const UID          = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
-const SECRET       = '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';
+const SECRET       = process.env.FORTYTWO_CLIENT_SECRET;
 const REDIRECT_URI = 'https://localhost:8443/accounts/fortytwo/login/callback/';
 
 // URL interne Django (dans le même réseau Docker)

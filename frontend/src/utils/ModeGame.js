@@ -53,9 +53,9 @@ function startGameModeLogic(name1, name2, canvas, ctx)
     let p1paddleHeight = 80;
     let p2paddleHeight = 80;
     const PADDLE_MAX_X = canvas.width / 2 - paddleWidth;
-    let leftPaddleX  = canvas.width  / 2 - (Math.min(canvas.width/2, canvas.height/2) - 10);
+    let leftPaddleX  = canvas.width  / 2 - (Math.min(canvas.width/2, canvas.height/2) - 10) + 30;
     let leftPaddleY  = (canvas.height - p1paddleHeight) / 2;
-    let rightPaddleX = canvas.width - paddleWidth;
+    let rightPaddleX = canvas.width - paddleWidth - (canvas.width / 7);
     let rightPaddleY = (canvas.height - p2paddleHeight) / 2;
 
     // parametres de la balle
@@ -209,13 +209,13 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 color_sec = true;
                 setTimeout(() => {color_sec = false}, 100);
             }
-            // else
-            // {
-            //     p1multiballs = true;
-            //     setTimeout(() => {p1multiballs = false}, 5000);
-            //     color_sec = true;
-            //     setTimeout(() => {color_sec = false}, 100);
-            // }
+            else
+            {
+                p1multiballs = true;
+                setTimeout(() => {p1multiballs = false}, 5000);
+                color_sec = true;
+                setTimeout(() => {color_sec = false}, 100);
+            }
         }
         else if (bonus.id === 'canon')
         {
@@ -385,13 +385,13 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
         let minY = 0, maxY = h - pH;
 
-        // Côté gauche — diagonale : y_min = oH * (1 - px/oW)
+        // Côté gauche diagonale : y_min = oH * (1 - px/oW)
         if (px < oW) {
             const diagY = oH * (1 - px / oW);
             minY = diagY;
             maxY = h - pH - diagY;
         }
-        // Côté droit — diagonale : y_min = oH * (1 - (w - px - paddleWidth) / oW)
+        // Côté droit diagonale : y_min = oH * (1 - (w - px - paddleWidth) / oW)
         else if (px + paddleWidth > w - oW) {
             const excess = px + paddleWidth - (w - oW);
             const diagY  = oH * (excess / oW);
@@ -466,7 +466,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
 
 
 
-        // ── Joueur gauche ──
+        // joueur gauche
         const speed = 7 * p1SpeedMult, hSpeed = 4 * p1SpeedMult;
         if (p1blockmovement === false)
         {
@@ -475,7 +475,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 if (keys['w'] || keys['W']) leftPaddleY -= speed;
                 if (keys['s'] || keys['S']) leftPaddleY += speed;
                 if ((keys['d'] || keys['D']) && leftPaddleX < PADDLE_MAX_X) leftPaddleX += hSpeed;
-                if ((keys['a'] || keys['A']) && leftPaddleX > paddleWidth / 2 - 3) leftPaddleX -= hSpeed;
+                if ((keys['a'] || keys['A']) && leftPaddleX > (paddleWidth + paddleWidth - (paddleWidth / 1.5)) / 2) leftPaddleX -= hSpeed;
             }
             else
             {
@@ -485,7 +485,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 if ((keys['a'] || keys['A']) && leftPaddleX < canvas.width / 2 - paddleWidth) leftPaddleX += hSpeed;
             }
         }
-        // Contraint après mouvement
+        // Contraint apres mouvement
         leftPaddleY = constrainPaddle(leftPaddleX, leftPaddleY, p1paddleHeight);
 
         // IA
@@ -504,13 +504,13 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 else if (rightPaddleX < targetX - 3) rightPaddleX += hSpeed;
             }
 
-            // MALUS invisibilité — IA perdue si balle loin, dérive lentement
+            // MALUS invisibilité , IA perdue si balle loin, dérive lentement
             else if (p2Invisible && ballX < rightPaddleX - 200)
             {
                 rightPaddleY += Math.sin(Date.now() / 300) * 1.5; // dérive lente bas→haut
             }
 
-            // MALUS multiballes — perdue seulement si balle dans sa moitié, 50% chance de suivre une fausse balle
+            // MALUS multiballes , perdue seulement si balle dans sa moitié, 50% chance de suivre une fausse balle
             else if (p2multiballs && ballX > canvas.width / 2) {
                 const sp = aiBaseSpeed * p2SpeedMult;
                 const centerPaddle = rightPaddleY + p2paddleHeight / 2;
@@ -527,7 +527,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                 rightPaddleY = Math.max(0, Math.min(canvas.height - p2paddleHeight, rightPaddleY));
             }
 
-            // MALUS inversion — se trompe de direction de temps en temps
+            // MALUS inversion , se trompe de direction de temps en temps
             else if (p2Inverse)
             {
                 const sp = aiBaseSpeed * p2SpeedMult;
@@ -586,7 +586,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                     if (keys['ArrowUp']) rightPaddleY -= sp2;
                     if (keys['ArrowDown'])  rightPaddleY += sp2;
                     if (keys['ArrowLeft']  && rightPaddleX > canvas.width / 2) rightPaddleX -= hs2;
-                    if (keys['ArrowRight'] && rightPaddleX < canvas.width - paddleWidth) rightPaddleX += hs2;
+                    if (keys['ArrowRight'] && rightPaddleX < canvas.width - (paddleWidth * 2 - ((paddleWidth / 1.5)))) rightPaddleX += hs2;
                 }
                 else
                 {
@@ -648,7 +648,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
                         normalSpeedX = 10;
                         normalSpeedY = 10;
                     }
-                        // Raquette adverse touchée — restore vitesse normale
+                        // Raquette adverse touchée , restore vitesse normale
                         ballSpeedX = -normalSpeedX;
                         if (normalSpeedY === 0)
                             normalSpeedY = -7;
@@ -737,7 +737,7 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         ballSpeedY = (Math.random() > 0.5 ? 5 : -5);
         leftPaddleX  = canvas.width / 2 - (Math.min(canvas.width / 2, canvas.height / 2) - 10);
         leftPaddleY  = (canvas.height - p1paddleHeight) / 2;
-        rightPaddleX = canvas.width - paddleWidth - 10;
+        rightPaddleX = canvas.width - paddleWidth - (canvas.width / 7);
         rightPaddleY = (canvas.height - p2paddleHeight) / 2;
         p1SpeedMult = 1, p2SpeedMult = 1;
         p1blockmovement = false;

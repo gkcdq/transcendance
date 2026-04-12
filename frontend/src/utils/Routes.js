@@ -501,7 +501,7 @@ export const routes = {
                     } catch (e) {
                         isSearching = false;
                         clearInterval(interval);
-                        btnMatchmaking.disabled = false;
+                        btnMatchmaking.disabled = false;    
                         sessionStorage.removeItem('matchmaking_active');
                         mmStatus.innerHTML = `<span style="color:#ff4d6d;">Erreur réseau.</span>`;
                     }

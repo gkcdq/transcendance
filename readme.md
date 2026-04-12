@@ -1,6 +1,6 @@
 # Transcendence
 
-_This project has been created as part of the 42 curriculum by tmilin._
+_This project has been created as part of the 42 curriculum by tmilin, nharraqi, modembel, trami._
 
 
 ## Description
@@ -11,6 +11,69 @@ __Transcendence__ is a full-stack web application built as the final project of 
 - The project is fully containerized with Docker and runs behind an Nginx reverse proxy with SSL.
 - The backend is powered by Django + Django Channels for WebSocket support,
 - PostgreSQL for data persistence, and Redis as a message broker.
+
+
+## Team Information
+
+
+#### tmilin: Product Owner (PO), Project Manager (PM), Developers: 
+- Maintains the product backlog.
+- Makes decisions on features and priorities.
+- Validates completed work.
+- Communicates with stakeholders (evaluators, peers).
+- Organizes team meetings and planning sessions.
+- Tracks progress and deadlines.
+- Ensures team communication.
+- Manages risks and blockers.
+- Write code for assigned features.
+- Participate in code reviews.
+- Test their implementations.
+- Document their work.
+
+#### modembel: Technical Lead / Architect, Developers:
+- Defines technical architecture.
+- Makes technology stack decisions.
+- Ensures code quality and best practices.
+- Reviews critical code changes.
+- Write code for assigned features.
+- Participate in code reviews.
+- Test their implementations.
+- Document their work.
+
+#### nharraqi: Technical Lead / Architect, Developers:
+- Defines technical architecture.
+- Makes technology stack decisions.
+- Ensures code quality and best practices.
+- Reviews critical code changes.
+- Write code for assigned features.
+- Participate in code reviews.
+- Test their implementations.
+- Document their work.
+
+#### trami: Technical Lead / Architect, Developers:
+- Defines technical architecture.
+- Makes technology stack decisions.
+- Ensures code quality and best practices.
+- Reviews critical code changes.
+- Write code for assigned features.
+- Participate in code reviews.
+- Test their implementations.
+- Document their work.
+
+## Project Management
+- Communication channels: Discord was use during all the process of this project.
+- Code : Every part of codes was push on a dev repository on github.
+- How the team organized: When a code was push on the github repository, 
+
+## Individual Contributions
+
+trami: IA concept + picked the right stack for multi clients handling in online mode. Contribution for the Game logic conception.
+
+nharraqi: Developped the real-time chat with web-socket && participated in the creation and conceptualization of malus and bonus.
+
+modembel: Managed the users handling authentifications, personalizations of profiles, friends system. Developped the admin panel using Django.
+
+tmilin: Makes decisions on features and priorities, Organizes team meetings and planning sessions + dev frontend
 
 ## Instructions
 
@@ -62,36 +125,9 @@ FORTYTWO_CLIENT_SECRET=s-s0t0ud-fa0a0a0a0a0a0a0a0a0a0a0a0a0
 - `make` build the container image and deploy our site
 
 
-## Team Information
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-### //
-
-_TODO: role_
-_TODO: brief description of their responsibilities_
-
-## Project Management
-
-_TODO_
-
-
 ## Features List
 
-### 👤 User Management
+### 👤 User Management / modembel, tmilin
 
 - User registration and secure authentification.
 - Login / Logout with session management.
@@ -100,7 +136,7 @@ _TODO_
 - Online / Offline status indicator.
 - Profil page displaying user information and activity.
 
-### 👥 Friends System
+### 👥 Friends System / modembel, tmilin
 
 - Send / Receive firend requests.
 - Accept / Decline friend requests.
@@ -108,7 +144,7 @@ _TODO_
 - view friends list.
 - See real-time online status of friends.
 
-### 🏓 Game
+### 🏓 Game / trami, tmilin
 
 - Classic local Pong (1v1 on the same keyboard).
 - Octogon mode with power-ups and malus.
@@ -116,38 +152,38 @@ _TODO_
 - Spectator mode to watch ongoing games.
 - Customizable game settings (difficulty, paddle color).
 
-### 🤖 AI Opponent
+### 🤖 AI Opponent / trami, tmilin
 
 - Playable against an AI in local and octogon mode.
 - Adjustable difficulty (easy / medium / hard).
 - Human-like behavior (not perfect play).
 - AI affected by malus power-ups (freeze, inversion, invisibility, multiball).
 
-### 🏆 Tournament
+### 🏆 Tournament / tmilin
 
 - Tournament registration and bracket system.
 - Clear matchup order and progression tracking.
 - Matchmaking system for tournament participants.
 
-### 🎮 Power-ups & Malus (Octagon Mode)
+### 🎮 Power-ups & Malus (Octagon Mode) / nharraqi, tmilin
 
 - Bonus: speed boost, canon shot, freeze ball, giant wall.
 - Malus: multiballs, touch inversion, freeze opponent, little paddle, invisible paddle.
 - Randomized power-up spawns during the game.
 
-### 💬 Chat
+### 💬 Chat / nharraqi
 
 - Global real-time chat via WebSocket.
 - Message history (last 50 messages loaded on connect).
 
-### 🔑 Authentication
+### 🔑 Authentication / modembel, tmilin
 
 - Classic registration / login.
 - OAuth 2.0 login via 42 intranet.
 - CSRF protection and secure session management.
 - Password change and account deletion (GDPR).
 
-### 🛡️ ADMIN
+### 🛡️ ADMIN / modembel, tmilin
 
 - Django admin portal.
 - View, edit, and delete, users (CRUD).
@@ -525,7 +561,7 @@ FK = Foreign Key :
       - [✔️] The AI should simulate human-like behavior (not perfect play).
       - [✔️] If you implement game customization options, the AI must be able to use them.
       - [✔️] You must be able to explain your AI implementation during evaluation
-
+  
   # Gaming and user experience
 
 - [✔️] __Major :__ Implement a complete web-based game where users can play against each other.
@@ -554,10 +590,6 @@ FK = Foreign Key :
       - [✔️] Real-time updates for spectators.
       - [❌] Optional: spectator chat.
 
-
-# Individual Contributions
-
-_TODO_
 
 # File review
 
@@ -598,7 +630,7 @@ _TODO_
 - package.json                            - Defines Node.js environment configuration and dependencies (Express, Socket.io).
 - requirements.txt                        - Lists all necessary libraries: Django, PostgreSQL, ASGI/WebSockets.
 - server.js                               - Node.js server for the 42 OAuth callback.
--
+- 
 - __Frontend__ (frontend/src/)
 
 - main.js                                 - Bootstrap: initializes userStore, declares navigateTo, router, and global functions.
@@ -612,7 +644,7 @@ _TODO_
 - utils/settings.js                       - Settings page: paddle color, AI difficulty, account deletion.
 
 - components/Navbar.js                    - Navbar rendering.
--
+- 
 - __Infrastructure__
 
 - nginx/nginx.conf                        - Reverse proxy: redirects /api/ to Django, /ws/ to Channels, and everything else to the frontend.

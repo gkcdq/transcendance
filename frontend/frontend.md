@@ -300,3 +300,41 @@ curl -k -X POST https://localhost:8443/api/users/upload-avatar/ \
 5. Router runs:     Routes['/profile'].init() → fetches profile data, renders stats
 6. URL updates:     https://localhost:8443/profile (no page reload)
 ```
+
+## Browser-Specific Limitations
+### Chrome
+
+- Self-signed certificates: blocked by default on https://localhost:8443, the user must type thisisunsafe on the error page to bypass it
+- WebSocket: fully supported, no limitations
+- WebRTC: fully supported
+- SameSite cookies: strict by default since Chrome 80, cookies without a SameSite attribute may be blocked
+
+### Brave
+
+- Shields: the built-in blocker may block WebSockets and requests to api.intra.42.fr → the user must disable Shields on the site
+- WebRTC: blocked by default in privacy settings (brave://settings/privacy → WebRTC IP handling policy), may break multiplayer
+- Fingerprinting: Brave blocks certain Canvas APIs used by the Pong game, may cause graphical glitches
+- Third-party cookies: blocked by default, may interfere with the OAuth 42 session
+
+### Firefox
+
+- WebRTC: requires media.peerconnection.enabled = true in about:config (enabled by default)
+- WebSocket: fully supported, no limitations
+- Canvas 2D (Pong game): slightly lower performance on complex animations compared to Chrome
+
+### Safari
+
+- WebRTC: partial support, peer-to-peer connections may require a TURN server
+- WebSocket over TLS: requires a valid certificate → wss://localhost may be blocked without a manual exception from the user
+- localStorage: disabled in private browsing, JWT token storage may fail
+- Autoplay audio/video: blocked without prior user interaction
+
+### Edge (Chromium)
+
+- Behavior identical to Chrome, no notable limitations
+- Self-signed certificates: displays a warning on the first connection to https://localhost:8443, the user must manually accept it
+
+### Limitations common to all browsers
+
+- Self-signed certificate: a security warning is displayed on first access, the user must manually accept it
+- HTTPS required: OAuth 42 and WebSockets (wss://) require HTTPS, the site does not work over plain HTTP
