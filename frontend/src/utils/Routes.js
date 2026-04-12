@@ -1,3 +1,4 @@
+import { legalPageHTML, initLegal } from './legal.js';
 import { getCsrfToken, userStore } from './userStore.js';
 await userStore.init();
 if (userStore.get('is_staff') === 'true') {
@@ -1007,4 +1008,12 @@ export const routes = {
         },
         init: () => {}
     },
+    '/legal': {
+    title: 'Mentions légales',
+    render: () => legalPageHTML,
+    init: () => {
+        initBouncingBalls();
+        initLegal();
+    }
+},
 };

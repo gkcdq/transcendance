@@ -27,6 +27,8 @@ def register(request):
         return JsonResponse({'error': 'Cet email est déjà utilisé.'}, status=400)
     if not '@' in email:
         return JsonResponse({'error': 'missing @ in email.'}, status=400)
+    if not username.isalnum():
+         return JsonResponse({'error': 'Votre pseudo ne peut contenir que des lettres et des nombres.'}, status=400)
 
     user = User.objects.create_user(username=username, email=email, password=password)
     profile = user.profile

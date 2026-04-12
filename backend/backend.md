@@ -487,3 +487,30 @@ GET    /api/chat/history/               → last 50 messages
 ws://backend:8000/ws/game/<room_id>/    → online game
 ws://backend:8000/ws/chat/              → global chat
 ```
+
+## Security check
+
+- #### To see the hashage of the password, first you need to get in:
+```bash
+docker exec -it backend python3 src/manage.py shell
+```
+- #### When u get into the container:
+```bash
+from django.contrib.auth.models import User
+```
+```Bash
+u = User.objects.first()
+```
+```bash
+print(u.password)
+```
+
+### Test formulaire
+- by script :
+```bash
+<script>alert('xss')</script>
+```
+- by SQL injection :
+```bash
+' OR '1'='1
+```
