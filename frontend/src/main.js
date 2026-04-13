@@ -564,7 +564,7 @@ export function initChat() {
         appendMessage(data.message, data.type === 'history');
     };
     ws.onerror = () => appendSystemMessage('Connexion au chat perdue.');
-    ws.onclose = () => console.warn('[Chat] WebSocket fermé');
+    //ws.onclose = () => console.warn('[Chat] WebSocket fermé');
     window.addEventListener('popstate', () => { if (!document.getElementById('chat-messages')) ws.close(); });
     if (!form) return;
     form.onsubmit = (e) => {
