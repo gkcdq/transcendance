@@ -245,7 +245,7 @@ export function initTournamentLogic() {
     const btnCancel = document.getElementById('btn-cancel-t');
     if (btnCancel) btnCancel.onclick = () => {
         if (confirm("Annuler le tournoi ?")) {
-            tournamentState.isActive = false; tournamentState.isMatchRunning = false; router();
+            tournamentState.isActive = false; tournamentState.isMatchRunning = false; router(); navigateTo('/game');
         }
     };
 }

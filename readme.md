@@ -16,21 +16,21 @@ __Transcendence__ is a full-stack web application built as the final project of 
 ## Team Information
 
 
-#### tmilin: Product Owner (PO), Project Manager (PM), Developers: 
+#### tmilin: Product Owner (PO), Developers: 
 - Maintains the product backlog.
 - Makes decisions on features and priorities.
 - Validates completed work.
 - Communicates with stakeholders (evaluators, peers).
-- Organizes team meetings and planning sessions.
-- Tracks progress and deadlines.
-- Ensures team communication.
-- Manages risks and blockers.
 - Write code for assigned features.
 - Participate in code reviews.
 - Test their implementations.
 - Document their work.
 
-#### modembel: Technical Lead / Architect, Developers:
+#### modembel: Product Manager (PM), Technical Lead / Architect, Developers:
+- Organizes team meetings and planning sessions.
+- Tracks progress and deadlines.
+- Ensures team communication.
+- Manages risks and blockers.
 - Defines technical architecture.
 - Makes technology stack decisions.
 - Ensures code quality and best practices.
@@ -510,7 +510,6 @@ FK = Foreign Key :
 ## Modules
 
   # WEB
-- [✔️] __Major :__ Implement real-time features using WebSockets or similar technology
 - [✔️] __Major :__ Allow users to interact with other users
       - [✔️] A basic chat system (send/receive messages between users)
       - [✔️] A profile system (view user information)
@@ -519,10 +518,6 @@ FK = Foreign Key :
       - [✔️] Real-time updates across clients.
       - [✔️] Handle connection/disconnection gracefully.
       - [✔️] Efficient message broadcasting.
-- [✔️] __Major :__ Allow users to interact with other users. The minimum requirements are:
-      - [✔️] A basic chat system (send/receive messages between users).
-      - [✔️] A profile system (view user information).
-      - [✔️] A friends system (add/remove friends, see friends list)
 - [✔️] __Minor :__ Use a backend framework (Express, Fastify, NestJS, Django, etc.)
 - [✔️] __Minor :__  Use an ORM for the database
 

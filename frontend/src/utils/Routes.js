@@ -40,6 +40,17 @@ const playPageHTML = `
     </div>
 `;
 
+async function cancelMatchmaking() {
+    if (!sessionStorage.getItem('matchmaking_active')) return;
+    sessionStorage.removeItem('matchmaking_active');
+    try {
+        await fetch('/api/game/matchmaking/cancel/', {
+            method: 'POST', credentials: 'include',
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+    } catch(e) {}
+}
+
 export const routes = {
 
     '/': {
