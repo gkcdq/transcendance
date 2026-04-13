@@ -141,7 +141,6 @@ function startGameModeLogic(name1, name2, canvas, ctx)
         else if (bonus.id === 'freeze') {
             if (ballSpeedX === 0 && ballSpeedY === 0) return;
             const ox = ballSpeedX, oy = ballSpeedY;
-            console.log('y = ', ballSpeedY);
             if (p2Canon === true || p1Canon === true)
                 normalSpeedX = ox; normalSpeedY = oy;
             ballSpeedX = 0; ballSpeedY = 0;
