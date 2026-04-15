@@ -79,7 +79,7 @@ export const routes = {
                     <canvas id="pong-canvas-bg"></canvas>
                     <div class="hero-container" style="position:relative; z-index:1;">
                         <div class="home-profile-header">
-                        <h1>Pong Game 🎾</h1>
+                        <h2>Pong Game 🎾</h2>
                         <h5>📌 Connecte-toi pour jouer 📌</h5>
                         </div>
                         <div class="pong-showcase">
@@ -180,8 +180,9 @@ export const routes = {
                                 <h4>${name}</h4>
                                     ${avatar ? `<img src="${avatar}" class="home-avatar-img" style="border-color:${color}">` : ''}
                                     <div class="level-badge">Niveau ${level - 1}</div>
-                                    <h5>👑 Grade : ${grade} 👑</h5>
-                                    <h1>Pong Game 🎾</h1>
+                                    <pr> </pr>
+                                    <h6>👑 Grade : ${grade} 👑</h6>
+                                    <h2>Pong Game 🎾</h2>
                                 </div>
                                 <div class="pong-showcase">
                                     <div class="pong-gif-mockup">
@@ -314,7 +315,7 @@ export const routes = {
             const myName = userStore.get('user_name', 'Player');
             return `
                 <canvas id="pong-canvas-bg"></canvas>
-                <h2 style="text-transform:uppercase;letter-spacing:2px;">⚔️ Pong Match ⚔️</h2>
+                <h4 style="text-transform:uppercase;letter-spacing:2px;">⚔️ Pong Match ⚔️</h4>
                 <div id="game-layout" style="display:flex;gap:30px;align-items:flex-start;justify-content:center;padding:20px;flex-wrap:wrap;">        
                     <!-- COLONNE GAUCHE -->
                     <div id="setup-container" style="display:flex;flex-direction:column;align-items:center;gap:20px;min-width:320px;">

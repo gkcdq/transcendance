@@ -15,31 +15,33 @@ body {
 header {
     background-color: var(--nav-bg);
     border-bottom: 2px solid var(--accent);
-    padding: 1rem 2rem;
+    /* Supprime le padding : Bootstrap .navbar gère déjà l'espacement */
+    padding: 0;
 }
 
 #navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
+    /* Bootstrap .navbar gère le display flex et l'alignement */
+    /* On garde juste la couleur de fond et retire les conflits */
+    padding: 0.5rem 1rem;
+    background-color: var(--nav-bg);
 }
 
 .nav-links {
     list-style: none;
-    display: flex;
-    gap: 1.5rem;
+    /* Retire le display:flex et gap — Bootstrap .navbar-nav s'en charge */
+    margin: 0;
+    padding: 0;
 }
 
-.nav-links a {
-    color: var(--text);
+.nav-links a, .nav-links a.nav-link {
+    color: var(--text) !important;
     text-decoration: none;
     font-weight: bold;
-    transition: 0.3s;
+    transition: color 0.3s;
 }
 
-.nav-links a:hover {
-    color: var(--accent);
+.nav-links a:hover, .nav-links a.nav-link:hover {
+    color: var(--accent) !important;
 }
 
 #app {
@@ -58,11 +60,11 @@ header {
     font-weight: bold;
 }
 
-/* Ajoute un effet de lueur au titre */
-.logo {
+/* Logo / navbar-brand */
+.logo, .logo.navbar-brand {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--accent);
+    color: var(--accent) !important;
     text-shadow: 0 0 10px rgba(0, 186, 188, 0.5);
     letter-spacing: 3px;
 }
@@ -978,8 +980,9 @@ header {
 
 
 
-.logo {
-    animation: blink-colors 4s linear infinite; /* 8s pour que ce soit fluide */
+/* Animation logo - fusionne avec la définition précédente */
+.logo, .logo.navbar-brand {
+    animation: blink-colors 4s linear infinite;
     transition: text-shadow 0.3s ease;
 }
 @keyframes blink-colors {
@@ -1020,4 +1023,67 @@ header {
     display: flex;
     justify-content: center;
     width: 100%;
+}
+
+/* =============================================
+   RESPONSIVE — Mobile / Tablet
+   ============================================= */
+
+/* Navbar mobile : menu collapse Bootstrap */
+@media (max-width: 767px) {
+    .navbar-collapse {
+        background-color: var(--nav-bg);
+        padding: 10px 0;
+        border-top: 1px solid rgba(0, 186, 188, 0.2);
+    }
+
+    .nav-links .nav-link {
+        padding: 10px 20px !important;
+    }
+
+    /* Chat : sidebar passe en haut */
+    .chat-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #30363d;
+        padding: 10px;
+    }
+
+    .chat-messages {
+        height: 40vh;
+    }
+
+    /* Leaderboard : masque les stats secondaires */
+    .perc, .xp {
+        display: none;
+    }
+
+    /* Tournoi : bracket en colonne */
+    .bracket-display {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Canvas Pong responsive */
+    #pongCanvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Settings */
+    .settings-container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    /* Profile stats : déjà géré (grid 1fr) mais renforcement */
+    .stats-dashboard {
+        flex-direction: column;
+        align-items: center;
+    }
 }
