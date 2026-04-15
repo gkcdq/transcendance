@@ -326,6 +326,12 @@ docker-compose.yml
 ```
 💡 `Not used directly as Nginx serves the frontend files by reading the volumes directly.`
 
+---
+
+🎨 Bootstrap 5
+
+Bootstrap is the CSS framework used to structure and style the user interface in a modern and "responsive" way (optimized for mobile devices). It prevents the need to write thousands of lines of plain CSS from scratch.
+
 __Global Schema__
 
 
