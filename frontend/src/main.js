@@ -3,9 +3,10 @@ import { userStore, getCsrfToken } from './utils/userStore.js';
 import { initOnlinePong } from './utils/OnlinePong.js';
 import { letCurrentPongInstance, returnCurrentPongInstance, unlockNav, lockNavAdmin } from './utils/State.js';
 import { routes } from './utils/Routes.js';
+import { FORTYTWO_CLIENT_UID } from './config.js';
 
 // OAuth 42
-const UID      = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
+const UID      = FORTYTWO_CLIENT_UID;
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
 

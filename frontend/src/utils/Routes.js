@@ -14,7 +14,8 @@ import { initModeGame } from './ModeGame.js';
 import { lockNav } from './State.js';
 import { tournamentState ,initTournamentLogic, loadLeaderboard, initSpectatorMode, initBouncingBalls, initProfile, initChat} from '../main.js';
 import { navigateTo } from './State.js';
-const UID      = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
+import { FORTYTWO_CLIENT_UID } from '../config.js';
+const UID      = FORTYTWO_CLIENT_UID;
 const CALLBACK = encodeURIComponent('https://localhost:8443/accounts/fortytwo/login/callback/');
 const authUrl  = `https://api.intra.42.fr/oauth/authorize?client_id=${UID}&redirect_uri=${CALLBACK}&response_type=code`;
 const playModePageHTML = `
