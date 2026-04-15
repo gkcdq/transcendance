@@ -1,1 +1,0 @@
-export const FORTYTWO_CLIENT_UID = 'u-s4t2ud-ca92bf4d5bd6937ac2295ecb335d4eb51dc7a9a1e0d5554f8555fdc4c7c2c597';
