@@ -1,5 +1,5 @@
 # Environnment
 *.env
 
-# Frontend UID
+# Frontend client UID
 frontend/src/config.js
