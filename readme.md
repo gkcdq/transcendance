@@ -110,7 +110,7 @@ DOCKER_COMPOSE = docker compose
 
 For 42 intra connections:
 FORTYTWO_CLIENT_UID=u-s4t2ud-example
-FORTYTWO_CLIENT_SECRET=s-s0t0ud-example
+FORTYTWO_CLIENT_SECRET=s-s4t2ud-example
 ```
 - Create a config.js at this location : `frontend/src/`
 ```
