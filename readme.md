@@ -15,7 +15,7 @@ __Transcendence__ is a full-stack web application built as the final project of 
 
 ## Team Information
  
-
+ 
 #### tmilin: Product Owner (PO), Developers: 
 - Maintains the product backlog.
 - Makes decisions on features and priorities.
