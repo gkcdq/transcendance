@@ -87,7 +87,7 @@ tmilin: Makes decisions on features and priorities, Organizes team meetings and 
 
 - Create a .env file at the root of the project:
 ```
-Database:
+#Database:
 POSTGRES_DB=postgres_name
 POSTGRES_USER=postgres_user
 POSTGRES_PASSWORD=postgres_password
@@ -95,7 +95,7 @@ POSTGRES_HOST=postgres_host
 POSTGRES_PORT=postgres_port
 
 
-Django:
+#Django:
 DJANGO_SUPERUSER_USERNAME=superusername_example
 DJANGO_SUPERUSER_PASSWORD=superusername_password
 DJANGO_SUPERUSER_EMAIL=superusername@email.com
@@ -104,11 +104,11 @@ DEBUG=1
 ALLOWED_HOSTS=allowed_host
 
 
-Container name for the Makefile:
+#Container name for the Makefile:
 DOCKER_COMPOSE = docker compose
 
 
-For 42 intra connections:
+#For 42 intra connections:
 FORTYTWO_CLIENT_UID=u-s4t2ud-example
 FORTYTWO_CLIENT_SECRET=s-s4t2ud-example
 ```
