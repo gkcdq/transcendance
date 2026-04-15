@@ -11,7 +11,7 @@ __Transcendence__ is a full-stack web application built as the final project of 
 - The project is fully containerized with Docker and runs behind an Nginx reverse proxy with SSL.
 - The backend is powered by Django + Django Channels for WebSocket support,
 - PostgreSQL for data persistence, and Redis as a message broker.
-
+ 
 
 ## Team Information
 
