@@ -1,7 +1,7 @@
 :root {
     --bg-dark: #0d1117;
     --nav-bg: #161b22;
-    --accent: #00babc; /* Cyan 42 */
+    --accent: #00babc; 
     --text: #c9d1d9;
 }
 
@@ -15,20 +15,16 @@ body {
 header {
     background-color: var(--nav-bg);
     border-bottom: 2px solid var(--accent);
-    /* Supprime le padding : Bootstrap .navbar gère déjà l'espacement */
     padding: 0;
 }
 
 #navbar {
-    /* Bootstrap .navbar gère le display flex et l'alignement */
-    /* On garde juste la couleur de fond et retire les conflits */
-    padding: 0.5rem 1rem;
+    padding: 0rem 0rem;
     background-color: var(--nav-bg);
 }
 
 .nav-links {
     list-style: none;
-    /* Retire le display:flex et gap — Bootstrap .navbar-nav s'en charge */
     margin: 0;
     padding: 0;
 }

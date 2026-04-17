@@ -4,7 +4,7 @@ export DOCKER_API_VERSION=1.44
 all: bootstrap
 	chmod +x backend/scripts/entrypoint.sh
 	chmod +x backend/src/manage.py
-	$(DOCKER_COMPOSE) up --build 
+	$(DOCKER_COMPOSE) up --build -d
 
 bootstrap:
 	mkdir -p frontend/vendor

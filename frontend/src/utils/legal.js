@@ -91,7 +91,6 @@ export const legalPageHTML = `
                 <li>Droit d'accès à vos données personnelles</li>
                 <li>Droit de rectification en cas d'inexactitude</li>
                 <li>Droit à l'effacement ("droit à l'oubli") disponible depuis la page <strong style="color:#00babc;">Paramètres → Supprimer mon compte</strong></li>
-                <li>Droit à la portabilité de vos données</li>
                 <li>Droit d'opposition au traitement</li>
             </ul>`
         )}

@@ -43,12 +43,6 @@ const LS_KEYS = {
 export const userStore = {
     _cache: {},
     _isAuthenticated: false,
-    /**
-     * init() — À appeler une fois au chargement de l'app.
-     * Si l'utilisateur est connecté (session Django active),
-     * prend le cache depuis l'API et met à jour le localStorage.
-     * s=inon lit le localStorage comme avant.
-     */
     async init() {
         try {
             const data = await apiFetch('/me/');
@@ -80,8 +74,8 @@ export const userStore = {
 
     /**
      * Écriture : localStorage immédiat + PATCH API si connecté.
-     * @param {string} lsKey  - clé localStorage historique (ex: 'pong_wins')
-     * @param {*}      value  - valeur à sauvegarder
+     * @param {string} lsKey 
+     * @param {*}      value 
      */
     async set(lsKey, value) {
         this._cache[lsKey] = value;
@@ -102,10 +96,6 @@ export const userStore = {
         }
     },
 
-    /**
-     * Enregistre un match terminé (wins/losses + historique + XP + temps)
-     * Remplace les 4-5 localStorage.setItem dispersés dans main.js
-     */
     async recordMatch({ isVictory, score1, score2, opponentName, durationSeconds = 0 }) {
         const wins    = parseInt(this.get('pong_wins', 0));
         const losses  = parseInt(this.get('pong_losses', 0));
@@ -180,7 +170,7 @@ export const userStore = {
 
     _syncToLocalStorage() {
         Object.entries(this._cache).forEach(([k, v]) => {
-            if (k === 'user_avatar') return; // ne cache jamais l'avatar en localStorage
+            if (k === 'user_avatar') return;
             if (v !== null && v !== undefined) localStorage.setItem(k, v);
         });
     },
